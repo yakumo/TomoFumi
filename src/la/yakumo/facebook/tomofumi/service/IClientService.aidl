@@ -7,12 +7,14 @@ interface IClientService
     void registerCallback(IClientServiceCallback callback);
     void unregisterCallback(IClientServiceCallback callback);
 
-    void updateStream();
-    void updateComment(String post_id);
-    void updateLike(String post_id);
+    void login();
 
-    void addStream(String text);
-    void addComment(String post_id, String text);
-    void addStreamLike(String post_id);
-    void addCommentLike(String post_id);
+    int updateStream();
+    int updateComment(String post_id);
+    int updateLike(String post_id);
+
+    int addStream(String text);
+    int addComment(String post_id, String text);
+    int addStreamLike(String post_id);
+    int addCommentLike(String post_id);
 }

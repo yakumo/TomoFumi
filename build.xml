@@ -60,11 +60,15 @@
     </target>
 -->
     <target name="-generate-app-const" unless="app.const.exists">
+      <property
+         name="app.isFree"
+         value="true"/>
       <touch file="${app.const}"/>
 <echo file="${app.const}">/* auto generate file. don't edit this file. */
 package la.yakumo.facebook;
 /** @hide */
 public final class AppConst {
+ public static final boolean IS_FREE = ${app.isFree};
  public static final String APP_ID = "${facebook.appid}";
  public static final String API_KEY = "${facebook.apikey}";
  public static final String SECRET_KEY = "${facebook.secretkey}";

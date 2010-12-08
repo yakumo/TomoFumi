@@ -2,4 +2,6 @@
 <resources>
   <string name="app_name">TomoFumi</string>
   <string name="login_title">Login</string>
+
+  <string name="error_login_cancel">Login cancel</string>
 </resources>
