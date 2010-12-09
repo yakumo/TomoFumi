@@ -189,7 +189,25 @@ public class ClientService
 
     public void updateStream()
     {
-        new StreamUpdator(ClientService.this).execute();
+        new StreamUpdator(
+            ClientService.this,
+            handler).execute(
+                new Runnable()
+                {
+                    public void run()
+                    {
+                        Log.i(TAG, "finish update stream");
+                        int numListener = listeners.beginBroadcast();
+                        for (int i = 0 ; i < numListener ; i++) {
+                            try {
+                                listeners.getBroadcastItem(i).updatedStream(null);
+                            } catch (RemoteException e) {
+                                Log.e(TAG, "RemoteException", e);
+                            }
+                        }
+                        listeners.finishBroadcast();
+                    }
+                });
     }
 
     public void updateComment(String post_id)

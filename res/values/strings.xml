@@ -3,5 +3,9 @@
   <string name="app_name">TomoFumi</string>
   <string name="login_title">Login</string>
 
+  <string name="text_post_title">Post to Facebook</string>
+
+  <string name="menu_post_stream">Post</string>
+
   <string name="error_login_cancel">Login cancel</string>
 </resources>

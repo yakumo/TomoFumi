@@ -2,12 +2,25 @@ package la.yakumo.facebook.tomofumi;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
@@ -17,6 +30,10 @@ public class StreamListActivity extends Activity
     private static final String TAG = Constants.LOG_TAG;
 
     private IClientService service = null;
+
+    private ListView streamList;
+    private Database db;
+    private Handler handler = new Handler();
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
         public void loggedIn(String userID)
@@ -40,6 +57,15 @@ public class StreamListActivity extends Activity
 
         public void updatedStream(String errorMessage)
         {
+            Log.i(TAG, "updatedStream:"+errorMessage);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    StreamCursorAdapter a =
+                        (StreamCursorAdapter)streamList.getAdapter();
+                    a.getCursor().requery();
+                }
+            });
         }
 
         public void updatedComment(String post_id, String errorMessage)
@@ -74,6 +100,36 @@ public class StreamListActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
+        db = new Database(this);
+        SQLiteDatabase wdb = db.getWritableDatabase();
+        try {
+            wdb.beginTransaction();
+            wdb.delete("stream", null, null);
+            wdb.setTransactionSuccessful();
+        } finally {
+            wdb.endTransaction();
+        }
+        wdb.close();
+
+        SQLiteDatabase rdb = db.getReadableDatabase();
+        Cursor c =
+            rdb.query(
+                "stream",
+                new String[] {
+                    "_id",
+                    "message",
+                    "comments",
+                    "likes",
+                    "actor_id",
+                },
+                null,
+                null,
+                null,
+                null,
+                "created_time desc");
+        streamList = (ListView) findViewById(R.id.stream_list);
+        streamList.setAdapter(new StreamCursorAdapter(this, c));
+
         Intent intent = new Intent(this, ClientService.class);
         if (bindService(intent, conn, BIND_AUTO_CREATE)) {
         }
@@ -90,6 +146,54 @@ public class StreamListActivity extends Activity
             }
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
+        }
+        db.close();
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(R.string.menu_post_stream)
+            .setIcon(R.drawable.ic_menu_start_conversation)
+            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item)
+                {
+                    postStream(null);
+                    return true;
+                }
+            })
+            ;
+        return true;
+    }
+
+    public void postStream(View v)
+    {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClass(this, TextPostActivity.class);
+        startActivity(intent);
+    }
+
+    public class StreamCursorAdapter
+        extends CursorAdapter
+    {
+        private int idxMessage;
+
+        public StreamCursorAdapter(Context context, Cursor c)
+        {
+            super(context, c, false);
+            idxMessage = c.getColumnIndex("message");
+        }
+
+        public void bindView(View view, Context context, Cursor cursor)
+        {
+            TextView tv = (TextView) view;
+            if (null != tv) {
+                tv.setText(cursor.getString(idxMessage));
+            }
+        }
+
+        public View newView(Context context, Cursor cursor, ViewGroup parent)
+        {
+            return new TextView(context);
         }
     }
 }

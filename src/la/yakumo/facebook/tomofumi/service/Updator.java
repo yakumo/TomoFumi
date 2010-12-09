@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 import la.yakumo.facebook.tomofumi.Constants;
 
 public class Updator
-    extends AsyncTask<String,Integer,Integer>
+    extends AsyncTask<Runnable,Integer,Integer>
 {
     protected static final String TAG = Constants.LOG_TAG;
     protected Facebook facebook;
@@ -19,17 +19,17 @@ public class Updator
         facebook = Facebook.getInstance(context);
     }
 
-    protected Integer doInBackground (String... params)
+    protected Integer doInBackground(Runnable... params)
     {
         return -1;
     }
 
-    protected void onProgressUpdate (Integer... values)
+    protected void onProgressUpdate(Integer... values)
     {
         Log.i(TAG, ""+this.getClass().toString()+"#onProgressUpdate");
     }
 
-    protected void onPostExecute (Integer result)
+    protected void onPostExecute(Integer result)
     {
         Log.i(TAG, ""+this.getClass().toString()+"#onPostExecute:"+result);
     }
