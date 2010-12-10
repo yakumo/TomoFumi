@@ -33,9 +33,21 @@ public class Database
             ",updated_time INTEGER"+
             ",message TEXT"+
             ",app_data BLOB"+
-            ",comments INTEGER"+
-            ",likes INTEGER"+
-            ",updated INTEGER"+
+            ",comments INTEGER default 0"+
+            ",comment_can_post INTEGER default 0"+
+            ",like_count INTEGER default 0"+
+            ",like_posted INTEGER default 0"+
+            ",can_like INTEGER default 0"+
+            ",updated INTEGER default 0"+
+            ");");
+        db.execSQL(
+            "CREATE TABLE user "+
+            "(_id INTEGER primary key unique"+
+            ",uid INTEGET"+
+            ",name TEXT"+
+            ",pic_square TEXT"+
+            ",username TEXT"+
+            ",pic_data BLOB"+
             ");");
     }
 

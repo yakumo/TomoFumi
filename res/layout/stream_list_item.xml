@@ -47,11 +47,27 @@
        android:layout_height="wrap_content"
        android:id="@+id/summary"
        style="@style/StreamSummary"/>
-    <TextView
+    <LinearLayout
+       android:orientation="horizontal"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:id="@+id/comments"
-       style="@style/StreamComment"
-       />
+       >
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:id="@+id/comments"
+         android:clickable="true"
+         android:onClick="onClickComment"
+         style="@style/StreamComment"
+         />
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:id="@+id/likes"
+         android:clickable="true"
+         android:onClick="onClickLike"
+         style="@style/StreamComment"
+         />
+    </LinearLayout>
   </LinearLayout>
 </LinearLayout>

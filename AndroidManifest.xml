@@ -27,6 +27,11 @@
     </activity>
 
     <activity
+       android:name=".StreamItemActivity"
+       android:label="@string/stream_item_title">
+    </activity>
+
+    <activity
        android:process=":service"
        android:name=".service.LoginActivity"
        android:label="@string/login_title">

@@ -65,17 +65,6 @@ public class StreamListActivity extends Activity
                     StreamCursorAdapter a =
                         (StreamCursorAdapter)streamList.getAdapter();
                     a.getCursor().requery();
-
-                    SQLiteDatabase wdb = db.getWritableDatabase();
-                    try {
-                        ContentValues val = new ContentValues();
-                        val.put("updated", 0);
-                        wdb.beginTransaction();
-                        wdb.update("stream", val, "updated=1", null);
-                        wdb.setTransactionSuccessful();
-                    } finally {
-                        wdb.endTransaction();
-                    }
                 }
             });
         }
@@ -124,13 +113,18 @@ public class StreamListActivity extends Activity
 
         SQLiteDatabase rdb = db.getReadableDatabase();
         Cursor c =
+            /*
             rdb.query(
                 "stream",
                 new String[] {
                     "_id",
+                    "post_id",
                     "message",
                     "comments",
-                    "likes",
+                    "comment_can_post",
+                    "like_count",
+                    "like_posted",
+                    "can_like",
                     "actor_id",
                     "updated",
                 },
@@ -140,6 +134,16 @@ public class StreamListActivity extends Activity
                 null,
                 "created_time desc",
                 "400");
+            */
+            rdb.rawQuery(
+                "SELECT *"+
+                " FROM stream"+
+                " LEFT JOIN user"+
+                " ON stream.actor_id=user.uid"+
+                " ORDER BY created_time DESC"+
+                " LIMIT 400"+
+                "",
+                null);
         streamList = (ListView) findViewById(R.id.stream_list);
         streamList.setAdapter(new StreamCursorAdapter(this, c));
 
@@ -161,6 +165,24 @@ public class StreamListActivity extends Activity
             Log.e(TAG, "RemoteException", e);
         }
         db.close();
+    }
+
+    public void onClickComment(View v)
+    {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClass(this, StreamItemActivity.class);
+        intent.putExtra("post_id", (String)v.getTag());
+        startActivity(intent);
+    }
+
+    public void onClickLike(View v)
+    {
+        String post_id = (String) v.getTag();
+        try {
+            service.addStreamLike(post_id);
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException", e);
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu)
@@ -204,18 +226,28 @@ public class StreamListActivity extends Activity
     public class StreamCursorAdapter
         extends CursorAdapter
     {
+        private int idxUserName;
+        private int idxPostId;
         private int idxMessage;
         private int idxUpdate;
         private int idxComments;
-        private int idxLikes;
+        private int idxCommentCanPost;
+        private int idxLikeCount;
+        private int idxLikePosted;
+        private int idxCanLike;
 
         public StreamCursorAdapter(Context context, Cursor c)
         {
             super(context, c, false);
+            idxUserName = c.getColumnIndex("name");
+            idxPostId = c.getColumnIndex("post_id");
             idxMessage = c.getColumnIndex("message");
             idxUpdate = c.getColumnIndex("updated");
             idxComments = c.getColumnIndex("comments");
-            idxLikes = c.getColumnIndex("likes");
+            idxCommentCanPost = c.getColumnIndex("comment_can_post");
+            idxLikeCount = c.getColumnIndex("like_count");
+            idxLikePosted = c.getColumnIndex("like_posted");
+            idxCanLike = c.getColumnIndex("can_like");
         }
 
         public void bindView(View view, Context context, Cursor cursor)
@@ -228,23 +260,43 @@ public class StreamListActivity extends Activity
             TextView message = (TextView) view.findViewById(R.id.message);
             TextView summary = (TextView) view.findViewById(R.id.summary);
             TextView comments = (TextView) view.findViewById(R.id.comments);
+            TextView likes = (TextView) view.findViewById(R.id.likes);
+            String post_id = cursor.getString(idxPostId);
             if (null != message) {
                 message.setText(cursor.getString(idxMessage));
             }
             if (null != comments) {
-                int comNum = cursor.getInt(idxComments);
-                int likeNum = cursor.getInt(idxLikes);
-                String comFmt =
-                    res.getQuantityString(
-                        R.plurals.plural_comment_format,
-                        comNum);
-                String likeFmt =
-                    res.getQuantityString(
-                        R.plurals.plural_like_format,
-                        likeNum);
-                comments.setText(
-                    String.format(comFmt, comNum) + " " +
-                    String.format(likeFmt, likeNum));
+                if (cursor.getInt(idxCommentCanPost) != 0) {
+                    int comNum = cursor.getInt(idxComments);
+                    String comFmt =
+                        res.getQuantityString(
+                            R.plurals.plural_comment_format,
+                            comNum);
+                    comments.setText(String.format(comFmt, comNum));
+                    comments.setTag(post_id);
+                    comments.setVisibility(View.VISIBLE);
+                }
+                else {
+                    comments.setVisibility(View.GONE);
+                }
+            }
+            if (null != summary) {
+                summary.setText(cursor.getString(idxUserName));
+            }
+            if (null != likes) {
+                if (cursor.getInt(idxCanLike) != 0) {
+                    int likeNum = cursor.getInt(idxLikeCount);
+                    String likeFmt =
+                        res.getQuantityString(
+                            R.plurals.plural_like_format,
+                            likeNum);
+                    likes.setText(String.format(likeFmt, likeNum));
+                    likes.setTag(post_id);
+                    likes.setVisibility(View.VISIBLE);
+                }
+                else {
+                    likes.setVisibility(View.GONE);
+                }
             }
 
             if (cursor.getInt(idxUpdate) == 1) {

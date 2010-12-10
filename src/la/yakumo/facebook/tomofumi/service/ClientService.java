@@ -35,6 +35,12 @@ public class ClientService
 
     private static final int MSG_LOGIN = 1;
     private static final int MSG_UPDATE_STREAM = 2;
+    private static final int MSG_UPDATE_COMMENT = 3;
+    private static final int MSG_UPDATE_LIKE = 4;
+    private static final int MSG_ADD_STREAM = 5;
+    private static final int MSG_ADD_COMMENT = 6;
+    private static final int MSG_ADD_STREAM_LIKE = 7;
+    private static final int MSG_ADD_COMMENT_LIKE = 8;
     private Handler handler = new Handler() {
         public void handleMessage(Message msg)
         {
@@ -44,6 +50,9 @@ public class ClientService
                 break;
             case MSG_UPDATE_STREAM:
                 updateStream();
+                break;
+            case MSG_ADD_STREAM_LIKE:
+                addStreamLike((String)msg.obj);
                 break;
             default:
                 break;
@@ -110,6 +119,10 @@ public class ClientService
             public int addStreamLike(String post_id)
             throws RemoteException
             {
+                Message msg = new Message();
+                msg.what = MSG_ADD_STREAM_LIKE;
+                msg.obj = new String(post_id);
+                handler.sendMessage(msg);
                 return RESULT_ERROR;
             }
 
@@ -228,6 +241,7 @@ public class ClientService
 
     public void addStreamLike(String post_id)
     {
+        Log.i(TAG, "addStreamLike:"+post_id);
     }
 
     public void addCommentLike(String post_id)

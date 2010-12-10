@@ -4,11 +4,13 @@
   <string name="login_title">Login</string>
 
   <string name="text_post_title">Post to Facebook</string>
+  <string name="stream_item_title">Wall Item</string>
 
   <string name="menu_post_stream">Post</string>
   <string name="menu_refresh">Refresh</string>
 
   <string name="error_login_cancel">Login cancel</string>
+  <string name="error_unknown_postid">Unknown Post ID</string>
 
   <plurals name="plural_comment_format">
     <item quantity="one">comment:%d</item>
