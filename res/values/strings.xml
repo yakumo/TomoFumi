@@ -6,6 +6,7 @@
   <string name="text_post_title">Post to Facebook</string>
 
   <string name="menu_post_stream">Post</string>
+  <string name="menu_refresh">Refresh</string>
 
   <string name="error_login_cancel">Login cancel</string>
 </resources>

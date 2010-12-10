@@ -47,7 +47,6 @@ public class StreamListActivity extends Activity
                     Log.e(TAG, "RemoteException", e);
                 }
             }
-
         }
 
         public void loginFailed(String reason)
@@ -152,6 +151,22 @@ public class StreamListActivity extends Activity
 
     public boolean onCreateOptionsMenu(Menu menu)
     {
+        menu.add(R.string.menu_refresh)
+            .setIcon(R.drawable.ic_menu_refresh)
+            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item)
+                {
+                    if (null != service) {
+                        try {
+                            service.updateStream();
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    return true;
+                }
+            })
+            ;
         menu.add(R.string.menu_post_stream)
             .setIcon(R.drawable.ic_menu_start_conversation)
             .setOnMenuItemClickListener(new OnMenuItemClickListener() {
@@ -185,15 +200,21 @@ public class StreamListActivity extends Activity
 
         public void bindView(View view, Context context, Cursor cursor)
         {
-            TextView tv = (TextView) view;
-            if (null != tv) {
-                tv.setText(cursor.getString(idxMessage));
+            if (null == view) {
+                return;
+            }
+
+            TextView message = (TextView) view.findViewById(R.id.message);
+            TextView summary = (TextView) view.findViewById(R.id.summary);
+            if (null != message) {
+                message.setText(cursor.getString(idxMessage));
             }
         }
 
         public View newView(Context context, Cursor cursor, ViewGroup parent)
         {
-            return new TextView(context);
+            View ret = View.inflate(context, R.layout.stream_list_item, null);
+            return ret;
         }
     }
 }
