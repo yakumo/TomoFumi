@@ -2,9 +2,11 @@ package la.yakumo.facebook.tomofumi;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -63,6 +65,17 @@ public class StreamListActivity extends Activity
                     StreamCursorAdapter a =
                         (StreamCursorAdapter)streamList.getAdapter();
                     a.getCursor().requery();
+
+                    SQLiteDatabase wdb = db.getWritableDatabase();
+                    try {
+                        ContentValues val = new ContentValues();
+                        val.put("updated", 0);
+                        wdb.beginTransaction();
+                        wdb.update("stream", val, "updated=1", null);
+                        wdb.setTransactionSuccessful();
+                    } finally {
+                        wdb.endTransaction();
+                    }
                 }
             });
         }
@@ -103,12 +116,11 @@ public class StreamListActivity extends Activity
         SQLiteDatabase wdb = db.getWritableDatabase();
         try {
             wdb.beginTransaction();
-            wdb.delete("stream", null, null);
+            wdb.execSQL("DELETE FROM stream");
             wdb.setTransactionSuccessful();
         } finally {
             wdb.endTransaction();
         }
-        wdb.close();
 
         SQLiteDatabase rdb = db.getReadableDatabase();
         Cursor c =
@@ -120,12 +132,14 @@ public class StreamListActivity extends Activity
                     "comments",
                     "likes",
                     "actor_id",
+                    "updated",
                 },
                 null,
                 null,
                 null,
                 null,
-                "created_time desc");
+                "created_time desc",
+                "400");
         streamList = (ListView) findViewById(R.id.stream_list);
         streamList.setAdapter(new StreamCursorAdapter(this, c));
 
@@ -191,11 +205,17 @@ public class StreamListActivity extends Activity
         extends CursorAdapter
     {
         private int idxMessage;
+        private int idxUpdate;
+        private int idxComments;
+        private int idxLikes;
 
         public StreamCursorAdapter(Context context, Cursor c)
         {
             super(context, c, false);
             idxMessage = c.getColumnIndex("message");
+            idxUpdate = c.getColumnIndex("updated");
+            idxComments = c.getColumnIndex("comments");
+            idxLikes = c.getColumnIndex("likes");
         }
 
         public void bindView(View view, Context context, Cursor cursor)
@@ -204,10 +224,36 @@ public class StreamListActivity extends Activity
                 return;
             }
 
+            Resources res = context.getResources();
             TextView message = (TextView) view.findViewById(R.id.message);
             TextView summary = (TextView) view.findViewById(R.id.summary);
+            TextView comments = (TextView) view.findViewById(R.id.comments);
             if (null != message) {
                 message.setText(cursor.getString(idxMessage));
+            }
+            if (null != comments) {
+                int comNum = cursor.getInt(idxComments);
+                int likeNum = cursor.getInt(idxLikes);
+                String comFmt =
+                    res.getQuantityString(
+                        R.plurals.plural_comment_format,
+                        comNum);
+                String likeFmt =
+                    res.getQuantityString(
+                        R.plurals.plural_like_format,
+                        likeNum);
+                comments.setText(
+                    String.format(comFmt, comNum) + " " +
+                    String.format(likeFmt, likeNum));
+            }
+
+            if (cursor.getInt(idxUpdate) == 1) {
+                view.setBackgroundResource(
+                    R.color.stream_updated_background_color);
+            }
+            else {
+                view.setBackgroundResource(
+                    R.color.stream_no_updated_background_color);
             }
         }
 

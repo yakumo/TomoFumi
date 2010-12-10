@@ -9,4 +9,13 @@
   <string name="menu_refresh">Refresh</string>
 
   <string name="error_login_cancel">Login cancel</string>
+
+  <plurals name="plural_comment_format">
+    <item quantity="one">comment:%d</item>
+    <item quantity="other">comments:%d</item>
+  </plurals>
+  <plurals name="plural_like_format">
+    <item quantity="one">like:%d</item>
+    <item quantity="other">likes:%d</item>
+  </plurals>
 </resources>

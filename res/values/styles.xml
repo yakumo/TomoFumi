@@ -10,6 +10,12 @@
     <item name="android:textColor">@color/stream_summary_text_color</item>
   </style>
 
+  <style name="StreamComment" parent="@android:style/TextAppearance.Small">
+    <item name="android:textSize">@dimen/stream_comment_text_size</item>
+    <item name="android:textColor">@color/stream_comment_text_color</item>
+    <item name="android:background">@drawable/fukidashi</item>
+  </style>
+
 <!-- old data start -->
   <!-- style name="ThemeWhiteList" parent="android:Theme.Light">
     <item name="android:listViewStyle">@style/ListWhiteList</item>
