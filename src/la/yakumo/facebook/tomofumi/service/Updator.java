@@ -1,6 +1,7 @@
 package la.yakumo.facebook.tomofumi.service;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,10 +14,21 @@ public class Updator
 {
     protected static final String TAG = Constants.LOG_TAG;
     protected Facebook facebook;
+    private Resources resources = null;
+    private OnProgress progress = null;
 
     public Updator(Context context)
     {
         facebook = Facebook.getInstance(context);
+        resources = null;
+        progress = null;
+    }
+
+    public Updator(Context context, OnProgress progress)
+    {
+        this.facebook = Facebook.getInstance(context);
+        this.resources = context.getResources();
+        this.progress = progress;
     }
 
     protected Integer doInBackground(Runnable... params)
@@ -27,6 +39,14 @@ public class Updator
     protected void onProgressUpdate(Integer... values)
     {
         Log.i(TAG, ""+this.getClass().toString()+"#onProgressUpdate");
+        if (null != progress) {
+            if (values.length == 3) {
+                progress.onProgress(
+                    values[0],
+                    values[1],
+                    resources.getString(values[2]));
+            }
+        }
     }
 
     protected void onPostExecute(Integer result)
@@ -43,5 +63,10 @@ public class Updator
         String ret = facebook.request(b);
         Log.i(TAG, "query result:"+ret);
         return ret;
+    }
+
+    public static interface OnProgress
+    {
+        public void onProgress(int now, int max, String msg);
     }
 }

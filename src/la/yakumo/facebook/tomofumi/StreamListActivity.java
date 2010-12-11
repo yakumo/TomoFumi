@@ -1,6 +1,7 @@
 package la.yakumo.facebook.tomofumi;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -36,6 +37,8 @@ public class StreamListActivity extends Activity
     private ListView streamList;
     private Database db;
     private Handler handler = new Handler();
+    private Resources resources = null;
+    private ProgressDialog progress = null;
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
         public void loggedIn(String userID)
@@ -43,11 +46,7 @@ public class StreamListActivity extends Activity
             Log.i(TAG, "loggedIn:"+userID);
 
             if (null != service) {
-                try {
-                    service.updateStream();
-                } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException", e);
-                }
+                requestUpdateStream();
             }
         }
 
@@ -62,6 +61,11 @@ public class StreamListActivity extends Activity
             handler.post(new Runnable() {
                 public void run()
                 {
+                    if (null != progress) {
+                        progress.dismiss();
+                        progress = null;
+                    }
+
                     StreamCursorAdapter a =
                         (StreamCursorAdapter)streamList.getAdapter();
                     a.getCursor().requery();
@@ -75,6 +79,24 @@ public class StreamListActivity extends Activity
 
         public void updatedLike(String post_id, String errorMessage)
         {
+        }
+
+        public void updateProgress(int now, int max, String msg)
+        {
+            if (null != progress) {
+                final int fNow = now;
+                final int fMax = max;
+                final String fMsg = msg;
+                handler.post(new Runnable() {
+                    public void run()
+                    {
+                        Log.i(TAG, "progress:"+fNow+"/"+fMax+":"+fMsg+":"+progress);
+                        progress.setMessage(fMsg);
+                        progress.setMax(fMax);
+                        progress.setProgress(fNow);
+                    }
+                });
+            }
         }
     };
 
@@ -99,6 +121,8 @@ public class StreamListActivity extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        resources = getResources();
         setContentView(R.layout.main);
 
         db = new Database(this);
@@ -113,28 +137,6 @@ public class StreamListActivity extends Activity
 
         SQLiteDatabase rdb = db.getReadableDatabase();
         Cursor c =
-            /*
-            rdb.query(
-                "stream",
-                new String[] {
-                    "_id",
-                    "post_id",
-                    "message",
-                    "comments",
-                    "comment_can_post",
-                    "like_count",
-                    "like_posted",
-                    "can_like",
-                    "actor_id",
-                    "updated",
-                },
-                null,
-                null,
-                null,
-                null,
-                "created_time desc",
-                "400");
-            */
             rdb.rawQuery(
                 "SELECT *"+
                 " FROM stream"+
@@ -193,11 +195,7 @@ public class StreamListActivity extends Activity
                 public boolean onMenuItemClick(MenuItem item)
                 {
                     if (null != service) {
-                        try {
-                            service.updateStream();
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "RemoteException", e);
-                        }
+                        requestUpdateStream();
                     }
                     return true;
                 }
@@ -214,6 +212,29 @@ public class StreamListActivity extends Activity
             })
             ;
         return true;
+    }
+
+    public void requestUpdateStream()
+    {
+        handler.post(new Runnable() {
+            public void run()
+            {
+                progress =
+                    ProgressDialog.show(
+                        StreamListActivity.this,
+                        resources.getString(
+                            R.string.progress_stream_update_title),
+                        null,
+                        false,
+                        false);
+                //progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            }
+        });
+        try {
+            service.updateStream();
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException", e);
+        }
     }
 
     public void postStream(View v)
@@ -256,7 +277,6 @@ public class StreamListActivity extends Activity
                 return;
             }
 
-            Resources res = context.getResources();
             TextView message = (TextView) view.findViewById(R.id.message);
             TextView summary = (TextView) view.findViewById(R.id.summary);
             TextView comments = (TextView) view.findViewById(R.id.comments);
@@ -269,7 +289,7 @@ public class StreamListActivity extends Activity
                 if (cursor.getInt(idxCommentCanPost) != 0) {
                     int comNum = cursor.getInt(idxComments);
                     String comFmt =
-                        res.getQuantityString(
+                        resources.getQuantityString(
                             R.plurals.plural_comment_format,
                             comNum);
                     comments.setText(String.format(comFmt, comNum));
@@ -287,7 +307,7 @@ public class StreamListActivity extends Activity
                 if (cursor.getInt(idxCanLike) != 0) {
                     int likeNum = cursor.getInt(idxLikeCount);
                     String likeFmt =
-                        res.getQuantityString(
+                        resources.getQuantityString(
                             R.plurals.plural_like_format,
                             likeNum);
                     likes.setText(String.format(likeFmt, likeNum));

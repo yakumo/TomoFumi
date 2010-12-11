@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import la.yakumo.facebook.tomofumi.data.Database;
+import la.yakumo.facebook.tomofumi.R;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +24,13 @@ public class StreamUpdator
     public StreamUpdator(Context context, Handler handler)
     {
         super(context);
+        this.context = context;
+        this.handler = handler;
+    }
+
+    public StreamUpdator(Context context, Handler handler, OnProgress progress)
+    {
+        super(context, progress);
         this.context = context;
         this.handler = handler;
     }
@@ -87,6 +95,8 @@ public class StreamUpdator
         } finally {
             wdb.endTransaction();
         }
+
+        publishProgress(0, 3, R.string.progress_wall_reading_message);
 
         ArrayList<Long> appList = new ArrayList<Long>();
         ArrayList<String> uidList = new ArrayList<String>();
@@ -159,6 +169,8 @@ public class StreamUpdator
             }
         }
 
+        publishProgress(1, 3, R.string.progress_user_reading_message);
+
         if (uidList.size() > 0) {
             String users = "(";
             String sep = "";
@@ -222,8 +234,12 @@ public class StreamUpdator
             }
         }
 
+        publishProgress(2, 3, R.string.progress_app_reading_message);
+
         wdb.close();
         db.close();
+
+        publishProgress(3, 3, R.string.progress_finish_message);
 
         if (null != handler) {
             for (Runnable r : params) {

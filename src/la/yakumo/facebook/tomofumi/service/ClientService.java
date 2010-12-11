@@ -204,7 +204,23 @@ public class ClientService
     {
         new StreamUpdator(
             ClientService.this,
-            handler).execute(
+            handler,
+            new Updator.OnProgress()
+            {
+                public void onProgress(int now, int max, String msg)
+                {
+                    int numListener = listeners.beginBroadcast();
+                    for (int i = 0 ; i < numListener ; i++) {
+                        try {
+                            listeners.getBroadcastItem(i).updateProgress(
+                                now, max, msg);
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    listeners.finishBroadcast();
+                }
+            }).execute(
                 new Runnable()
                 {
                     public void run()
