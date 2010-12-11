@@ -98,121 +98,128 @@ public class StreamUpdator
         } catch (IOException e) {
             Log.e(TAG, "IOException", e);
         }
-        try {
-            wdb.beginTransaction();
-            ContentValues val = new ContentValues();
+        if (resp.startsWith("[")) {
             try {
-                JSONArray mlist = new JSONArray(resp);
-                for (int i = 0 ; i < mlist.length() ; i++) {
-                    JSONObject obj = mlist.getJSONObject(i);
-                    Log.i(TAG, "msg:"+obj);
+                wdb.beginTransaction();
+                ContentValues val = new ContentValues();
+                try {
+                    JSONArray mlist = new JSONArray(resp);
+                    for (int i = 0 ; i < mlist.length() ; i++) {
+                        JSONObject obj = mlist.getJSONObject(i);
+                        Log.i(TAG, "msg:"+obj);
 
-                    val.clear();
-                    try {
-                        val.put("_id", obj.getString("post_id"));
-                        String app_id = obj.getString("app_id");
+                        val.clear();
                         try {
-                            long appId = Long.parseLong(app_id);
-                            val.put("app_id", appId);
-                            if (!appList.contains(appId)) {
-                                appList.add(appId);
+                            val.put("_id", obj.getString("post_id"));
+                            String app_id = obj.getString("app_id");
+                            try {
+                                long appId = Long.parseLong(app_id);
+                                val.put("app_id", appId);
+                                if (!appList.contains(appId)) {
+                                    appList.add(appId);
+                                }
+                            } catch (NumberFormatException e) {
                             }
-                        } catch (NumberFormatException e) {
+                            String uid = obj.getString("actor_id");
+                            if (!uidList.contains(uid)) {
+                                uidList.add(uid);
+                            }
+                            val.put("actor_id", uid);
+                            val.put("target_id", obj.getString("target_id"));
+                            val.put("created_time", obj.getLong("created_time"));
+                            val.put("updated_time", obj.getLong("updated_time"));
+                            val.put("message", obj.getString("message"));
+                            JSONObject comments = obj.getJSONObject("comments");
+                            val.put("comments", comments.getInt("count"));
+                            val.put("comment_can_post",
+                                    (comments.getBoolean("can_post")? 1: 0));
+                            JSONObject likes = obj.getJSONObject("likes");
+                            val.put("like_count", likes.getInt("count"));
+                            val.put("like_posted",
+                                    (likes.getBoolean("user_likes")? 1: 0));
+                            val.put("can_like",
+                                    (likes.getBoolean("can_like")? 1: 0));
+                            val.put("updated", 1);
+                        } catch (JSONException e) {
+                            Log.e(TAG, "JSONException", e);
                         }
-                        String uid = obj.getString("actor_id");
-                        if (!uidList.contains(uid)) {
-                            uidList.add(uid);
-                        }
-                        val.put("actor_id", uid);
-                        val.put("target_id", obj.getString("target_id"));
-                        val.put("created_time", obj.getLong("created_time"));
-                        val.put("updated_time", obj.getLong("updated_time"));
-                        val.put("message", obj.getString("message"));
-                        JSONObject comments = obj.getJSONObject("comments");
-                        val.put("comments", comments.getInt("count"));
-                        val.put("comment_can_post",
-                                (comments.getBoolean("can_post")? 1: 0));
-                        JSONObject likes = obj.getJSONObject("likes");
-                        val.put("like_count", likes.getInt("count"));
-                        val.put("like_posted",
-                                (likes.getBoolean("user_likes")? 1: 0));
-                        val.put("can_like",
-                                (likes.getBoolean("can_like")? 1: 0));
-                        val.put("updated", 1);
-                    } catch (JSONException e) {
-                        Log.e(TAG, "JSONException", e);
+
+                        wdb.insertWithOnConflict(
+                            "stream",
+                            null,
+                            val,
+                            SQLiteDatabase.CONFLICT_REPLACE);
                     }
-
-                    wdb.insertWithOnConflict(
-                        "stream",
-                        null,
-                        val,
-                        SQLiteDatabase.CONFLICT_REPLACE);
+                } catch (JSONException e) {
+                    Log.e(TAG, "JSONException", e);
                 }
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException", e);
+                wdb.setTransactionSuccessful();
+            } finally {
+                wdb.endTransaction();
             }
-            wdb.setTransactionSuccessful();
-        } finally {
-            wdb.endTransaction();
         }
 
-        String users = "(";
-        String sep = "";
-        for (String u : uidList) {
-            users = users + sep + u;
-            sep = ",";
-        }
-        users = users + ")";
+        if (uidList.size() > 0) {
+            String users = "(";
+            String sep = "";
+            for (String u : uidList) {
+                users = users + sep + u;
+                sep = ",";
+            }
+            users = users + ")";
 
-        resp = "{}";
-        query =
-            "SELECT"+
-            " uid"+
-            ",name"+
-            ",pic_square"+
-            ",username"+
-            " FROM user"+
-            " WHERE uid IN "+users+
-            "";
-        try {
-            resp = fqlQuery(query);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "MalformedURLException", e);
-        } catch (IOException e) {
-            Log.e(TAG, "IOException", e);
-        }
-        try {
-            wdb.beginTransaction();
-            ContentValues val = new ContentValues();
+            resp = "{}";
+            query =
+                "SELECT"+
+                " uid"+
+                ",name"+
+                ",pic_square"+
+                ",username"+
+                " FROM user"+
+                " WHERE uid IN "+users+
+                "";
             try {
-                JSONArray mlist = new JSONArray(resp);
-                for (int i = 0 ; i < mlist.length() ; i++) {
-                    JSONObject obj = mlist.getJSONObject(i);
-                    Log.i(TAG, "msg:"+obj);
-
-                    val.clear();
+                resp = fqlQuery(query);
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "MalformedURLException", e);
+            } catch (IOException e) {
+                Log.e(TAG, "IOException", e);
+            }
+            if (resp.startsWith("[")) {
+                try {
+                    wdb.beginTransaction();
+                    ContentValues val = new ContentValues();
                     try {
-                        val.put("_id", obj.getLong("uid"));
-                        val.put("name", obj.getString("name"));
-                        val.put("pic_square", obj.getString("pic_square"));
-                        val.put("username", obj.getString("username"));
+                        JSONArray mlist = new JSONArray(resp);
+                        for (int i = 0 ; i < mlist.length() ; i++) {
+                            JSONObject obj = mlist.getJSONObject(i);
+                            Log.i(TAG, "msg:"+obj);
+
+                            val.clear();
+                            try {
+                                val.put("_id", obj.getLong("uid"));
+                                val.put("name", obj.getString("name"));
+                                val.put("username", obj.getString("username"));
+                                val.put("pic_square",
+                                        obj.getString("pic_square"));
+                            } catch (JSONException e) {
+                                Log.e(TAG, "JSONException", e);
+                            }
+
+                            wdb.insertWithOnConflict(
+                                "user",
+                                null,
+                                val,
+                                SQLiteDatabase.CONFLICT_REPLACE);
+                        }
                     } catch (JSONException e) {
                         Log.e(TAG, "JSONException", e);
                     }
-
-                    wdb.insertWithOnConflict(
-                        "user",
-                        null,
-                        val,
-                        SQLiteDatabase.CONFLICT_REPLACE);
+                    wdb.setTransactionSuccessful();
+                } finally {
+                    wdb.endTransaction();
                 }
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException", e);
             }
-            wdb.setTransactionSuccessful();
-        } finally {
-            wdb.endTransaction();
         }
 
         wdb.close();

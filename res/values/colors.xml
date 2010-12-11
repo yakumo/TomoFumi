@@ -5,6 +5,6 @@
   <color name="stream_message_text_color">#225</color>
   <color name="stream_summary_text_color">#666</color>
   <color name="stream_comment_text_color">#666</color>
-  <color name="stream_updated_background_color">#eef</color>
-  <color name="stream_no_updated_background_color">#fff</color>
+  <color name="stream_updated_background_color">#fff</color>
+  <color name="stream_no_updated_background_color">#eee</color>
 </resources>
