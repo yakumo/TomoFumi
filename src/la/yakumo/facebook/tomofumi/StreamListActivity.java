@@ -139,7 +139,7 @@ public class StreamListActivity extends Activity
                 "SELECT *"+
                 " FROM stream"+
                 " LEFT JOIN user"+
-                " ON stream.actor_id=user.uid"+
+                " ON stream.actor_id=user._id"+
                 " ORDER BY created_time DESC"+
                 " LIMIT 400"+
                 "",
@@ -226,8 +226,8 @@ public class StreamListActivity extends Activity
     public class StreamCursorAdapter
         extends CursorAdapter
     {
-        private int idxUserName;
         private int idxPostId;
+        private int idxUserName;
         private int idxMessage;
         private int idxUpdate;
         private int idxComments;
@@ -239,8 +239,8 @@ public class StreamListActivity extends Activity
         public StreamCursorAdapter(Context context, Cursor c)
         {
             super(context, c, false);
+            idxPostId = c.getColumnIndex("_id");
             idxUserName = c.getColumnIndex("name");
-            idxPostId = c.getColumnIndex("post_id");
             idxMessage = c.getColumnIndex("message");
             idxUpdate = c.getColumnIndex("updated");
             idxComments = c.getColumnIndex("comments");

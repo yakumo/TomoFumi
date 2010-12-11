@@ -109,7 +109,7 @@ public class StreamUpdator
 
                     val.clear();
                     try {
-                        val.put("post_id", obj.getString("post_id"));
+                        val.put("_id", obj.getString("post_id"));
                         String app_id = obj.getString("app_id");
                         try {
                             long appId = Long.parseLong(app_id);
@@ -193,7 +193,7 @@ public class StreamUpdator
 
                     val.clear();
                     try {
-                        val.put("uid", obj.getLong("uid"));
+                        val.put("_id", obj.getLong("uid"));
                         val.put("name", obj.getString("name"));
                         val.put("pic_square", obj.getString("pic_square"));
                         val.put("username", obj.getString("username"));

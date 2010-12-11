@@ -24,8 +24,7 @@ public class Database
         Log.i(TAG, "Database#onCreate");
         db.execSQL(
             "CREATE TABLE stream "+
-            "(_id INTEGER primary key unique"+
-            ",post_id TEXT unique not null"+
+            "(_id TEXT primary key unique"+
             ",app_id INTEGER"+
             ",actor_id INTEGER"+
             ",target_id TEXT"+
@@ -43,7 +42,6 @@ public class Database
         db.execSQL(
             "CREATE TABLE user "+
             "(_id INTEGER primary key unique"+
-            ",uid INTEGET"+
             ",name TEXT"+
             ",pic_square TEXT"+
             ",username TEXT"+
