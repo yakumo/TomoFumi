@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -90,7 +92,6 @@ public class StreamListActivity extends Activity
                 handler.post(new Runnable() {
                     public void run()
                     {
-                        Log.i(TAG, "progress:"+fNow+"/"+fMax+":"+fMsg+":"+progress);
                         progress.setMessage(fMsg);
                         progress.setMax(fMax);
                         progress.setProgress(fNow);
@@ -283,7 +284,22 @@ public class StreamListActivity extends Activity
             TextView likes = (TextView) view.findViewById(R.id.likes);
             String post_id = cursor.getString(idxPostId);
             if (null != message) {
-                message.setText(cursor.getString(idxMessage));
+                /*
+                SpannableStringBuilder sb =
+                    new SpannableStringBuilder()
+                */
+                int nc = resources.getColor(R.color.msg_username_color);
+                StringBuilder sb = new StringBuilder();
+                sb.append("<u><font color=\"#");
+                sb.append(String.format("%06X", nc));
+                sb.append("\">");
+                sb.append(cursor.getString(idxUserName));
+                sb.append("</font></u>&nbsp;&nbsp;");
+                sb.append(cursor.getString(idxMessage));
+                sb.append("");
+                Log.i(TAG, "text:"+sb.toString());
+                CharSequence html = Html.fromHtml(sb.toString());
+                message.setText(html);
             }
             if (null != comments) {
                 if (cursor.getInt(idxCommentCanPost) != 0) {
@@ -301,7 +317,7 @@ public class StreamListActivity extends Activity
                 }
             }
             if (null != summary) {
-                summary.setText(cursor.getString(idxUserName));
+                //summary.setText(cursor.getString(idxUserName));
             }
             if (null != likes) {
                 if (cursor.getInt(idxCanLike) != 0) {

@@ -7,4 +7,5 @@
   <color name="stream_comment_text_color">#666</color>
   <color name="stream_updated_background_color">#fff</color>
   <color name="stream_no_updated_background_color">#eee</color>
+  <color name="msg_username_color">#7a7</color>
 </resources>
