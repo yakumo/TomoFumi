@@ -15,7 +15,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -251,12 +253,18 @@ public class StreamListActivity extends Activity
         private int idxPostId;
         private int idxUserName;
         private int idxMessage;
+        private int idxDescription;
         private int idxUpdate;
         private int idxComments;
         private int idxCommentCanPost;
         private int idxLikeCount;
         private int idxLikePosted;
         private int idxCanLike;
+        private Spannable.Factory factory = Spannable.Factory.getInstance();
+        private TextAppearanceSpan usernameSpan =
+            new TextAppearanceSpan(
+                StreamListActivity.this,
+                R.style.StreamMessageUser);
 
         public StreamCursorAdapter(Context context, Cursor c)
         {
@@ -264,6 +272,7 @@ public class StreamListActivity extends Activity
             idxPostId = c.getColumnIndex("_id");
             idxUserName = c.getColumnIndex("name");
             idxMessage = c.getColumnIndex("message");
+            idxDescription = c.getColumnIndex("description");
             idxUpdate = c.getColumnIndex("updated");
             idxComments = c.getColumnIndex("comments");
             idxCommentCanPost = c.getColumnIndex("comment_can_post");
@@ -284,22 +293,28 @@ public class StreamListActivity extends Activity
             TextView likes = (TextView) view.findViewById(R.id.likes);
             String post_id = cursor.getString(idxPostId);
             if (null != message) {
-                /*
-                SpannableStringBuilder sb =
-                    new SpannableStringBuilder()
-                */
-                int nc = resources.getColor(R.color.msg_username_color);
-                StringBuilder sb = new StringBuilder();
-                sb.append("<u><font color=\"#");
-                sb.append(String.format("%06X", nc));
-                sb.append("\">");
-                sb.append(cursor.getString(idxUserName));
-                sb.append("</font></u>&nbsp;&nbsp;");
-                sb.append(cursor.getString(idxMessage));
-                sb.append("");
-                Log.i(TAG, "text:"+sb.toString());
-                CharSequence html = Html.fromHtml(sb.toString());
-                message.setText(html);
+                String usr = cursor.getString(idxUserName);
+                String msg = cursor.getString(idxMessage);
+                if (null == usr) {
+                    usr = "???";
+                }
+                Spannable spannable =
+                    factory.newSpannable(
+                        usr + " " + msg);
+                spannable.setSpan(
+                    usernameSpan, 0, usr.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                message.setText(spannable, TextView.BufferType.SPANNABLE);
+            }
+            if (null != summary) {
+                String desc = cursor.getString(idxDescription);
+                if (desc.length() == 0) {
+                    summary.setVisibility(View.GONE);
+                }
+                else {
+                    summary.setVisibility(View.VISIBLE);
+                    summary.setText(desc);
+                }
             }
             if (null != comments) {
                 if (cursor.getInt(idxCommentCanPost) != 0) {
@@ -315,9 +330,6 @@ public class StreamListActivity extends Activity
                 else {
                     comments.setVisibility(View.GONE);
                 }
-            }
-            if (null != summary) {
-                //summary.setText(cursor.getString(idxUserName));
             }
             if (null != likes) {
                 if (cursor.getInt(idxCanLike) != 0) {

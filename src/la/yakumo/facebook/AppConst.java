@@ -3,7 +3,7 @@ package la.yakumo.facebook;
 /** @hide */
 public final class AppConst {
  public static final boolean IS_FREE = true;
- public static final String APP_ID = "163273310367677";
- public static final String API_KEY = "bfabcdc73e5f41280ee99e05c0e8e57c";
- public static final String SECRET_KEY = "9ae5d923a5f538175fc97a884dfead89";
+ public static final String APP_ID = "171565429540852";
+ public static final String API_KEY = "44f64359a403f44f7aaf7a1d10abbe25";
+ public static final String SECRET_KEY = "dffb6f7db7f1d3be646a36d106c5cf6f";
 }

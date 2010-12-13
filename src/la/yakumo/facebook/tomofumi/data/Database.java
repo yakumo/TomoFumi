@@ -31,6 +31,7 @@ public class Database
             ",created_time INTEGER"+
             ",updated_time INTEGER"+
             ",message TEXT"+
+            ",description TEXT default ''"+
             ",app_data BLOB"+
             ",comments INTEGER default 0"+
             ",comment_can_post INTEGER default 0"+
@@ -45,6 +46,7 @@ public class Database
             ",name TEXT"+
             ",pic_square TEXT"+
             ",username TEXT"+
+            ",profile_url TEXT"+
             ",pic_data BLOB"+
             ");");
     }

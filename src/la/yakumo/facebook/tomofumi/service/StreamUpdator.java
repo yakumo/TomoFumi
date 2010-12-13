@@ -150,6 +150,15 @@ public class StreamUpdator
                             val.put("can_like",
                                     (likes.getBoolean("can_like")? 1: 0));
                             val.put("updated", 1);
+
+                            JSONObject att = obj.getJSONObject("attachment");
+                            if (null != att) {
+                                String desc = att.getString("description");
+                                if (null == desc) {
+                                    desc = "";
+                                }
+                                val.put("description", desc);
+                            }
                         } catch (JSONException e) {
                             Log.e(TAG, "JSONException", e);
                         }
@@ -187,6 +196,7 @@ public class StreamUpdator
                 ",name"+
                 ",pic_square"+
                 ",username"+
+                ",profile_url"+
                 " FROM user"+
                 " WHERE uid IN "+users+
                 "";
@@ -214,6 +224,8 @@ public class StreamUpdator
                                 val.put("username", obj.getString("username"));
                                 val.put("pic_square",
                                         obj.getString("pic_square"));
+                                val.put("profile_url",
+                                        obj.getString("profile_url"));
                             } catch (JSONException e) {
                                 Log.e(TAG, "JSONException", e);
                             }
