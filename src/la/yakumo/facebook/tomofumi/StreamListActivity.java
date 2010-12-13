@@ -17,7 +17,10 @@ import android.os.RemoteException;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.text.style.TextAppearanceSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -27,6 +30,8 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import java.net.MalformedURLException;
+import java.net.URL;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
@@ -252,6 +257,7 @@ public class StreamListActivity extends Activity
     {
         private int idxPostId;
         private int idxUserName;
+        private int idxProfileUrl;
         private int idxMessage;
         private int idxDescription;
         private int idxUpdate;
@@ -265,12 +271,15 @@ public class StreamListActivity extends Activity
             new TextAppearanceSpan(
                 StreamListActivity.this,
                 R.style.StreamMessageUser);
+        private MovementMethod movementmethod =
+            LinkMovementMethod.getInstance();
 
         public StreamCursorAdapter(Context context, Cursor c)
         {
             super(context, c, false);
             idxPostId = c.getColumnIndex("_id");
             idxUserName = c.getColumnIndex("name");
+            idxProfileUrl = c.getColumnIndex("profile_url");
             idxMessage = c.getColumnIndex("message");
             idxDescription = c.getColumnIndex("description");
             idxUpdate = c.getColumnIndex("updated");
@@ -295,6 +304,7 @@ public class StreamListActivity extends Activity
             if (null != message) {
                 String usr = cursor.getString(idxUserName);
                 String msg = cursor.getString(idxMessage);
+                String userUrl = cursor.getString(idxProfileUrl);
                 if (null == usr) {
                     usr = "???";
                 }
@@ -304,6 +314,17 @@ public class StreamListActivity extends Activity
                 spannable.setSpan(
                     usernameSpan, 0, usr.length(),
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (null != userUrl) {
+                    try {
+                        URL url = new URL(userUrl);
+                        URLSpan s = new URLSpan(userUrl);
+                        spannable.setSpan(
+                            s, 0, usr.length(),
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    } catch (MalformedURLException e) {
+                        Log.i(TAG, "MalformedURLException", e);
+                    }
+                }
                 message.setText(spannable, TextView.BufferType.SPANNABLE);
             }
             if (null != summary) {
@@ -360,6 +381,10 @@ public class StreamListActivity extends Activity
         public View newView(Context context, Cursor cursor, ViewGroup parent)
         {
             View ret = View.inflate(context, R.layout.stream_list_item, null);
+            if (!Constants.IS_FREE) {
+                TextView message = (TextView) ret.findViewById(R.id.message);
+                message.setMovementMethod(movementmethod);
+            }
             return ret;
         }
     }
