@@ -6,6 +6,8 @@
   <string name="text_post_title">Post to Facebook</string>
   <string name="stream_item_title">Wall Item</string>
 
+  <string name="send_button_text">Send</string>
+
   <string name="progress_stream_update_title">Wall Update</string>
   <string name="progress_wall_reading_message">Reading wall data</string>
   <string name="progress_user_reading_message">Reading user data</string>
