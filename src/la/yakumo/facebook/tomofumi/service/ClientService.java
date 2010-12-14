@@ -270,26 +270,52 @@ public class ClientService
     public void addStream(String text)
     {
         Log.i(TAG, "addStream:"+text);
-        new StatusRegister(this, text).execute(new ItemRegister.OnSendFinish() {
-            public void onSendSuccess()
-            {
-                addedStream(null);
-            }
+        new StatusRegister(this, text)
+            .execute(new ItemRegister.OnSendFinish() {
+                public void onSendSuccess()
+                {
+                    addedStream(null);
+                }
 
-            public void onSendFail(String reason)
-            {
-                addedStream(reason);
-            }
-        });
+                public void onSendFail(String reason)
+                {
+                    addedStream(reason);
+                }
+            });
     }
 
     public void addComment(String post_id, String text)
     {
     }
 
-    public void addStreamLike(String post_id)
+    public void addedStreamLike(String post_id, String errMessage)
+    {
+        int numListener = listeners.beginBroadcast();
+        for (int i = 0 ; i < numListener ; i++) {
+            try {
+                listeners.getBroadcastItem(i).addedLike(post_id, errMessage);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+        listeners.finishBroadcast();
+    }
+
+    public void addStreamLike(final String post_id)
     {
         Log.i(TAG, "addStreamLike:"+post_id);
+        new StatusLikeRegister(this, post_id)
+            .execute(new ItemRegister.OnSendFinish() {
+                public void onSendSuccess()
+                {
+                    addedStreamLike(post_id, null);
+                }
+
+                public void onSendFail(String reason)
+                {
+                    addedStreamLike(post_id, reason);
+                }
+            });
     }
 
     public void addCommentLike(String post_id)

@@ -117,6 +117,14 @@ public class StreamListActivity extends Activity
 
         public void addedLike(String post_id, String errorMessage)
         {
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    StreamCursorAdapter a =
+                        (StreamCursorAdapter)streamList.getAdapter();
+                    a.getCursor().requery();
+                }
+            });
         }
     };
 
@@ -158,7 +166,7 @@ public class StreamListActivity extends Activity
         SQLiteDatabase rdb = db.getReadableDatabase();
         Cursor c =
             rdb.rawQuery(
-                "SELECT *"+
+                "SELECT *, stream._id as post_id"+
                 " FROM stream"+
                 " LEFT JOIN user"+
                 " ON stream.actor_id=user._id"+
@@ -289,7 +297,7 @@ public class StreamListActivity extends Activity
         public StreamCursorAdapter(Context context, Cursor c)
         {
             super(context, c, false);
-            idxPostId = c.getColumnIndex("_id");
+            idxPostId = c.getColumnIndex("post_id");
             idxUserName = c.getColumnIndex("name");
             idxProfileUrl = c.getColumnIndex("profile_url");
             idxMessage = c.getColumnIndex("message");
