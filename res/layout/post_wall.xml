@@ -1,27 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
    android:orientation="vertical"
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
    android:gravity="bottom"
-   android:padding="6dp"
    >
-  <EditText
-     android:id="@+id/stream_text"
+  <LinearLayout
+     android:orientation="vertical"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:layout_gravity="top"
-     android:editable="true"
-     android:gravity="top|left"
-     android:singleLine="false"
-     android:lines="8"
-     android:maxLines="400"
-     />
+     android:layout_alignParentTop="true"
+     >
+    <EditText
+       android:id="@+id/stream_text"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:editable="true"
+       android:gravity="top|left"
+       android:singleLine="false"
+       android:lines="8"
+       android:maxLines="400"
+       />
+    <LinearLayout
+       android:id="@+id/command_list"
+       android:orientation="horizontal"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       >
+      <ImageView
+         android:layout_width="@dimen/post_icon_size"
+         android:layout_height="@dimen/post_icon_size"
+         android:src="@android:drawable/ic_menu_edit"
+         android:clickable="true"
+         android:onClick="onClickCompose"
+         />
+      <ImageView
+         android:layout_width="@dimen/post_icon_size"
+         android:layout_height="@dimen/post_icon_size"
+         android:src="@android:drawable/ic_menu_camera"
+         android:clickable="true"
+         android:onClick="onClickCamera"
+         />
+      <ImageView
+         android:layout_width="@dimen/post_icon_size"
+         android:layout_height="@dimen/post_icon_size"
+         android:src="@android:drawable/ic_menu_gallery"
+         android:clickable="true"
+         android:onClick="onClickGallery"
+         />
+      <ImageView
+         android:layout_width="@dimen/post_icon_size"
+         android:layout_height="@dimen/post_icon_size"
+         android:src="@android:drawable/ic_menu_myplaces"
+         android:clickable="true"
+         android:onClick="onClickMyPlace"
+         />
+      <ImageView
+         android:layout_width="@dimen/post_icon_size"
+         android:layout_height="@dimen/post_icon_size"
+         android:src="@android:drawable/ic_menu_add"
+         android:clickable="true"
+         android:onClick="onClickAddLink"
+         />
+    </LinearLayout>
+    <LinearLayout
+       android:id="@+id/compose_view"
+       android:orientation="vertical"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:visibility="gone"
+       >
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/modestr_compose"
+         />
+    </LinearLayout>
+    <LinearLayout
+       android:id="@+id/camera_view"
+       android:orientation="vertical"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:visibility="gone"
+       >
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/modestr_camera"
+         />
+    </LinearLayout>
+    <LinearLayout
+       android:id="@+id/gallery_view"
+       android:orientation="vertical"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:visibility="gone"
+       >
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/modestr_gallery"
+         />
+    </LinearLayout>
+    <LinearLayout
+       android:id="@+id/myplaces_view"
+       android:orientation="vertical"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:visibility="gone"
+       >
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:text="@string/modestr_myplaces"
+         />
+    </LinearLayout>
+    <LinearLayout
+       android:id="@+id/addlink_view"
+       android:orientation="vertical"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:visibility="gone"
+       >
+      <RelativeLayout
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         >
+        <Button
+           android:id="@+id/link_text_check"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentRight="true"
+           android:text="@string/link_check"
+           />
+        <EditText
+           android:id="@+id/link_text"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:layout_toLeftOf="@id/link_text_check"
+           />
+      </RelativeLayout>
+      <LinearLayout
+         android:orientation="vertical"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:background="#f00"
+         >
+        <ImageView
+           android:id="@+id/image_icon"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="top|left"
+           />
+      </LinearLayout>
+    </LinearLayout>
+  </LinearLayout>
   <FrameLayout
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:layout_gravity="bottom"
+     android:layout_alignParentBottom="true"
      android:keepScreenOn="true"
      android:background="@color/title_back"
      android:padding="6dp"
@@ -34,4 +172,4 @@
        android:onClick="onClickSend"
        />
   </FrameLayout>
-</LinearLayout>
+</RelativeLayout>

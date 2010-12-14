@@ -7,6 +7,12 @@
   <string name="stream_item_title">Wall Item</string>
 
   <string name="send_button_text">Send</string>
+  <string name="link_check">Check</string>
+  <string name="modestr_compose">Compose</string>
+  <string name="modestr_camera">Camera</string>
+  <string name="modestr_gallery">Gallery</string>
+  <string name="modestr_myplaces">My Places</string>
+  <string name="modestr_addlink">Add Link</string>
 
   <string name="progress_stream_update_title">Wall Update</string>
   <string name="progress_wall_reading_message">Reading wall data</string>

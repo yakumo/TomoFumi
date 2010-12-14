@@ -21,8 +21,10 @@
        android:name=".TextPostActivity"
        android:label="@string/text_post_title">
       <intent-filter>
-        <action android:name="android.intent.action.SEND"/>
+        <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="text/*" />
+        <data android:mimeType="image/*" />
       </intent-filter>
     </activity>
 

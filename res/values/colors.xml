@@ -8,4 +8,5 @@
   <color name="stream_comment_text_color">#666</color>
   <color name="stream_updated_background_color">#fff</color>
   <color name="stream_no_updated_background_color">#eee</color>
+  <color name="post_splitter_color">#fff</color>
 </resources>

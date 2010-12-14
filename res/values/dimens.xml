@@ -5,4 +5,6 @@
   <dimen name="stream_summary_text_size">15sp</dimen>
   <dimen name="stream_comment_text_size">13sp</dimen>
   <dimen name="stream_post_textarea_height">80sp</dimen>
+  <dimen name="post_icon_size">32dp</dimen>
+  <dimen name="post_splitter_margin">32dp</dimen>
 </resources>
