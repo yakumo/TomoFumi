@@ -175,6 +175,12 @@ public class Facebook
         return facebook.request(graphPath, parameters);
     }
 
+    public String request(Bundle parameters, String httpMethod)
+    throws MalformedURLException, IOException
+    {
+        return facebook.request(null, parameters, httpMethod);
+    }
+
     public String request(String graphPath, Bundle parameters, String httpMethod)
     throws FileNotFoundException, MalformedURLException, IOException
     {

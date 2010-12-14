@@ -1,13 +1,21 @@
 package la.yakumo.facebook.tomofumi;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import java.net.MalformedURLException;
 import java.net.URL;
+import la.yakumo.facebook.tomofumi.service.ClientService;
+import la.yakumo.facebook.tomofumi.service.IClientService;
+import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
 
 public class TextPostActivity
     extends Activity
@@ -15,18 +23,120 @@ public class TextPostActivity
     private static final String TAG = Constants.LOG_TAG;
 
     private static final int MODE_COMPOSE = 0;
-    private static final int MODE_CAMERA = 1;
-    private static final int MODE_GALLERY = 2;
-    private static final int MODE_MYPLACES = 3;
-    private static final int MODE_ADDLINK = 4;
+    private static final int MODE_IMAGE = 1;
+    private static final int MODE_MYPLACES = 2;
+    private static final int MODE_ADDLINK = 3;
     private static final int[] allModeViews = new int[] {
         R.id.compose_view,
-        R.id.camera_view,
-        R.id.gallery_view,
+        R.id.image_view,
         R.id.myplaces_view,
         R.id.addlink_view,
     };
     private int postMode = MODE_COMPOSE;
+
+    private Handler handler = new Handler();
+    private IClientService service = null;
+
+    private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
+        public void loggedIn(String userID)
+        {
+            Log.i(TAG, "loggedIn:"+userID);
+
+            if (null == service) {
+                return;
+            }
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView inputView =
+                        (TextView)findViewById(R.id.stream_text);
+                    String text = inputView.getText().toString();
+
+                    try {
+                        switch (postMode) {
+                        case MODE_COMPOSE:
+                            service.addStream(text);
+                            break;
+                        case MODE_IMAGE:
+                            break;
+                        case MODE_MYPLACES:
+                            break;
+                        case MODE_ADDLINK:
+                            break;
+                        default:
+                            break;
+                        }
+                    } catch (RemoteException e) {
+                        Log.i(TAG, "RemoteException", e);
+                    }
+                }
+            });
+        }
+
+        public void loginFailed(String reason)
+        {
+            Log.i(TAG, "loginFailed:"+reason);
+        }
+
+        public void updatedStream(String errorMessage)
+        {
+        }
+
+        public void updatedComment(String post_id, String errorMessage)
+        {
+        }
+
+        public void updatedLike(String post_id, String errorMessage)
+        {
+        }
+
+        public void updateProgress(int now, int max, String msg)
+        {
+        }
+
+        public void addedStream(String errorMessage)
+        {
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    try {
+                        if (null != service) {
+                            service.unregisterCallback(listener);
+                            unbindService(conn);
+                        }
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "RemoteException", e);
+                    }
+                    finish();
+                }
+            });
+        }
+
+        public void addedComment(String post_id, String errorMessage)
+        {
+        }
+
+        public void addedLike(String post_id, String errorMessage)
+        {
+        }
+    };
+
+    private ServiceConnection conn = new ServiceConnection() {
+        public void onServiceConnected(ComponentName name, IBinder binder)
+        {
+            service = IClientService.Stub.asInterface(binder);
+            try {
+                service.registerCallback(listener);
+                service.login();
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName name)
+        {
+        }
+    };
 
     @Override
     public void onCreate(Bundle bndl)
@@ -62,22 +172,47 @@ public class TextPostActivity
         }
         else {
             TextView urlText = (TextView) findViewById(R.id.link_text);
-            if (null != urlText) {
-                try {
-                    URL url = new URL(text);
-                    updateMode(MODE_ADDLINK);
-                    urlText.setText(text);
-                } catch (MalformedURLException e) {
-                    Log.i(TAG, "MalformedURLException", e);
+            while (true) {
+                if (null != urlText) {
+                    try {
+                        URL url = new URL(text);
+                        updateMode(MODE_ADDLINK);
+                        urlText.setText(text);
+                        break;
+                    } catch (MalformedURLException e) {
+                    }
                 }
-            }
+                // TODO: read image from intent
 
+                if (null != inputView && null != text) {
+                    inputView.setText(text);
+                    break;
+                }
+
+                break;
+            }
         }
     }
 
     public void onClickSend(View v)
     {
         Log.i(TAG, "onClickSend");
+        switch (postMode) {
+        case MODE_COMPOSE:
+            sendCompose();
+            break;
+        case MODE_IMAGE:
+            sendImage();
+            break;
+        case MODE_MYPLACES:
+            sendPlace();
+            break;
+        case MODE_ADDLINK:
+            sendLink();
+            break;
+        default:
+            break;
+        }
     }
 
     public void onClickCompose(View v)
@@ -87,12 +222,12 @@ public class TextPostActivity
 
     public void onClickCamera(View v)
     {
-        updateMode(MODE_CAMERA);
+        updateMode(MODE_IMAGE);
     }
 
     public void onClickGallery(View v)
     {
-        updateMode(MODE_GALLERY);
+        updateMode(MODE_IMAGE);
     }
 
     public void onClickMyPlace(View v)
@@ -117,12 +252,10 @@ public class TextPostActivity
             v.setVisibility(View.GONE);
         }
         switch (mode) {
-        case MODE_CAMERA:
-        case MODE_GALLERY:
+        case MODE_IMAGE:
         case MODE_MYPLACES:
         case MODE_ADDLINK:
             v = findViewById(allModeViews[mode]);
-            Log.i(TAG, "visible view:"+v);
             if (null != v) {
                 v.setVisibility(View.VISIBLE);
             }
@@ -134,8 +267,27 @@ public class TextPostActivity
               v = findViewById(R.id.compse_view);
               v.setVisibility(View.VISIBLE);
             */
+            postMode = MODE_COMPOSE;
             break;
         }
+    }
 
+    private void sendCompose()
+    {
+        Intent intent = new Intent(this, ClientService.class);
+        if (bindService(intent, conn, BIND_AUTO_CREATE)) {
+        }
+    }
+
+    private void sendImage()
+    {
+    }
+
+    private void sendPlace()
+    {
+    }
+
+    private void sendLink()
+    {
     }
 }

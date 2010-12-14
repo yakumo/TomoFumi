@@ -51,6 +51,9 @@ public class ClientService
             case MSG_UPDATE_STREAM:
                 updateStream();
                 break;
+            case MSG_ADD_STREAM:
+                addStream((String)msg.obj);
+                break;
             case MSG_ADD_STREAM_LIKE:
                 addStreamLike((String)msg.obj);
                 break;
@@ -107,6 +110,10 @@ public class ClientService
             public int addStream(String text)
             throws RemoteException
             {
+                Message msg = new Message();
+                msg.what = MSG_ADD_STREAM;
+                msg.obj = new String(text);
+                handler.sendMessage(msg);
                 return RESULT_ERROR;
             }
 
@@ -247,8 +254,33 @@ public class ClientService
     {
     }
 
+    private void addedStream(String errMessage)
+    {
+        int numListener = listeners.beginBroadcast();
+        for (int i = 0 ; i < numListener ; i++) {
+            try {
+                listeners.getBroadcastItem(i).addedStream(errMessage);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+        listeners.finishBroadcast();
+    }
+
     public void addStream(String text)
     {
+        Log.i(TAG, "addStream:"+text);
+        new StatusRegister(this, text).execute(new ItemRegister.OnSendFinish() {
+            public void onSendSuccess()
+            {
+                addedStream(null);
+            }
+
+            public void onSendFail(String reason)
+            {
+                addedStream(reason);
+            }
+        });
     }
 
     public void addComment(String post_id, String text)

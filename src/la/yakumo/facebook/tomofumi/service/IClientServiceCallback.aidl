@@ -8,4 +8,7 @@ interface IClientServiceCallback
     void updatedComment(String post_id, String errorMessage);
     void updatedLike(String post_id, String errorMessage);
     void updateProgress(int now, int max, String msg);
+    void addedStream(String errorMessage);
+    void addedComment(String post_id, String errorMessage);
+    void addedLike(String post_id, String errorMessage);
 }

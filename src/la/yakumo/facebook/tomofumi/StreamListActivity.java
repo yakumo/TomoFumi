@@ -106,6 +106,18 @@ public class StreamListActivity extends Activity
                 });
             }
         }
+
+        public void addedStream(String errorMessage)
+        {
+        }
+
+        public void addedComment(String post_id, String errorMessage)
+        {
+        }
+
+        public void addedLike(String post_id, String errorMessage)
+        {
+        }
     };
 
     private ServiceConnection conn = new ServiceConnection() {

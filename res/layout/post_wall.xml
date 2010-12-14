@@ -20,6 +20,7 @@
        android:gravity="top|left"
        android:singleLine="false"
        android:lines="8"
+       android:maxLength="420"
        android:maxLines="400"
        />
     <LinearLayout
@@ -78,7 +79,7 @@
          />
     </LinearLayout>
     <LinearLayout
-       android:id="@+id/camera_view"
+       android:id="@+id/image_view"
        android:orientation="vertical"
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
@@ -88,19 +89,6 @@
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:text="@string/modestr_camera"
-         />
-    </LinearLayout>
-    <LinearLayout
-       android:id="@+id/gallery_view"
-       android:orientation="vertical"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:visibility="gone"
-       >
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="@string/modestr_gallery"
          />
     </LinearLayout>
     <LinearLayout
