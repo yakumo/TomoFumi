@@ -10,6 +10,7 @@ import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -32,6 +33,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
@@ -48,6 +50,7 @@ public class StreamListActivity extends Activity
     private Handler handler = new Handler();
     private Resources resources = null;
     private ProgressDialog progress = null;
+    private HashMap<String,View> likePosting = new HashMap<String,View>();
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
         public void loggedIn(String userID)
@@ -115,7 +118,7 @@ public class StreamListActivity extends Activity
         {
         }
 
-        public void addedLike(String post_id, String errorMessage)
+        public void addedLike(final String post_id, String errorMessage)
         {
             handler.post(new Runnable() {
                 public void run()
@@ -123,6 +126,12 @@ public class StreamListActivity extends Activity
                     StreamCursorAdapter a =
                         (StreamCursorAdapter)streamList.getAdapter();
                     a.getCursor().requery();
+
+                    View v = likePosting.get(post_id);
+                    likePosting.remove(post_id);
+                    if (post_id.equals(v.getTag())) {
+                        v.setEnabled(true);
+                    }
                 }
             });
         }
@@ -208,7 +217,14 @@ public class StreamListActivity extends Activity
     public void onClickLike(View v)
     {
         String post_id = (String) v.getTag();
+        if (likePosting.containsKeys(post_id)) {
+            return;
+        }
         try {
+            if (null != v) {
+                v.setEnabled(false);
+            }
+            likePosting.put(post_id, v);
             service.addStreamLike(post_id);
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
@@ -293,6 +309,8 @@ public class StreamListActivity extends Activity
                 R.style.StreamMessageUser);
         private MovementMethod movementmethod =
             LinkMovementMethod.getInstance();
+        private Drawable postedLike;
+        private Drawable unPostedLike;
 
         public StreamCursorAdapter(Context context, Cursor c)
         {
@@ -308,6 +326,10 @@ public class StreamListActivity extends Activity
             idxLikeCount = c.getColumnIndex("like_count");
             idxLikePosted = c.getColumnIndex("like_posted");
             idxCanLike = c.getColumnIndex("can_like");
+
+            Resources res = context.getResources();
+            postedLike = res.getDrawable(R.drawable.like_light);
+            unPostedLike = res.getDrawable(R.drawable.like_dark);
         }
 
         public void bindView(View view, Context context, Cursor cursor)
@@ -373,8 +395,15 @@ public class StreamListActivity extends Activity
                 }
             }
             if (null != likes) {
+                if (likePosting.containsKey(post_id)) {
+                    likes.setEnabled(false);
+                }
+                else {
+                    likes.setEnabled(true);
+                }
                 if (cursor.getInt(idxCanLike) != 0) {
                     int likeNum = cursor.getInt(idxLikeCount);
+                    boolean postedLike = (cursor.getInt(idxLikePosted) != 0);
                     String likeFmt =
                         resources.getQuantityString(
                             R.plurals.plural_like_format,
@@ -382,6 +411,11 @@ public class StreamListActivity extends Activity
                     likes.setText(String.format(likeFmt, likeNum));
                     likes.setTag(post_id);
                     likes.setVisibility(View.VISIBLE);
+                    likes.setCompoundDrawablesWithIntrinsicBounds(
+                        (postedLike)?
+                        R.drawable.like_light:
+                        R.drawable.like_dark,
+                        0, 0, 0);
                 }
                 else {
                     likes.setVisibility(View.GONE);
