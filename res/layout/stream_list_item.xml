@@ -24,10 +24,10 @@
          android:padding="3px"
          android:background="#fff"
          >
-        <ImageView
+        <la.yakumo.facebook.tomofumi.view.NetImageView
            android:layout_width="@dimen/stream_image_width"
            android:layout_height="wrap_content"
-           android:id="@+id/icon"
+           android:id="@+id/stream_icon"
            />
       </FrameLayout>
     </FrameLayout>
@@ -42,16 +42,38 @@
        android:layout_height="wrap_content"
        android:id="@+id/message"
        style="@style/StreamMessage"/>
+    <LinearLayout
+       android:orientation="horizontal"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:id="@+id/summary_base"
+       >
+      <la.yakumo.facebook.tomofumi.view.NetImageView
+         android:layout_width="@dimen/stream_image_width"
+         android:layout_height="wrap_content"
+         android:id="@+id/summary_icon"
+         />
+      <TextView
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:id="@+id/summary"
+         style="@style/StreamSummary"/>
+    </LinearLayout>
     <TextView
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
-       android:id="@+id/summary"
-       style="@style/StreamSummary"/>
+       android:id="@+id/description"
+       style="@style/StreamDescription"/>
     <LinearLayout
        android:orientation="horizontal"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        >
+      <la.yakumo.facebook.tomofumi.NetImageView
+         android:layout_width="@dimen/stream_app_icon_size"
+         android:layout_height="@dimen/stream_app_icon_size"
+         android:id="@+id/app_icon"
+         />
       <TextView
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"

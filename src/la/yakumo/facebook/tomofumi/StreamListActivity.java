@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20,6 +21,8 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
+import android.text.style.DynamicDrawableSpan;
+import android.text.style.ImageSpan;
 import android.text.style.TextAppearanceSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
@@ -38,6 +41,7 @@ import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
+import la.yakumo.facebook.tomofumi.view.NetImageView;
 
 public class StreamListActivity extends Activity
 {
@@ -217,7 +221,7 @@ public class StreamListActivity extends Activity
     public void onClickLike(View v)
     {
         String post_id = (String) v.getTag();
-        if (likePosting.containsKeys(post_id)) {
+        if (likePosting.containsKey(post_id)) {
             return;
         }
         try {
@@ -293,9 +297,14 @@ public class StreamListActivity extends Activity
     {
         private int idxPostId;
         private int idxUserName;
+        private int idxUserIcon;
         private int idxProfileUrl;
         private int idxMessage;
         private int idxDescription;
+        private int idxAttName;
+        private int idxAttCaption;
+        private int idxAttLink;
+        private int idxAttIcon;
         private int idxUpdate;
         private int idxComments;
         private int idxCommentCanPost;
@@ -303,10 +312,18 @@ public class StreamListActivity extends Activity
         private int idxLikePosted;
         private int idxCanLike;
         private Spannable.Factory factory = Spannable.Factory.getInstance();
+        private TextAppearanceSpan messageSpan =
+            new TextAppearanceSpan(
+                StreamListActivity.this,
+                R.style.StreamMessage);
         private TextAppearanceSpan usernameSpan =
             new TextAppearanceSpan(
                 StreamListActivity.this,
                 R.style.StreamMessageUser);
+        private TextAppearanceSpan summarySpan =
+            new TextAppearanceSpan(
+                StreamListActivity.this,
+                R.style.StreamSummary);
         private MovementMethod movementmethod =
             LinkMovementMethod.getInstance();
         private Drawable postedLike;
@@ -317,9 +334,14 @@ public class StreamListActivity extends Activity
             super(context, c, false);
             idxPostId = c.getColumnIndex("post_id");
             idxUserName = c.getColumnIndex("name");
+            idxUserIcon = c.getColumnIndex("pic_square");
             idxProfileUrl = c.getColumnIndex("profile_url");
             idxMessage = c.getColumnIndex("message");
             idxDescription = c.getColumnIndex("description");
+            idxAttName = c.getColumnIndex("attachment_name");
+            idxAttCaption = c.getColumnIndex("attachment_caption");
+            idxAttLink = c.getColumnIndex("attachment_link");
+            idxAttIcon = c.getColumnIndex("attachment_icon");
             idxUpdate = c.getColumnIndex("updated");
             idxComments = c.getColumnIndex("comments");
             idxCommentCanPost = c.getColumnIndex("comment_can_post");
@@ -340,8 +362,14 @@ public class StreamListActivity extends Activity
 
             TextView message = (TextView) view.findViewById(R.id.message);
             TextView summary = (TextView) view.findViewById(R.id.summary);
+            TextView description = (TextView) view.findViewById(R.id.description);
             TextView comments = (TextView) view.findViewById(R.id.comments);
             TextView likes = (TextView) view.findViewById(R.id.likes);
+            NetImageView streamIcon = (NetImageView)
+                view.findViewById(R.id.stream_icon);
+            NetImageView summaryIcon = (NetImageView)
+                view.findViewById(R.id.summary_icon);
+            View summaryBase = view.findViewById(R.id.summary_base);
             String post_id = cursor.getString(idxPostId);
             if (null != message) {
                 String usr = cursor.getString(idxUserName);
@@ -350,9 +378,11 @@ public class StreamListActivity extends Activity
                 if (null == usr) {
                     usr = "???";
                 }
-                Spannable spannable =
-                    factory.newSpannable(
-                        usr + " " + msg);
+                String allMsg = usr + " " + msg;
+                Spannable spannable = factory.newSpannable(allMsg);
+                spannable.setSpan(
+                    messageSpan, 0, allMsg.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 spannable.setSpan(
                     usernameSpan, 0, usr.length(),
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -364,19 +394,68 @@ public class StreamListActivity extends Activity
                             s, 0, usr.length(),
                             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     } catch (MalformedURLException e) {
-                        Log.i(TAG, "MalformedURLException", e);
                     }
                 }
                 message.setText(spannable, TextView.BufferType.SPANNABLE);
             }
             if (null != summary) {
-                String desc = cursor.getString(idxDescription);
-                if (desc.length() == 0) {
-                    summary.setVisibility(View.GONE);
+                String name = cursor.getString(idxAttName);
+                String caption = cursor.getString(idxAttCaption);
+                String link = cursor.getString(idxAttLink);
+                String icon = cursor.getString(idxAttIcon);
+                String msg = "";
+                String sep = "";
+                if (null != name && name.length() > 0) {
+                    msg = msg + sep + name;
+                    sep = "\n";
+                }
+                if (null != caption && caption.length() > 0) {
+                    msg = msg + sep + caption;
+                    sep = "\n";
+                }
+                Log.i(TAG, "name:"+name+",cap:"+caption+",link:"+link+",icon:"+icon);
+                if (msg.length() > 0) {
+                    Spannable spannable = factory.newSpannable(msg);
+                    spannable.setSpan(
+                        summarySpan, 0, msg.length(),
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    if (null != name && name.length() > 0 &&
+                        null != link && link.length() > 0) {
+                        try {
+                            URL url = new URL(link);
+                            URLSpan s = new URLSpan(link);
+                            spannable.setSpan(
+                                s, 0, name.length(),
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        } catch (MalformedURLException e) {
+                            Log.i(TAG, "MalformedURLException", e);
+                        }
+                    }
+                    summaryBase.setVisibility(View.VISIBLE);
+                    summary.setText(spannable, TextView.BufferType.SPANNABLE);
                 }
                 else {
-                    summary.setVisibility(View.VISIBLE);
-                    summary.setText(desc);
+                    summaryBase.setVisibility(View.GONE);
+                }
+            }
+            if (null != description) {
+                String desc = cursor.getString(idxDescription);
+                if (null != desc && desc.length() > 0) {
+                    description.setVisibility(View.VISIBLE);
+                    description.setText(desc);
+                }
+                else {
+                    description.setVisibility(View.GONE);
+                }
+            }
+            if (null != streamIcon) {
+                String uri = cursor.getString(idxUserIcon);
+                if (null != uri) {
+                    streamIcon.setImageURI(Uri.parse(uri));
+                    streamIcon.setVisibility(View.VISIBLE);
+                }
+                else {
+                    streamIcon.setVisibility(View.GONE);
                 }
             }
             if (null != comments) {
@@ -438,6 +517,8 @@ public class StreamListActivity extends Activity
             if (!Constants.IS_FREE) {
                 TextView message = (TextView) ret.findViewById(R.id.message);
                 message.setMovementMethod(movementmethod);
+                TextView summary = (TextView) ret.findViewById(R.id.summary);
+                summary.setMovementMethod(movementmethod);
             }
             return ret;
         }

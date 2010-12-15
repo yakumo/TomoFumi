@@ -32,7 +32,10 @@ public class Database
             ",updated_time INTEGER"+
             ",message TEXT"+
             ",description TEXT default ''"+
-            ",app_data BLOB"+
+            ",attachment_name TEXT"+
+            ",attachment_caption TEXT"+
+            ",attachment_link TEXT"+
+            ",attachment_icon TEXT"+
             ",comments INTEGER default 0"+
             ",comment_can_post INTEGER default 0"+
             ",like_count INTEGER default 0"+
@@ -48,6 +51,13 @@ public class Database
             ",username TEXT"+
             ",profile_url TEXT"+
             ",pic_data BLOB"+
+            ");");
+        db.execSQL(
+            "CREATE TABLE images "+
+            "(_id INTEGER primary key unique"+
+            ",read_time INTEGER"+
+            ",image_url TEXT"+
+            ",image_data BLOB"+
             ");");
     }
 

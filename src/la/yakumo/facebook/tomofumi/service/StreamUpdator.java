@@ -35,6 +35,23 @@ public class StreamUpdator
         this.handler = handler;
     }
 
+    private void setVariable(
+        ContentValues val,
+        String dkey,
+        JSONObject obj,
+        String skey)
+    {
+        String tmp = "";
+        try {
+            tmp = obj.getString(skey);
+        } catch (JSONException e) {
+        }
+        if (null == tmp) {
+            tmp = "";
+        }
+        val.put(dkey, tmp);
+    }
+
     @Override
     protected Integer doInBackground(Runnable... params)
     {
@@ -153,11 +170,16 @@ public class StreamUpdator
 
                             JSONObject att = obj.getJSONObject("attachment");
                             if (null != att) {
-                                String desc = att.getString("description");
-                                if (null == desc) {
-                                    desc = "";
-                                }
-                                val.put("description", desc);
+                                setVariable(val, "description",
+                                            att, "description");
+                                setVariable(val, "attachment_name",
+                                            att, "name");
+                                setVariable(val, "attachment_caption",
+                                            att, "caption");
+                                setVariable(val, "attachment_link",
+                                            att, "href");
+                                setVariable(val, "attachment_icon",
+                                            att, "icon");
                             }
                         } catch (JSONException e) {
                             Log.e(TAG, "JSONException", e);
