@@ -35,6 +35,7 @@ public class Database
             ",attachment_name TEXT"+
             ",attachment_caption TEXT"+
             ",attachment_link TEXT"+
+            ",attachment_image TEXT"+
             ",attachment_icon TEXT"+
             ",comments INTEGER default 0"+
             ",comment_can_post INTEGER default 0"+

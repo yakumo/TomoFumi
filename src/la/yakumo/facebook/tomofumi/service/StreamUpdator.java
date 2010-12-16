@@ -180,6 +180,16 @@ public class StreamUpdator
                                             att, "href");
                                 setVariable(val, "attachment_icon",
                                             att, "icon");
+
+                                try {
+                                    JSONArray media = att.getJSONArray("media");
+                                    if (null != media) {
+                                        JSONObject fmo = media.getJSONObject(0);
+                                        setVariable(val, "attachment_image",
+                                                    fmo, "src");
+                                    }
+                                } catch (JSONException e) {
+                                }
                             }
                         } catch (JSONException e) {
                             Log.e(TAG, "JSONException", e);

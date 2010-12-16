@@ -304,6 +304,7 @@ public class StreamListActivity extends Activity
         private int idxAttName;
         private int idxAttCaption;
         private int idxAttLink;
+        private int idxAttImage;
         private int idxAttIcon;
         private int idxUpdate;
         private int idxComments;
@@ -341,6 +342,7 @@ public class StreamListActivity extends Activity
             idxAttName = c.getColumnIndex("attachment_name");
             idxAttCaption = c.getColumnIndex("attachment_caption");
             idxAttLink = c.getColumnIndex("attachment_link");
+            idxAttImage = c.getColumnIndex("attachment_image");
             idxAttIcon = c.getColumnIndex("attachment_icon");
             idxUpdate = c.getColumnIndex("updated");
             idxComments = c.getColumnIndex("comments");
@@ -369,6 +371,8 @@ public class StreamListActivity extends Activity
                 view.findViewById(R.id.stream_icon);
             NetImageView summaryIcon = (NetImageView)
                 view.findViewById(R.id.summary_icon);
+            NetImageView appIcon = (NetImageView)
+                view.findViewById(R.id.app_icon);
             View summaryBase = view.findViewById(R.id.summary_base);
             String post_id = cursor.getString(idxPostId);
             if (null != message) {
@@ -403,6 +407,7 @@ public class StreamListActivity extends Activity
                 String caption = cursor.getString(idxAttCaption);
                 String link = cursor.getString(idxAttLink);
                 String icon = cursor.getString(idxAttIcon);
+                String image = cursor.getString(idxAttImage);
                 String msg = "";
                 String sep = "";
                 if (null != name && name.length() > 0) {
@@ -430,6 +435,12 @@ public class StreamListActivity extends Activity
                         } catch (MalformedURLException e) {
                             Log.i(TAG, "MalformedURLException", e);
                         }
+                    }
+                    if (null != icon && null != appIcon) {
+                        appIcon.setImageURI(Uri.parse(icon));
+                    }
+                    if (null != image && null != summaryIcon) {
+                        summaryIcon.setImageURI(Uri.parse(image));
                     }
                     summaryBase.setVisibility(View.VISIBLE);
                     summary.setText(spannable, TextView.BufferType.SPANNABLE);
