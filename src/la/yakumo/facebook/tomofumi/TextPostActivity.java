@@ -1,9 +1,11 @@
 package la.yakumo.facebook.tomofumi;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -36,18 +38,30 @@ public class TextPostActivity
 
     private Handler handler = new Handler();
     private IClientService service = null;
+    private ProgressDialog progress = null;
+    private Resources resources = null;
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
-        public void loggedIn(String userID)
+        public void loggedIn(int sessionID, String userID)
         {
-            Log.i(TAG, "loggedIn:"+userID);
+            Log.i(TAG, "loggedIn:"+sessionID+","+userID);
 
-            if (null == service) {
+            if (null == service &&
+                Constants.SESSION_POST != sessionID) {
                 return;
             }
             handler.post(new Runnable() {
                 public void run()
                 {
+                    progress = ProgressDialog.show(
+                        TextPostActivity.this,
+                        resources.getString(
+                            R.string.progress_stream_update_title),
+                        resources.getString(
+                            R.string.progress_posting_message),
+                        false,
+                        false);
+
                     TextView inputView =
                         (TextView)findViewById(R.id.stream_text);
                     String text = inputView.getText().toString();
@@ -73,7 +87,7 @@ public class TextPostActivity
             });
         }
 
-        public void loginFailed(String reason)
+        public void loginFailed(int sessionID, String reason)
         {
             Log.i(TAG, "loginFailed:"+reason);
         }
@@ -99,6 +113,9 @@ public class TextPostActivity
             handler.post(new Runnable() {
                 public void run()
                 {
+                    if (null != progress) {
+                        progress.dismiss();
+                    }
                     try {
                         if (null != service) {
                             service.unregisterCallback(listener);
@@ -127,7 +144,7 @@ public class TextPostActivity
             service = IClientService.Stub.asInterface(binder);
             try {
                 service.registerCallback(listener);
-                service.login();
+                service.login(Constants.SESSION_POST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -142,6 +159,8 @@ public class TextPostActivity
     public void onCreate(Bundle bndl)
     {
         super.onCreate(bndl);
+
+        resources = getResources();
         setContentView(R.layout.post_wall);
         updateMode(MODE_COMPOSE);
 

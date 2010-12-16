@@ -10,7 +10,9 @@
      android:icon="@drawable/icon">
     <activity
        android:name=".StreamListActivity"
-       android:label="@string/app_name">
+       android:label="@string/app_name"
+       android:configChanges="keyboard|orientation|keyboardHidden"
+       >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
@@ -30,7 +32,9 @@
 
     <activity
        android:name=".StreamItemActivity"
-       android:label="@string/stream_item_title">
+       android:label="@string/stream_item_title"
+       android:configChanges="keyboard|orientation|keyboardHidden"
+       >
     </activity>
 
     <activity

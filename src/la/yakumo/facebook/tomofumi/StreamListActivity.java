@@ -57,16 +57,17 @@ public class StreamListActivity extends Activity
     private HashMap<String,View> likePosting = new HashMap<String,View>();
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
-        public void loggedIn(String userID)
+        public void loggedIn(int sessionID, String userID)
         {
-            Log.i(TAG, "loggedIn:"+userID);
+            Log.i(TAG, "loggedIn:"+sessionID+","+userID);
 
-            if (null != service) {
+            if (null != service &&
+                Constants.SESSION_STREAM_LIST == sessionID) {
                 requestUpdateStream();
             }
         }
 
-        public void loginFailed(String reason)
+        public void loginFailed(int sessionID, String reason)
         {
             Log.i(TAG, "loginFailed:"+reason);
         }
@@ -147,7 +148,7 @@ public class StreamListActivity extends Activity
             service = IClientService.Stub.asInterface(binder);
             try {
                 service.registerCallback(listener);
-                service.login();
+                service.login(Constants.SESSION_STREAM_LIST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -193,6 +194,16 @@ public class StreamListActivity extends Activity
         Intent intent = new Intent(this, ClientService.class);
         if (bindService(intent, conn, BIND_AUTO_CREATE)) {
         }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        StreamCursorAdapter a =
+            (StreamCursorAdapter)streamList.getAdapter();
+        a.getCursor().requery();
     }
 
     @Override
@@ -304,6 +315,7 @@ public class StreamListActivity extends Activity
         private int idxAttName;
         private int idxAttCaption;
         private int idxAttLink;
+        private int idxAttImage;
         private int idxAttIcon;
         private int idxUpdate;
         private int idxComments;
@@ -341,6 +353,7 @@ public class StreamListActivity extends Activity
             idxAttName = c.getColumnIndex("attachment_name");
             idxAttCaption = c.getColumnIndex("attachment_caption");
             idxAttLink = c.getColumnIndex("attachment_link");
+            idxAttImage = c.getColumnIndex("attachment_image");
             idxAttIcon = c.getColumnIndex("attachment_icon");
             idxUpdate = c.getColumnIndex("updated");
             idxComments = c.getColumnIndex("comments");
@@ -369,8 +382,19 @@ public class StreamListActivity extends Activity
                 view.findViewById(R.id.stream_icon);
             NetImageView summaryIcon = (NetImageView)
                 view.findViewById(R.id.summary_icon);
+            NetImageView appIcon = (NetImageView)
+                view.findViewById(R.id.app_icon);
             View summaryBase = view.findViewById(R.id.summary_base);
             String post_id = cursor.getString(idxPostId);
+            if (null != streamIcon) {
+                streamIcon.setImageResource(R.drawable.clear_image);
+            }
+            if (null != summaryIcon) {
+                summaryIcon.setImageResource(R.drawable.clear_image);
+            }
+            if (null != appIcon) {
+                appIcon.setImageResource(R.drawable.clear_image);
+            }
             if (null != message) {
                 String usr = cursor.getString(idxUserName);
                 String msg = cursor.getString(idxMessage);
@@ -403,6 +427,7 @@ public class StreamListActivity extends Activity
                 String caption = cursor.getString(idxAttCaption);
                 String link = cursor.getString(idxAttLink);
                 String icon = cursor.getString(idxAttIcon);
+                String image = cursor.getString(idxAttImage);
                 String msg = "";
                 String sep = "";
                 if (null != name && name.length() > 0) {
@@ -413,7 +438,6 @@ public class StreamListActivity extends Activity
                     msg = msg + sep + caption;
                     sep = "\n";
                 }
-                Log.i(TAG, "name:"+name+",cap:"+caption+",link:"+link+",icon:"+icon);
                 if (msg.length() > 0) {
                     Spannable spannable = factory.newSpannable(msg);
                     spannable.setSpan(
@@ -429,6 +453,18 @@ public class StreamListActivity extends Activity
                                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         } catch (MalformedURLException e) {
                             Log.i(TAG, "MalformedURLException", e);
+                        }
+                    }
+                    if (null != icon && null != appIcon) {
+                        appIcon.setImageURI(Uri.parse(icon));
+                    }
+                    if (null != summaryIcon) {
+                        if (null != image && image.length() > 0){
+                            summaryIcon.setVisibility(View.VISIBLE);
+                            summaryIcon.setImageURI(Uri.parse(image));
+                        }
+                        else {
+                            summaryIcon.setVisibility(View.GONE);
                         }
                     }
                     summaryBase.setVisibility(View.VISIBLE);

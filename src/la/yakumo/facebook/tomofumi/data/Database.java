@@ -35,6 +35,7 @@ public class Database
             ",attachment_name TEXT"+
             ",attachment_caption TEXT"+
             ",attachment_link TEXT"+
+            ",attachment_image TEXT"+
             ",attachment_icon TEXT"+
             ",comments INTEGER default 0"+
             ",comment_can_post INTEGER default 0"+
@@ -58,6 +59,15 @@ public class Database
             ",read_time INTEGER"+
             ",image_url TEXT"+
             ",image_data BLOB"+
+            ");");
+        db.execSQL(
+            "CREATE TABLE comments "+
+            "(_id INTEGER primary key unique"+
+            ",post_id TEXT"+
+            ",data_mode INTEGER"+
+            ",user_id INTEGER"+
+            ",time INTEGER default 0"+
+            ",message TEXT default ''"+
             ");");
     }
 

@@ -1,33 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
    android:orientation="vertical"
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
-   android:gravity="bottom"
    >
-  <LinearLayout
-     android:orientation="vertical"
+  <EditText
+     android:id="@+id/stream_text"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:layout_alignParentTop="true"
+     android:editable="true"
+     android:gravity="top|left"
+     android:singleLine="false"
+     android:lines="5"
+     android:maxLength="420"
+     android:maxLines="400"
+     />
+  <RelativeLayout
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
      >
-    <EditText
-       android:id="@+id/stream_text"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:editable="true"
-       android:gravity="top|left"
-       android:singleLine="false"
-       android:lines="8"
-       android:maxLength="420"
-       android:maxLines="400"
-       />
     <LinearLayout
        android:id="@+id/command_list"
        android:orientation="horizontal"
-       android:layout_width="fill_parent"
+       android:layout_width="wrap_content"
        android:layout_height="wrap_content"
+       android:layout_alignParentLeft="true"
        >
       <ImageView
          android:layout_width="@dimen/post_icon_size"
@@ -66,98 +64,98 @@
          />
     </LinearLayout>
     <LinearLayout
-       android:id="@+id/compose_view"
-       android:orientation="vertical"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:visibility="gone"
-       >
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="@string/modestr_compose"
-         />
-    </LinearLayout>
-    <LinearLayout
-       android:id="@+id/image_view"
-       android:orientation="vertical"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:visibility="gone"
-       >
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="@string/modestr_camera"
-         />
-    </LinearLayout>
-    <LinearLayout
-       android:id="@+id/myplaces_view"
-       android:orientation="vertical"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:visibility="gone"
-       >
-      <TextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:text="@string/modestr_myplaces"
-         />
-    </LinearLayout>
-    <LinearLayout
-       android:id="@+id/addlink_view"
-       android:orientation="vertical"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:visibility="gone"
-       >
-      <RelativeLayout
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         >
-        <Button
-           android:id="@+id/link_text_check"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_alignParentRight="true"
-           android:text="@string/link_check"
-           />
-        <EditText
-           android:id="@+id/link_text"
-           android:layout_width="fill_parent"
-           android:layout_height="wrap_content"
-           android:layout_toLeftOf="@id/link_text_check"
-           />
-      </RelativeLayout>
-      <LinearLayout
-         android:orientation="vertical"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:background="#f00"
-         >
-        <ImageView
-           android:id="@+id/image_icon"
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:layout_gravity="top|left"
-           />
-      </LinearLayout>
-    </LinearLayout>
-  </LinearLayout>
-  <FrameLayout
-     android:layout_width="fill_parent"
-     android:layout_height="wrap_content"
-     android:layout_alignParentBottom="true"
-     android:keepScreenOn="true"
-     android:background="@color/title_back"
-     android:padding="6dp"
-     >
-    <Button
+       android:id="@+id/command_list"
+       android:orientation="horizontal"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:layout_gravity="center"
-       android:text="@string/send_button_text"
-       android:onClick="onClickSend"
+       android:layout_alignParentRight="true"
+       >
+      <ImageView
+         android:layout_width="@dimen/post_icon_size"
+         android:layout_height="@dimen/post_icon_size"
+         android:src="@android:drawable/ic_menu_share"
+         android:clickable="true"
+         android:onClick="onClickSend"
+         android:id="@+id/send_button"
+         />
+    </LinearLayout>
+  </RelativeLayout>
+  <LinearLayout
+     android:id="@+id/compose_view"
+     android:orientation="vertical"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:visibility="gone"
+     >
+    <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="@string/modestr_compose"
        />
-  </FrameLayout>
-</RelativeLayout>
+  </LinearLayout>
+  <LinearLayout
+     android:id="@+id/image_view"
+     android:orientation="vertical"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:visibility="gone"
+     >
+    <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="@string/modestr_camera"
+       />
+  </LinearLayout>
+  <LinearLayout
+     android:id="@+id/myplaces_view"
+     android:orientation="vertical"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:visibility="gone"
+     >
+    <TextView
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:text="@string/modestr_myplaces"
+       />
+  </LinearLayout>
+  <LinearLayout
+     android:id="@+id/addlink_view"
+     android:orientation="vertical"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:visibility="gone"
+     >
+    <RelativeLayout
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       >
+      <Button
+         android:id="@+id/link_text_check"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentRight="true"
+         android:text="@string/link_check"
+         />
+      <EditText
+         android:id="@+id/link_text"
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:layout_toLeftOf="@id/link_text_check"
+         />
+    </RelativeLayout>
+    <LinearLayout
+       android:orientation="vertical"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:background="#f00"
+       >
+      <ImageView
+         android:id="@+id/image_icon"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_gravity="top|left"
+         />
+    </LinearLayout>
+  </LinearLayout>
+</LinearLayout>
