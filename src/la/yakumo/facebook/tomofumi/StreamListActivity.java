@@ -375,6 +375,15 @@ public class StreamListActivity extends Activity
                 view.findViewById(R.id.app_icon);
             View summaryBase = view.findViewById(R.id.summary_base);
             String post_id = cursor.getString(idxPostId);
+            if (null != streamIcon) {
+                streamIcon.setImageResource(R.drawable.clear_image);
+            }
+            if (null != summaryIcon) {
+                summaryIcon.setImageResource(R.drawable.clear_image);
+            }
+            if (null != appIcon) {
+                appIcon.setImageResource(R.drawable.clear_image);
+            }
             if (null != message) {
                 String usr = cursor.getString(idxUserName);
                 String msg = cursor.getString(idxMessage);
@@ -418,7 +427,6 @@ public class StreamListActivity extends Activity
                     msg = msg + sep + caption;
                     sep = "\n";
                 }
-                Log.i(TAG, "name:"+name+",cap:"+caption+",link:"+link+",icon:"+icon);
                 if (msg.length() > 0) {
                     Spannable spannable = factory.newSpannable(msg);
                     spannable.setSpan(

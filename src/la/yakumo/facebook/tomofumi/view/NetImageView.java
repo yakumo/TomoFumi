@@ -47,8 +47,6 @@ public class NetImageView
     @Override
     public void setImageURI(Uri uri)
     {
-        //super.setImageURI(uri);
-        Log.i(TAG, "image:"+uri);
         String uriStr = uri.toString();
         setTag(uriStr);
         new ImageLoader(getContext()).execute(uriStr);
