@@ -7,7 +7,7 @@ interface IClientService
     void registerCallback(IClientServiceCallback callback);
     void unregisterCallback(IClientServiceCallback callback);
 
-    void login();
+    void login(int sessionID);
 
     int updateStream();
     int updateComment(String post_id);

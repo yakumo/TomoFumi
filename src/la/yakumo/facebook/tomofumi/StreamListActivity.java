@@ -57,16 +57,17 @@ public class StreamListActivity extends Activity
     private HashMap<String,View> likePosting = new HashMap<String,View>();
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
-        public void loggedIn(String userID)
+        public void loggedIn(int sessionID, String userID)
         {
-            Log.i(TAG, "loggedIn:"+userID);
+            Log.i(TAG, "loggedIn:"+sessionID+","+userID);
 
-            if (null != service) {
+            if (null != service &&
+                Constants.SESSION_STREAM_LIST == sessionID) {
                 requestUpdateStream();
             }
         }
 
-        public void loginFailed(String reason)
+        public void loginFailed(int sessionID, String reason)
         {
             Log.i(TAG, "loginFailed:"+reason);
         }
@@ -147,7 +148,7 @@ public class StreamListActivity extends Activity
             service = IClientService.Stub.asInterface(binder);
             try {
                 service.registerCallback(listener);
-                service.login();
+                service.login(Constants.SESSION_STREAM_LIST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -193,6 +194,16 @@ public class StreamListActivity extends Activity
         Intent intent = new Intent(this, ClientService.class);
         if (bindService(intent, conn, BIND_AUTO_CREATE)) {
         }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        StreamCursorAdapter a =
+            (StreamCursorAdapter)streamList.getAdapter();
+        a.getCursor().requery();
     }
 
     @Override
@@ -447,8 +458,14 @@ public class StreamListActivity extends Activity
                     if (null != icon && null != appIcon) {
                         appIcon.setImageURI(Uri.parse(icon));
                     }
-                    if (null != image && null != summaryIcon) {
-                        summaryIcon.setImageURI(Uri.parse(image));
+                    if (null != summaryIcon) {
+                        if (null != image && image.length() > 0){
+                            summaryIcon.setVisibility(View.VISIBLE);
+                            summaryIcon.setImageURI(Uri.parse(image));
+                        }
+                        else {
+                            summaryIcon.setVisibility(View.GONE);
+                        }
                     }
                     summaryBase.setVisibility(View.VISIBLE);
                     summary.setText(spannable, TextView.BufferType.SPANNABLE);

@@ -29,6 +29,8 @@ public class ClientService
         "la.yakumo.facebook.tomofumi.LOGIN_FAIL";
     public static final String EXTRA_LOGIN_REASON =
         "la.yakumo.facebook.tomofumi.LOGIN_REASON";
+    public static final String EXTRA_LOGIN_SESSION_ID =
+        "la.yakumo.facebook.tomofumi.LOGIN_SESSIONID";
 
     private RemoteCallbackList<IClientServiceCallback> listeners =
         new RemoteCallbackList<IClientServiceCallback>();
@@ -46,10 +48,13 @@ public class ClientService
         {
             switch (msg.what) {
             case MSG_LOGIN:
-                login();
+                login(msg.arg1);
                 break;
             case MSG_UPDATE_STREAM:
                 updateStream();
+                break;
+            case MSG_UPDATE_COMMENT:
+                updateComment((String)msg.obj);
                 break;
             case MSG_ADD_STREAM:
                 addStream((String)msg.obj);
@@ -80,9 +85,12 @@ public class ClientService
                 listeners.unregister(callback);
             }
 
-            public void login()
+            public void login(int sessionID)
             {
-                handler.sendEmptyMessage(MSG_LOGIN);
+                Message msg = new Message();
+                msg.what = MSG_LOGIN;
+                msg.arg1 = sessionID;
+                handler.sendMessage(msg);
             }
 
             public int updateStream()
@@ -98,7 +106,14 @@ public class ClientService
             public int updateComment(String post_id)
             throws RemoteException
             {
-                return RESULT_ERROR;
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_UPDATE_COMMENT;
+                    msg.obj = post_id;
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_DISPLAY_LOGIN;
             }
 
             public int updateLike(String post_id)
@@ -145,11 +160,14 @@ public class ClientService
             public void onReceive(Context context, Intent intent)
             {
                 String action = intent.getAction();
+                int sessionID = intent.getIntExtra(EXTRA_LOGIN_SESSION_ID, -1);
                 if (ACTION_LOGIN_SUCCESS.equals(action)) {
-                    sendLoggedIn();
+                    sendLoggedIn(sessionID);
                 }
                 if (ACTION_LOGIN_FAIL.equals(action)) {
-                    sendLoginFail(intent.getStringExtra(EXTRA_LOGIN_REASON));
+                    sendLoginFail(
+                        sessionID,
+                        intent.getStringExtra(EXTRA_LOGIN_REASON));
                 }
             }
         };
@@ -173,13 +191,13 @@ public class ClientService
         return stub;
     }
 
-    private void sendLoggedIn()
+    private void sendLoggedIn(int sessionID)
     {
         String uid = Facebook.getInstance(this).getUserID();
         int numListener = listeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).loggedIn(uid);
+                listeners.getBroadcastItem(i).loggedIn(sessionID, uid);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -187,12 +205,12 @@ public class ClientService
         listeners.finishBroadcast();
     }
 
-    private void sendLoginFail(String reason)
+    private void sendLoginFail(int sessionID, String reason)
     {
         int numListener = listeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).loginFailed(reason);
+                listeners.getBroadcastItem(i).loginFailed(sessionID, reason);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -200,10 +218,10 @@ public class ClientService
         listeners.finishBroadcast();
     }
 
-    public void login()
+    public void login(int sessionID)
     {
         if (Facebook.getInstance(ClientService.this).loginCheck()) {
-            sendLoggedIn();
+            sendLoggedIn(sessionID);
         }
     }
 
@@ -246,8 +264,45 @@ public class ClientService
                 });
     }
 
-    public void updateComment(String post_id)
+    public void updateComment(final String post_id)
     {
+        new CommentsUpdator(
+            ClientService.this,
+            post_id,
+            handler,
+            new Updator.OnProgress()
+            {
+                public void onProgress(int now, int max, String msg)
+                {
+                    int numListener = listeners.beginBroadcast();
+                    for (int i = 0 ; i < numListener ; i++) {
+                        try {
+                            listeners.getBroadcastItem(i).updateProgress(
+                                now, max, msg);
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    listeners.finishBroadcast();
+                }
+            }).execute(
+                new Runnable()
+                {
+                    public void run()
+                    {
+                        Log.i(TAG, "finish update comment");
+                        int numListener = listeners.beginBroadcast();
+                        for (int i = 0 ; i < numListener ; i++) {
+                            try {
+                                listeners.getBroadcastItem(i).updatedComment(
+                                    post_id, null);
+                            } catch (RemoteException e) {
+                                Log.e(TAG, "RemoteException", e);
+                            }
+                        }
+                        listeners.finishBroadcast();
+                    }
+                });
     }
 
     public void updateLike(String post_id)

@@ -10,4 +10,9 @@ public class Constants
     public static final String APP_ID = AppConst.APP_ID;
     public static final String API_KEY = AppConst.API_KEY;
     public static final String SECRET_KEY = AppConst.SECRET_KEY;
+
+    public static final int SESSION_UNKNOWN = 0;
+    public static final int SESSION_STREAM_LIST = 1;
+    public static final int SESSION_POST = 2;
+    public static final int SESSION_UPDATE_COMMENTS = 3;
 }

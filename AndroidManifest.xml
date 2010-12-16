@@ -32,7 +32,9 @@
 
     <activity
        android:name=".StreamItemActivity"
-       android:label="@string/stream_item_title">
+       android:label="@string/stream_item_title"
+       android:configChanges="keyboard|orientation|keyboardHidden"
+       >
     </activity>
 
     <activity

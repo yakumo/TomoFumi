@@ -42,11 +42,12 @@ public class TextPostActivity
     private Resources resources = null;
 
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
-        public void loggedIn(String userID)
+        public void loggedIn(int sessionID, String userID)
         {
-            Log.i(TAG, "loggedIn:"+userID);
+            Log.i(TAG, "loggedIn:"+sessionID+","+userID);
 
-            if (null == service) {
+            if (null == service &&
+                Constants.SESSION_POST != sessionID) {
                 return;
             }
             handler.post(new Runnable() {
@@ -86,7 +87,7 @@ public class TextPostActivity
             });
         }
 
-        public void loginFailed(String reason)
+        public void loginFailed(int sessionID, String reason)
         {
             Log.i(TAG, "loginFailed:"+reason);
         }
@@ -143,7 +144,7 @@ public class TextPostActivity
             service = IClientService.Stub.asInterface(binder);
             try {
                 service.registerCallback(listener);
-                service.login();
+                service.login(Constants.SESSION_POST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }

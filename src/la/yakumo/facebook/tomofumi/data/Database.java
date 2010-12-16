@@ -60,6 +60,15 @@ public class Database
             ",image_url TEXT"+
             ",image_data BLOB"+
             ");");
+        db.execSQL(
+            "CREATE TABLE comments "+
+            "(_id INTEGER primary key unique"+
+            ",post_id TEXT"+
+            ",data_mode INTEGER"+
+            ",user_id INTEGER"+
+            ",time INTEGER default 0"+
+            ",message TEXT default ''"+
+            ");");
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)

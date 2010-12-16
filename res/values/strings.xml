@@ -20,6 +20,7 @@
   <string name="progress_app_reading_message">Reading application data</string>
   <string name="progress_finish_message">Read finished</string>
   <string name="progress_posting_message">Registing message</string>
+  <string name="progress_updating_comment_message">Reading comment data</string>
 
   <string name="menu_post_stream">Post</string>
   <string name="menu_refresh">Refresh</string>
