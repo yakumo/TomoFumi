@@ -26,7 +26,8 @@
          >
         <la.yakumo.facebook.tomofumi.view.NetImageView
            android:layout_width="@dimen/stream_image_width"
-           android:layout_height="wrap_content"
+           android:layout_height="@dimen/stream_image_width"
+           android:scaleType="fitXY"
            android:id="@+id/stream_icon"
            />
       </FrameLayout>
