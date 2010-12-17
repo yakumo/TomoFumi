@@ -240,6 +240,8 @@ public class StreamListActivity extends Activity
                 v.setEnabled(false);
             }
             likePosting.put(post_id, v);
+            ((TextView)v).setCompoundDrawablesWithIntrinsicBounds(
+                R.drawable.like_press, 0, 0, 0);
             service.addStreamLike(post_id);
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
@@ -527,9 +529,11 @@ public class StreamListActivity extends Activity
                     likes.setTag(post_id);
                     likes.setVisibility(View.VISIBLE);
                     likes.setCompoundDrawablesWithIntrinsicBounds(
-                        (postedLike)?
-                        R.drawable.like_light:
-                        R.drawable.like_dark,
+                        ((likePosting.containsKey(post_id))?
+                         R.drawable.like_press:
+                         ((postedLike)?
+                          R.drawable.like_light:
+                          R.drawable.like_dark)),
                         0, 0, 0);
                 }
                 else {
