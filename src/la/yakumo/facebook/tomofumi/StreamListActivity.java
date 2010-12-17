@@ -395,7 +395,7 @@ public class StreamListActivity extends Activity
                 summaryIcon.setImageResource(R.drawable.clear_image);
             }
             if (null != appIcon) {
-                appIcon.setImageResource(R.drawable.clear_image);
+                appIcon.setVisibility(View.GONE);
             }
             if (null != message) {
                 String usr = cursor.getString(idxUserName);
@@ -458,6 +458,7 @@ public class StreamListActivity extends Activity
                         }
                     }
                     if (null != icon && null != appIcon) {
+                        appIcon.setVisibility(View.VISIBLE);
                         appIcon.setImageURI(Uri.parse(icon));
                     }
                     if (null != summaryIcon) {
