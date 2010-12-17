@@ -8,6 +8,9 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import la.yakumo.facebook.tomofumi.Constants;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Updator
     extends AsyncTask<Runnable,Integer,Integer>
@@ -60,6 +63,25 @@ public class Updator
         Bundle b = new Bundle();
         b.putString("method", "fql.query");
         b.putString("query", query);
+        String ret = facebook.request(b);
+        Log.i(TAG, "query result:"+ret);
+        return ret;
+    }
+
+    protected String fqlMultiQuery(String... queries)
+        throws MalformedURLException, IOException
+    {
+        Bundle b = new Bundle();
+        b.putString("method", "fql.multiquery");
+        JSONObject ql = new JSONObject();
+        for (int i = 0 ; i < queries.length ; i++) {
+            try {
+                ql.put(String.format("query%d", i + 1), queries[i]);
+            } catch (JSONException e) {
+                Log.e(TAG, "JSONException", e);
+            }
+        }
+        b.putString("queries", ql.toString());
         String ret = facebook.request(b);
         Log.i(TAG, "query result:"+ret);
         return ret;

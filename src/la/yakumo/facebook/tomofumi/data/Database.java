@@ -64,8 +64,10 @@ public class Database
             "CREATE TABLE comments "+
             "(_id INTEGER primary key unique"+
             ",post_id TEXT"+
+            ",item_id TEXT"+
             ",data_mode INTEGER"+
             ",user_id INTEGER"+
+            ",like_count INTEGER"+
             ",time INTEGER default 0"+
             ",message TEXT default ''"+
             ");");

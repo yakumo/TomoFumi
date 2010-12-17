@@ -15,4 +15,7 @@ public class Constants
     public static final int SESSION_STREAM_LIST = 1;
     public static final int SESSION_POST = 2;
     public static final int SESSION_UPDATE_COMMENTS = 3;
+
+    public static final int COMMENTMODE_COMMENT = 1;
+    public static final int COMMENTMODE_LIKE = 0;
 }

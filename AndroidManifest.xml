@@ -34,6 +34,7 @@
        android:name=".StreamItemActivity"
        android:label="@string/stream_item_title"
        android:configChanges="keyboard|orientation|keyboardHidden"
+       android:windowSoftInputMode="stateHidden|adjustResize"
        >
     </activity>
 
