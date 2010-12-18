@@ -62,7 +62,8 @@ public class StreamListActivity extends Activity
             Log.i(TAG, "loggedIn:"+sessionID+","+userID);
 
             if (null != service &&
-                Constants.SESSION_STREAM_LIST == sessionID) {
+                (Constants.SESSION_STREAM_LIST == sessionID ||
+                 Constants.SESSION_UNKNOWN == sessionID)) {
                 requestUpdateStream();
             }
         }

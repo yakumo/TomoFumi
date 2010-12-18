@@ -28,11 +28,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
 import la.yakumo.facebook.tomofumi.view.NetImageView;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class StreamItemActivity
     extends Activity
@@ -43,12 +46,14 @@ public class StreamItemActivity
 
     private IClientService service = null;
 
+    private String userId = null;
     private String postId;
     private ProgressDialog progress = null;
     private Handler handler = new Handler();
     private Resources resources;
     private ListView commentListView;
     private Database db;
+    private HashMap<String,View> likePressed = new HashMap<String,View>();
     private Spannable.Factory factory = Spannable.Factory.getInstance();
     private TextAppearanceSpan messageSpan;
     private TextAppearanceSpan usernameSpan;
@@ -60,6 +65,7 @@ public class StreamItemActivity
         public void loggedIn(int sessionID, String userID)
         {
             Log.i(TAG, "loggedIn:"+sessionID+","+userID);
+            StreamItemActivity.this.userId = userId;
 
             if (null != service &&
                 Constants.SESSION_UPDATE_COMMENTS == sessionID) {
@@ -85,6 +91,7 @@ public class StreamItemActivity
                         progress.dismiss();
                         progress = null;
 
+                        /*
                         SQLiteDatabase rdb = db.getReadableDatabase();
                         Cursor c =
                             rdb.rawQuery(
@@ -115,6 +122,7 @@ public class StreamItemActivity
                                     c.getString(c.getColumnIndex("pic_square")));
                             } while (c.moveToNext());
                         }
+                        */
 
                         CommentListAdapter ca = (CommentListAdapter)
                             commentListView.getAdapter();
@@ -394,12 +402,41 @@ public class StreamItemActivity
         db.close();
     }
 
+    public void onClickSendComment(View v)
+    {
+        TextView tv = (TextView) findViewById(R.id.comment_text);
+        String text = tv.getText().toString();
+        Log.i(TAG, "comment:"+text);
+        try {
+            if (null != service) {
+                service.addComment(postId, text);
+            }
+        } catch (RemoteException e) {
+            Log.i(TAG, "RemoteException", e);
+        }
+    }
+
+    public void onClickLike(View v)
+    {
+        Log.i(TAG, "add like to comment:"+v.getTag());
+        try {
+            if (null != service) {
+                service.addCommentLike((String) v.getTag());
+            }
+        } catch (RemoteException e) {
+            Log.i(TAG, "RemoteException", e);
+        }
+    }
+
     public class CommentListAdapter
         extends CursorAdapter
     {
         private int idxUserName;
         private int idxUserIcon;
         private int idxMessage;
+        private int idxLikes;
+        private int idxItemId;
+        private int idxDataMode;
         private Spannable.Factory factory = Spannable.Factory.getInstance();
         private TextAppearanceSpan messageSpan =
             new TextAppearanceSpan(
@@ -418,13 +455,49 @@ public class StreamItemActivity
             idxUserName = c.getColumnIndex("name");
             idxUserIcon = c.getColumnIndex("pic_square");
             idxMessage = c.getColumnIndex("message");
+            idxLikes = c.getColumnIndex("likes");
+            idxItemId = c.getColumnIndex("item_id");
+            idxDataMode = c.getColumnIndex("data_mode");
         }
 
         public void bindView(View view, Context context, Cursor cursor)
         {
             TextView message = (TextView) view.findViewById(R.id.message);
+            TextView likes = (TextView) findViewById(R.id.likes);
             NetImageView icon = (NetImageView)
                 view.findViewById(R.id.stream_icon);
+            String commentId = cursor.getString(idxItemId);
+            boolean isComment = (cursor.getInt(idxDataMode) == 1);
+            Log.i(TAG, "datamode:"+isComment+", "+cursor.getString(idxMessage));
+            if (null != likes) {
+                if (isComment) {
+                    likes.setTag(commentId);
+                    String l = cursor.getString(idxLikes);
+                    try {
+                        JSONObject lObj = new JSONObject(l);
+                        int likeNum = lObj.length();
+                        String likeFmt =
+                            resources.getQuantityString(
+                                R.plurals.plural_like_format,
+                                likeNum);
+                        likes.setText(String.format(likeFmt, likeNum));
+                        likes.setVisibility(View.VISIBLE);
+                        likes.setCompoundDrawablesWithIntrinsicBounds(
+                            ((likePressed.containsKey(commentId))?
+                             R.drawable.like_press:
+                            ((lObj.has(userId))?
+                              R.drawable.like_light:
+                              R.drawable.like_dark)),
+                            0, 0, 0);
+                    } catch (JSONException e) {
+                        Log.i(TAG, "JSONException:"+l, e);
+                        likes.setVisibility(View.GONE);
+                    }
+                }
+                else {
+                    likes.setVisibility(View.GONE);
+                }
+            }
             if (null != message) {
                 message.setText("");
                 String msg =

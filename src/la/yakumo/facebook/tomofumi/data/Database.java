@@ -70,6 +70,7 @@ public class Database
             ",like_count INTEGER"+
             ",time INTEGER default 0"+
             ",message TEXT default ''"+
+            ",likes TEXT default '[]'"+
             ");");
     }
 

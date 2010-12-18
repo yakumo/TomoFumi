@@ -46,11 +46,12 @@ public class CommentsUpdator
         this.post_id = post_id;
     }
 
-    private void parseComment(
+    private ArrayList<String> parseComment(
         SQLiteDatabase wdb,
         JSONArray comments,
         JSONArray likes)
     {
+        ArrayList<String> ret = new ArrayList<String>();
         ContentValues val = new ContentValues();
         try {
             for (int i = 0 ; i < comments.length() ; i++) {
@@ -59,9 +60,11 @@ public class CommentsUpdator
 
                 val.clear();
                 try {
+                    String itemId = obj.getString("id");
+                    ret.add(itemId);
                     val.put("post_id", post_id);
                     val.put("data_mode", Constants.COMMENTMODE_COMMENT);
-                    val.put("item_id", obj.getString("id"));
+                    val.put("item_id", itemId);
                     val.put("user_id", obj.getString("fromid"));
                     val.put("like_count", 0);
                     val.put("time", obj.getLong("time"));
@@ -100,6 +103,7 @@ public class CommentsUpdator
         } catch (JSONException e) {
             Log.e(TAG, "JSONException", e);
         }
+        return ret;
     }
 
     private void parseUsers(
@@ -176,6 +180,7 @@ public class CommentsUpdator
 
         Database db = new Database(context);
 
+        ArrayList<String> commentIds = null;
         String query1 =
             "SELECT"+
             " id"+
@@ -233,8 +238,8 @@ public class CommentsUpdator
         } catch (IOException e) {
             Log.e(TAG, "IOException", e);
         }
+        SQLiteDatabase wdb = db.getWritableDatabase();
         if (resp.startsWith("[")) {
-            SQLiteDatabase wdb = db.getWritableDatabase();
             wdb.delete("comments", "post_id=?", new String[] {post_id});
             try {
                 wdb.beginTransaction();
@@ -244,7 +249,7 @@ public class CommentsUpdator
                     JSONArray q1 = getResult(resps, 1);
                     JSONArray q2 = getResult(resps, 2);
                     JSONArray q3 = getResult(resps, 3);
-                    parseComment(wdb, q0, q1);
+                    commentIds = parseComment(wdb, q0, q1);
                     parseUsers(wdb, q2, q3);
                 } catch (JSONException e) {
                     Log.e(TAG, "JSONException", e);
@@ -253,9 +258,48 @@ public class CommentsUpdator
             } finally {
                 wdb.endTransaction();
             }
-            wdb.close();
         }
 
+        HashMap<String,String> commentLikes = new HashMap<String,String>();
+        for (String id : commentIds) {
+            try {
+                String path = String.format("/%s/likes", id);
+                resp = facebook.request(path, "GET");
+                JSONObject likeTmp = new JSONObject();
+                JSONObject likes = new JSONObject(resp);
+                JSONArray data = likes.getJSONArray("data");
+                for (int i = 0 ; i < data.length() ; i++) {
+                    JSONObject obj = data.getJSONObject(i);
+                    try {
+                        likeTmp.put(
+                            obj.getString("id"),
+                            obj.getString("name"));
+                    } catch (JSONException e) {
+                    }
+                }
+                commentLikes.put(id, likeTmp.toString());
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "MalformedURLException", e);
+            } catch (IOException e) {
+                Log.e(TAG, "IOException", e);
+            } catch (JSONException e) {
+                Log.e(TAG, "JSONException", e);
+            }
+        }
+        try {
+            ContentValues val = new ContentValues();
+            wdb.beginTransaction();
+            for (String key : commentLikes.keySet()) {
+                val.clear();
+                val.put("likes", commentLikes.get(key));
+                wdb.update("comments", val, "item_id=?", new String[] {key});
+            }
+            wdb.setTransactionSuccessful();
+        } finally {
+            wdb.endTransaction();
+        }
+
+        wdb.close();
         db.close();
 
         if (null != handler) {

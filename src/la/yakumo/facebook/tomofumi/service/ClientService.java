@@ -160,7 +160,9 @@ public class ClientService
             public void onReceive(Context context, Intent intent)
             {
                 String action = intent.getAction();
-                int sessionID = intent.getIntExtra(EXTRA_LOGIN_SESSION_ID, -1);
+                int sessionID = intent.getIntExtra(
+                    EXTRA_LOGIN_SESSION_ID,
+                    Constants.SESSION_UNKNOWN);
                 if (ACTION_LOGIN_SUCCESS.equals(action)) {
                     sendLoggedIn(sessionID);
                 }

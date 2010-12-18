@@ -92,6 +92,7 @@
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
        android:layout_toLeftOf="@id/send_button"
+       android:id="@+id/comment_text"
        />
   </RelativeLayout>
   <ListView
