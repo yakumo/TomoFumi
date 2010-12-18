@@ -46,6 +46,7 @@ public class ClientService
     private Handler handler = new Handler() {
         public void handleMessage(Message msg)
         {
+            String[] strs;
             switch (msg.what) {
             case MSG_LOGIN:
                 login(msg.arg1);
@@ -59,8 +60,15 @@ public class ClientService
             case MSG_ADD_STREAM:
                 addStream((String)msg.obj);
                 break;
+            case MSG_ADD_COMMENT:
+                strs = (String[])msg.obj;
+                addComment(strs[0], strs[1]);
+                break;
             case MSG_ADD_STREAM_LIKE:
                 addStreamLike((String)msg.obj);
+                break;
+            case MSG_ADD_COMMENT_LIKE:
+                addCommentLike((String)msg.obj);
                 break;
             default:
                 break;
@@ -125,32 +133,52 @@ public class ClientService
             public int addStream(String text)
             throws RemoteException
             {
-                Message msg = new Message();
-                msg.what = MSG_ADD_STREAM;
-                msg.obj = new String(text);
-                handler.sendMessage(msg);
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_STREAM;
+                    msg.obj = new String(text);
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
                 return RESULT_ERROR;
             }
 
             public int addComment(String post_id, String text)
             throws RemoteException
             {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_COMMENT;
+                    msg.obj = new String[] {post_id, text};
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
                 return RESULT_ERROR;
             }
 
             public int addStreamLike(String post_id)
             throws RemoteException
             {
-                Message msg = new Message();
-                msg.what = MSG_ADD_STREAM_LIKE;
-                msg.obj = new String(post_id);
-                handler.sendMessage(msg);
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_STREAM_LIKE;
+                    msg.obj = new String(post_id);
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
                 return RESULT_ERROR;
             }
 
             public int addCommentLike(String post_id)
             throws RemoteException
             {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_COMMENT_LIKE;
+                    msg.obj = new String(post_id);
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
                 return RESULT_ERROR;
             }
         };
@@ -341,8 +369,34 @@ public class ClientService
             });
     }
 
-    public void addComment(String post_id, String text)
+    public void addedComment(String post_id, String text, String errMessage)
     {
+        int numListener = listeners.beginBroadcast();
+        for (int i = 0 ; i < numListener ; i++) {
+            try {
+                listeners.getBroadcastItem(i).addedComment(post_id, errMessage);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+        listeners.finishBroadcast();
+    }
+
+    public void addComment(final String post_id, final String text)
+    {
+        Log.i(TAG, "addComment:"+post_id+", "+text);
+        new CommentRegister(this, post_id, text)
+            .execute(new ItemRegister.OnSendFinish() {
+                public void onSendSuccess()
+                {
+                    addedComment(post_id, text, null);
+                }
+
+                public void onSendFail(String reason)
+                {
+                    addedComment(post_id, text, reason);
+                }
+            });
     }
 
     public void addedStreamLike(String post_id, String errMessage)
@@ -377,5 +431,6 @@ public class ClientService
 
     public void addCommentLike(String post_id)
     {
+        Log.i(TAG, "addCommentLike:"+post_id);
     }
 }
