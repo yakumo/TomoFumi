@@ -30,16 +30,14 @@ public class StreamListAdapter
     private static final String TAG = Constants.LOG_TAG;
 
     private ArrayList<StreamListItem> items = new ArrayList<StreamListItem>();
-
+    private Spannable.Factory factory = Spannable.Factory.getInstance();
+    private MovementMethod movementmethod = LinkMovementMethod.getInstance();
     private Context context;
     private Resources resources;
     private Database db;
-    private Spannable.Factory factory = Spannable.Factory.getInstance();
     private TextAppearanceSpan messageSpan;
     private TextAppearanceSpan usernameSpan;
     private TextAppearanceSpan summarySpan;
-    private MovementMethod movementmethod =
-        LinkMovementMethod.getInstance();
 
     public StreamListAdapter(Context context)
     {
@@ -104,9 +102,13 @@ public class StreamListAdapter
             ret = View.inflate(context, R.layout.stream_list_item, null);
             if (!Constants.IS_FREE) {
                 TextView message = (TextView) ret.findViewById(R.id.message);
-                message.setMovementMethod(movementmethod);
+                if (null != message) {
+                    message.setMovementMethod(movementmethod);
+                }
                 TextView summary = (TextView) ret.findViewById(R.id.summary);
-                summary.setMovementMethod(movementmethod);
+                if (null != summary) {
+                    summary.setMovementMethod(movementmethod);
+                }
             }
         }
         if (null != ret) {
@@ -336,267 +338,3 @@ public class StreamListAdapter
         }
     }
 }
-
-
-
-    /*
-    public class StreamCursorAdapter
-        extends CursorAdapter
-    {
-        private int idxPostId;
-        private int idxUserName;
-        private int idxUserIcon;
-        private int idxProfileUrl;
-        private int idxMessage;
-        private int idxDescription;
-        private int idxAttName;
-        private int idxAttCaption;
-        private int idxAttLink;
-        private int idxAttImage;
-        private int idxAttIcon;
-        private int idxUpdate;
-        private int idxComments;
-        private int idxCommentCanPost;
-        private int idxLikeCount;
-        private int idxLikePosted;
-        private int idxCanLike;
-        private Spannable.Factory factory = Spannable.Factory.getInstance();
-        private TextAppearanceSpan messageSpan =
-            new TextAppearanceSpan(
-                StreamListActivity.this,
-                R.style.StreamMessage);
-        private TextAppearanceSpan usernameSpan =
-            new TextAppearanceSpan(
-                StreamListActivity.this,
-                R.style.StreamMessageUser);
-        private TextAppearanceSpan summarySpan =
-            new TextAppearanceSpan(
-                StreamListActivity.this,
-                R.style.StreamSummary);
-        private MovementMethod movementmethod =
-            LinkMovementMethod.getInstance();
-        private Drawable postedLike;
-        private Drawable unPostedLike;
-
-        public StreamCursorAdapter(Context context, Cursor c)
-        {
-            super(context, c, false);
-            idxPostId = c.getColumnIndex("post_id");
-            idxUserName = c.getColumnIndex("name");
-            idxUserIcon = c.getColumnIndex("pic_square");
-            idxProfileUrl = c.getColumnIndex("profile_url");
-            idxMessage = c.getColumnIndex("message");
-            idxDescription = c.getColumnIndex("description");
-            idxAttName = c.getColumnIndex("attachment_name");
-            idxAttCaption = c.getColumnIndex("attachment_caption");
-            idxAttLink = c.getColumnIndex("attachment_link");
-            idxAttImage = c.getColumnIndex("attachment_image");
-            idxAttIcon = c.getColumnIndex("attachment_icon");
-            idxUpdate = c.getColumnIndex("updated");
-            idxComments = c.getColumnIndex("comments");
-            idxCommentCanPost = c.getColumnIndex("comment_can_post");
-            idxLikeCount = c.getColumnIndex("like_count");
-            idxLikePosted = c.getColumnIndex("like_posted");
-            idxCanLike = c.getColumnIndex("can_like");
-
-            Resources res = context.getResources();
-            postedLike = res.getDrawable(R.drawable.like_light);
-            unPostedLike = res.getDrawable(R.drawable.like_dark);
-        }
-
-        public void bindView(View view, Context context, Cursor cursor)
-        {
-            if (null == view) {
-                return;
-            }
-
-            TextView message = (TextView) view.findViewById(R.id.message);
-            TextView summary = (TextView) view.findViewById(R.id.summary);
-            TextView description = (TextView) view.findViewById(R.id.description);
-            TextView comments = (TextView) view.findViewById(R.id.comments);
-            TextView likes = (TextView) view.findViewById(R.id.likes);
-            NetImageView streamIcon = (NetImageView)
-                view.findViewById(R.id.stream_icon);
-            NetImageView summaryIcon = (NetImageView)
-                view.findViewById(R.id.summary_icon);
-            NetImageView appIcon = (NetImageView)
-                view.findViewById(R.id.app_icon);
-            View summaryBase = view.findViewById(R.id.summary_base);
-            String post_id = cursor.getString(idxPostId);
-            if (null != streamIcon) {
-                streamIcon.setImageResource(R.drawable.clear_image);
-            }
-            if (null != summaryIcon) {
-                summaryIcon.setImageResource(R.drawable.clear_image);
-            }
-            if (null != appIcon) {
-                appIcon.setVisibility(View.GONE);
-            }
-            if (null != message) {
-                String usr = cursor.getString(idxUserName);
-                String msg = cursor.getString(idxMessage);
-                String userUrl = cursor.getString(idxProfileUrl);
-                if (null == usr) {
-                    usr = "???";
-                }
-                String allMsg = usr + " " + msg;
-                Spannable spannable = factory.newSpannable(allMsg);
-                spannable.setSpan(
-                    messageSpan, 0, allMsg.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                spannable.setSpan(
-                    usernameSpan, 0, usr.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                if (null != userUrl) {
-                    try {
-                        URL url = new URL(userUrl);
-                        URLSpan s = new URLSpan(userUrl);
-                        spannable.setSpan(
-                            s, 0, usr.length(),
-                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    } catch (MalformedURLException e) {
-                    }
-                }
-                message.setText(spannable, TextView.BufferType.SPANNABLE);
-            }
-            if (null != summary) {
-                String name = cursor.getString(idxAttName);
-                String caption = cursor.getString(idxAttCaption);
-                String link = cursor.getString(idxAttLink);
-                String icon = cursor.getString(idxAttIcon);
-                String image = cursor.getString(idxAttImage);
-                String msg = "";
-                String sep = "";
-                if (null != name && name.length() > 0) {
-                    msg = msg + sep + name;
-                    sep = "\n";
-                }
-                if (null != caption && caption.length() > 0) {
-                    msg = msg + sep + caption;
-                    sep = "\n";
-                }
-                if (msg.length() > 0) {
-                    Spannable spannable = factory.newSpannable(msg);
-                    spannable.setSpan(
-                        summarySpan, 0, msg.length(),
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    if (null != name && name.length() > 0 &&
-                        null != link && link.length() > 0) {
-                        try {
-                            URL url = new URL(link);
-                            URLSpan s = new URLSpan(link);
-                            spannable.setSpan(
-                                s, 0, name.length(),
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        } catch (MalformedURLException e) {
-                            Log.i(TAG, "MalformedURLException", e);
-                        }
-                    }
-                    if (null != icon && null != appIcon) {
-                        appIcon.setVisibility(View.VISIBLE);
-                        appIcon.setImageURI(Uri.parse(icon));
-                    }
-                    if (null != summaryIcon) {
-                        if (null != image && image.length() > 0){
-                            summaryIcon.setVisibility(View.VISIBLE);
-                            summaryIcon.setImageURI(Uri.parse(image));
-                        }
-                        else {
-                            summaryIcon.setVisibility(View.GONE);
-                        }
-                    }
-                    summaryBase.setVisibility(View.VISIBLE);
-                    summary.setText(spannable, TextView.BufferType.SPANNABLE);
-                }
-                else {
-                    summaryBase.setVisibility(View.GONE);
-                }
-            }
-            if (null != description) {
-                String desc = cursor.getString(idxDescription);
-                if (null != desc && desc.length() > 0) {
-                    description.setVisibility(View.VISIBLE);
-                    description.setText(desc);
-                }
-                else {
-                    description.setVisibility(View.GONE);
-                }
-            }
-            if (null != streamIcon) {
-                String uri = cursor.getString(idxUserIcon);
-                if (null != uri) {
-                    streamIcon.setImageURI(Uri.parse(uri));
-                    streamIcon.setVisibility(View.VISIBLE);
-                }
-                else {
-                    streamIcon.setVisibility(View.GONE);
-                }
-            }
-            if (null != comments) {
-                if (cursor.getInt(idxCommentCanPost) != 0) {
-                    int comNum = cursor.getInt(idxComments);
-                    String comFmt =
-                        resources.getQuantityString(
-                            R.plurals.plural_comment_format,
-                            comNum);
-                    comments.setText(String.format(comFmt, comNum));
-                    comments.setTag(post_id);
-                    comments.setVisibility(View.VISIBLE);
-                }
-                else {
-                    comments.setVisibility(View.GONE);
-                }
-            }
-            if (null != likes) {
-                if (likePosting.containsKey(post_id)) {
-                    likes.setEnabled(false);
-                }
-                else {
-                    likes.setEnabled(true);
-                }
-                if (cursor.getInt(idxCanLike) != 0) {
-                    int likeNum = cursor.getInt(idxLikeCount);
-                    boolean postedLike = (cursor.getInt(idxLikePosted) != 0);
-                    String likeFmt =
-                        resources.getQuantityString(
-                            R.plurals.plural_like_format,
-                            likeNum);
-                    likes.setText(String.format(likeFmt, likeNum));
-                    likes.setTag(post_id);
-                    likes.setVisibility(View.VISIBLE);
-                    likes.setCompoundDrawablesWithIntrinsicBounds(
-                        ((likePosting.containsKey(post_id))?
-                         R.drawable.like_press:
-                         ((postedLike)?
-                          R.drawable.like_light:
-                          R.drawable.like_dark)),
-                        0, 0, 0);
-                }
-                else {
-                    likes.setVisibility(View.GONE);
-                }
-            }
-
-            if (cursor.getInt(idxUpdate) == 1) {
-                view.setBackgroundResource(
-                    R.color.stream_updated_background_color);
-            }
-            else {
-                view.setBackgroundResource(
-                    R.color.stream_no_updated_background_color);
-            }
-        }
-
-        public View newView(Context context, Cursor cursor, ViewGroup parent)
-        {
-            View ret = View.inflate(context, R.layout.stream_list_item, null);
-            if (!Constants.IS_FREE) {
-                TextView message = (TextView) ret.findViewById(R.id.message);
-                message.setMovementMethod(movementmethod);
-                TextView summary = (TextView) ret.findViewById(R.id.summary);
-                summary.setMovementMethod(movementmethod);
-            }
-            return ret;
-        }
-    }
-    */

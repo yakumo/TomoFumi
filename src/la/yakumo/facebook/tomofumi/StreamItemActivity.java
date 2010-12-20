@@ -29,6 +29,7 @@ import android.widget.Toast;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import la.yakumo.facebook.tomofumi.adapter.CommentListAdapter;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
@@ -126,7 +127,7 @@ public class StreamItemActivity
 
                         CommentListAdapter ca = (CommentListAdapter)
                             commentListView.getAdapter();
-                        ca.getCursor().requery();
+                        ca.reloadData(postId);
                     }
                 });
             }
@@ -313,6 +314,7 @@ public class StreamItemActivity
             }
         }
 
+        /*
         c = rdb.rawQuery(
                 "SELECT *"+
                 " FROM comments"+
@@ -327,8 +329,9 @@ public class StreamItemActivity
                 new String[] {
                     postId
                 });
+        */
         commentListView = (ListView) findViewById(R.id.comment_list);
-        commentListView.setAdapter(new CommentListAdapter(this, c));
+        commentListView.setAdapter(new CommentListAdapter(this));
 
         intent = new Intent(this, ClientService.class);
         if (bindService(intent, conn, BIND_AUTO_CREATE)) {
@@ -399,114 +402,5 @@ public class StreamItemActivity
             Log.i(TAG, "RemoteException", e);
         }
         */
-    }
-
-    public class CommentListAdapter
-        extends CursorAdapter
-    {
-        private int idxUserName;
-        private int idxUserIcon;
-        private int idxMessage;
-        private int idxLikes;
-        private int idxItemId;
-        private int idxDataMode;
-        private Spannable.Factory factory = Spannable.Factory.getInstance();
-        private TextAppearanceSpan messageSpan =
-            new TextAppearanceSpan(
-                StreamItemActivity.this,
-                R.style.StreamMessage);
-        private TextAppearanceSpan usernameSpan =
-            new TextAppearanceSpan(
-                StreamItemActivity.this,
-                R.style.StreamMessageUser);
-        private MovementMethod movementmethod =
-            LinkMovementMethod.getInstance();
-
-        public CommentListAdapter(Context context, Cursor c)
-        {
-            super(context, c);
-            idxUserName = c.getColumnIndex("name");
-            idxUserIcon = c.getColumnIndex("pic_square");
-            idxMessage = c.getColumnIndex("message");
-            idxLikes = c.getColumnIndex("likes");
-            idxItemId = c.getColumnIndex("item_id");
-            idxDataMode = c.getColumnIndex("data_mode");
-        }
-
-        public void bindView(View view, Context context, Cursor cursor)
-        {
-            TextView message = (TextView) view.findViewById(R.id.message);
-            TextView likes = (TextView) findViewById(R.id.likes);
-            NetImageView icon = (NetImageView)
-                view.findViewById(R.id.stream_icon);
-            String commentId = cursor.getString(idxItemId);
-            boolean isComment = (cursor.getInt(idxDataMode) == 1);
-            Log.i(TAG, "datamode:"+isComment+", "+cursor.getString(idxMessage));
-            if (null != likes) {
-                if (isComment) {
-                    likes.setTag(commentId);
-                    String l = cursor.getString(idxLikes);
-                    try {
-                        JSONObject lObj = new JSONObject(l);
-                        int likeNum = lObj.length();
-                        String likeFmt =
-                            resources.getQuantityString(
-                                R.plurals.plural_like_format,
-                                likeNum);
-                        likes.setText(String.format(likeFmt, likeNum));
-                        likes.setVisibility(View.VISIBLE);
-                        likes.setCompoundDrawablesWithIntrinsicBounds(
-                            ((likePressed.containsKey(commentId))?
-                             R.drawable.like_press:
-                            ((lObj.has(userId))?
-                              R.drawable.like_light:
-                              R.drawable.like_dark)),
-                            0, 0, 0);
-                    } catch (JSONException e) {
-                        Log.i(TAG, "JSONException:"+l, e);
-                        likes.setVisibility(View.GONE);
-                    }
-                }
-                else {
-                    likes.setVisibility(View.GONE);
-                }
-            }
-            if (null != message) {
-                message.setText("");
-                String msg =
-                    (cursor.isNull(idxMessage)?
-                     "":
-                     cursor.getString(idxMessage));
-                String usr =
-                    (cursor.isNull(idxUserName)?
-                     "":
-                     cursor.getString(idxUserName));
-                String allMsg = usr + " " + msg;
-                Spannable spannable = factory.newSpannable(allMsg);
-                spannable.setSpan(
-                    messageSpan, 0, allMsg.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                spannable.setSpan(
-                    usernameSpan, 0, usr.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                message.setText(spannable, TextView.BufferType.SPANNABLE);
-            }
-            if (null != icon) {
-                String iconUri = cursor.getString(idxUserIcon);
-                if (null != icon) {
-                    icon.setImageURI(Uri.parse(iconUri));
-                }
-            }
-        }
-
-        public View newView (Context context, Cursor cursor, ViewGroup parent)
-        {
-            View ret =
-                View.inflate(
-                    context,
-                    R.layout.stream_item_comment_item,
-                    null);
-            return ret;
-        }
     }
 }
