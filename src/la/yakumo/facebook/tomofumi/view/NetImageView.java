@@ -77,7 +77,6 @@ public class NetImageView
             if (c.moveToFirst()) {
                 imageData = c.getBlob(0);
             }
-            rdb.close();
 
             String imgUri = params[0];
             if (null == imageData || imageData.length <= 0) {
@@ -115,7 +114,6 @@ public class NetImageView
                         null,
                         val,
                         SQLiteDatabase.CONFLICT_REPLACE);
-                    wdb.close();
                 } catch (MalformedURLException e) {
                 } catch (IOException e) {
                 }
@@ -132,7 +130,6 @@ public class NetImageView
                     }
                 });
             }
-            db.close();
 
             return 0;
         }

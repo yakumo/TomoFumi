@@ -299,9 +299,6 @@ public class CommentsUpdator
             wdb.endTransaction();
         }
 
-        wdb.close();
-        db.close();
-
         if (null != handler) {
             for (Runnable r : params) {
                 handler.post(r);

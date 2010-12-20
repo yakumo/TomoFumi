@@ -312,7 +312,6 @@ public class StreamItemActivity
                 }
             }
         }
-        c.close();
 
         c = rdb.rawQuery(
                 "SELECT *"+
@@ -372,7 +371,6 @@ public class StreamItemActivity
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
         }
-        db.close();
     }
 
     public void onClickSendComment(View v)

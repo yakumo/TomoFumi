@@ -50,7 +50,6 @@ public class StatusLikeRegister
             like_posted = c.getInt(1);
             can_like = c.getInt(2);
         }
-        rdb.close();
 
         try {
             Bundle b = new Bundle();
@@ -82,7 +81,6 @@ public class StatusLikeRegister
                     new String[] {
                         post_id,
                     });
-                wdb.close();
             }
         } catch (MalformedURLException e) {
             Log.i(TAG, "MalformedURLException", e);
@@ -91,7 +89,6 @@ public class StatusLikeRegister
             Log.i(TAG, "IOException", e);
             errStr = e.getMessage();
         }
-        db.close();
 
         for (OnSendFinish f : params) {
             if (null == errStr) {

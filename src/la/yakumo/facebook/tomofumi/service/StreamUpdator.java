@@ -77,7 +77,7 @@ public class StreamUpdator
                     val.put("updated_time", obj.getLong("updated_time"));
                     val.put("message", obj.getString("message"));
                     JSONObject comments = obj.getJSONObject("comments");
-                    val.put("comments", comments.getInt("count"));
+                    val.put("comment_count", comments.getInt("count"));
                     val.put("comment_can_post",
                             (comments.getBoolean("can_post")? 1: 0));
                     JSONObject likes = obj.getJSONObject("likes");
@@ -197,7 +197,6 @@ public class StreamUpdator
         if (c.moveToFirst()) {
             lastStream = c.getLong(0);
         }
-        rdb.close();
 
         String q1 =
             "SELECT"+
@@ -281,13 +280,9 @@ public class StreamUpdator
             } finally {
                 wdb.endTransaction();
             }
-            wdb.close();
         }
 
         publishProgress(2, 3, R.string.progress_app_reading_message);
-
-        db.close();
-
         publishProgress(3, 3, R.string.progress_finish_message);
 
         if (null != handler) {
