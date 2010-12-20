@@ -32,7 +32,7 @@ import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
-import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
+import la.yakumo.facebook.tomofumi.service.callback.*;
 import la.yakumo.facebook.tomofumi.view.NetImageView;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -61,27 +61,27 @@ public class StreamItemActivity
     private MovementMethod movementmethod =
         LinkMovementMethod.getInstance();
 
-    private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
-        public void loggedIn(int sessionID, String userID)
+    private ILoginCallback loginListener = new ILoginCallback.Stub() {
+        public void loggedIn(String userID)
         {
-            Log.i(TAG, "loggedIn:"+sessionID+","+userID);
+            Log.i(TAG, "loggedIn:"+userID);
             StreamItemActivity.this.userId = userId;
 
-            if (null != service &&
-                Constants.SESSION_UPDATE_COMMENTS == sessionID) {
-                requestUpdateComments(postId);
+            try {
+                service.unregisterLoginCallback(loginListener);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
             }
+            requestUpdateComments(postId);
         }
 
-        public void loginFailed(int sessionID, String reason)
+        public void loginFailed(String reason)
         {
             Log.i(TAG, "loginFailed:"+reason);
         }
+    };
 
-        public void updatedStream(String errorMessage)
-        {
-        }
-
+    private ICommentCallback commentListener = new ICommentCallback.Stub() {
         public void updatedComment(String post_id, String errorMessage)
         {
             if (null != progress) {
@@ -132,36 +132,7 @@ public class StreamItemActivity
             }
         }
 
-        public void updatedLike(String post_id, String errorMessage)
-        {
-        }
-
-        public void updateProgress(int now, int max, String msg)
-        {
-            if (null != progress) {
-                final int fNow = now;
-                final int fMax = max;
-                final String fMsg = msg;
-                handler.post(new Runnable() {
-                    public void run()
-                    {
-                        progress.setMessage(fMsg);
-                        progress.setMax(fMax);
-                        progress.setProgress(fNow);
-                    }
-                });
-            }
-        }
-
-        public void addedStream(String errorMessage)
-        {
-        }
-
         public void addedComment(String post_id, String errorMessage)
-        {
-        }
-
-        public void addedLike(final String post_id, String errorMessage)
         {
         }
     };
@@ -171,7 +142,8 @@ public class StreamItemActivity
         {
             service = IClientService.Stub.asInterface(binder);
             try {
-                service.registerCallback(listener);
+                service.registerLoginCallback(loginListener);
+                service.registerCommentCallback(commentListener);
                 service.login(Constants.SESSION_UPDATE_COMMENTS);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
@@ -393,7 +365,8 @@ public class StreamItemActivity
         super.onDestroy();
         try {
             if (null != service) {
-                service.unregisterCallback(listener);
+                service.unregisterLoginCallback(loginListener);
+                service.unregisterCommentCallback(commentListener);
                 unbindService(conn);
             }
         } catch (RemoteException e) {
@@ -419,6 +392,7 @@ public class StreamItemActivity
     public void onClickLike(View v)
     {
         Log.i(TAG, "add like to comment:"+v.getTag());
+        /*
         try {
             if (null != service) {
                 service.addCommentLike((String) v.getTag());
@@ -426,6 +400,7 @@ public class StreamItemActivity
         } catch (RemoteException e) {
             Log.i(TAG, "RemoteException", e);
         }
+        */
     }
 
     public class CommentListAdapter

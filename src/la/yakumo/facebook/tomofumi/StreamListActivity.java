@@ -40,7 +40,7 @@ import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
-import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
+import la.yakumo.facebook.tomofumi.service.callback.*;
 import la.yakumo.facebook.tomofumi.view.NetImageView;
 
 public class StreamListActivity extends Activity
@@ -56,6 +56,7 @@ public class StreamListActivity extends Activity
     private ProgressDialog progress = null;
     private HashMap<String,View> likePosting = new HashMap<String,View>();
 
+    /*
     private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
         public void loggedIn(int sessionID, String userID)
         {
@@ -142,13 +143,81 @@ public class StreamListActivity extends Activity
             });
         }
     };
+    */
+
+    private ILoginCallback loginListener = new ILoginCallback.Stub() {
+        public void loggedIn(String userID)
+        {
+            Log.i(TAG, "loggedIn:"+userID);
+
+            try {
+                service.unregisterLoginCallback(loginListener);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+            requestUpdateStream();
+        }
+
+        public void loginFailed(String reason)
+        {
+            Log.i(TAG, "loginFailed:"+reason);
+            try {
+                service.unregisterLoginCallback(loginListener);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+    };
+
+    private IStreamCallback streamListener = new IStreamCallback.Stub() {
+        public void updatedStream(String errorMessage)
+        {
+            Log.i(TAG, "updatedStream:"+errorMessage);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    if (null != progress) {
+                        progress.dismiss();
+                        progress = null;
+                    }
+
+                    StreamCursorAdapter a =
+                        (StreamCursorAdapter)streamList.getAdapter();
+                    a.getCursor().requery();
+                }
+            });
+        }
+
+        public void addedStream(String errorMessage)
+        {
+        }
+    };
+
+    private ILikeCallback likeListener = new ILikeCallback.Stub() {
+        public void registerLike(String post_id)
+        {
+        }
+
+        public void registedLike(String post_id)
+        {
+        }
+
+        public void unregisterLike(String post_id)
+        {
+        }
+
+        public void unregistedLike(String post_id)
+        {
+        }
+    };
 
     private ServiceConnection conn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder binder)
         {
             service = IClientService.Stub.asInterface(binder);
             try {
-                service.registerCallback(listener);
+                service.registerLoginCallback(loginListener);
+                service.registerStreamCallback(streamListener);
                 service.login(Constants.SESSION_STREAM_LIST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
@@ -213,7 +282,8 @@ public class StreamListActivity extends Activity
         super.onDestroy();
         try {
             if (null != service) {
-                service.unregisterCallback(listener);
+                service.unregisterLoginCallback(loginListener);
+                service.unregisterStreamCallback(streamListener);
                 unbindService(conn);
             }
         } catch (RemoteException e) {
@@ -243,7 +313,7 @@ public class StreamListActivity extends Activity
             likePosting.put(post_id, v);
             ((TextView)v).setCompoundDrawablesWithIntrinsicBounds(
                 R.drawable.like_press, 0, 0, 0);
-            service.addStreamLike(post_id);
+            service.toggleStreamLike(post_id);
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
         }

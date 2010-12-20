@@ -13,6 +13,7 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 import la.yakumo.facebook.tomofumi.Constants;
+import la.yakumo.facebook.tomofumi.service.callback.*;
 
 public class ClientService
     extends Service
@@ -32,8 +33,14 @@ public class ClientService
     public static final String EXTRA_LOGIN_SESSION_ID =
         "la.yakumo.facebook.tomofumi.LOGIN_SESSIONID";
 
-    private RemoteCallbackList<IClientServiceCallback> listeners =
-        new RemoteCallbackList<IClientServiceCallback>();
+    private RemoteCallbackList<ILoginCallback> loginListeners =
+        new RemoteCallbackList<ILoginCallback>();
+    private RemoteCallbackList<IStreamCallback> streamListeners =
+        new RemoteCallbackList<IStreamCallback>();
+    private RemoteCallbackList<ICommentCallback> commentListeners =
+        new RemoteCallbackList<ICommentCallback>();
+    private RemoteCallbackList<ILikeCallback> likeListeners =
+        new RemoteCallbackList<ILikeCallback>();
 
     private static final int MSG_LOGIN = 1;
     private static final int MSG_UPDATE_STREAM = 2;
@@ -79,6 +86,7 @@ public class ClientService
     private final IClientService.Stub stub =
         new IClientService.Stub()
         {
+            /*
             public void registerCallback(IClientServiceCallback callback)
             throws RemoteException
             {
@@ -91,6 +99,55 @@ public class ClientService
             {
                 Log.i(TAG, "unregisterCallback:"+callback);
                 listeners.unregister(callback);
+            }
+            */
+
+            public void registerLoginCallback(ILoginCallback callback)
+            {
+                Log.i(TAG, "registerLoginCallback:"+callback);
+                loginListeners.register(callback);
+            }
+
+            public void unregisterLoginCallback(ILoginCallback callback)
+            {
+                Log.i(TAG, "unregisterLoginCallback:"+callback);
+                loginListeners.unregister(callback);
+            }
+
+            public void registerStreamCallback(IStreamCallback callback)
+            {
+                Log.i(TAG, "registerStreamCallback:"+callback);
+                streamListeners.register(callback);
+            }
+
+            public void unregisterStreamCallback(IStreamCallback callback)
+            {
+                Log.i(TAG, "unregisterStreamCallback:"+callback);
+                streamListeners.unregister(callback);
+            }
+
+            public void registerCommentCallback(ICommentCallback callback)
+            {
+                Log.i(TAG, "registerCommentCallback:"+callback);
+                commentListeners.register(callback);
+            }
+
+            public void unregisterCommentCallback(ICommentCallback callback)
+            {
+                Log.i(TAG, "unregisterCommentCallback:"+callback);
+                commentListeners.unregister(callback);
+            }
+
+            public void registerLikeCallback(ILikeCallback callback)
+            {
+                Log.i(TAG, "registerLikeCallback:"+callback);
+                likeListeners.register(callback);
+            }
+
+            public void unregisterLikeCallback(ILikeCallback callback)
+            {
+                Log.i(TAG, "unregisterLikeCallback:"+callback);
+                likeListeners.unregister(callback);
             }
 
             public void login(int sessionID)
@@ -156,26 +213,65 @@ public class ClientService
                 return RESULT_ERROR;
             }
 
-            public int addStreamLike(String post_id)
-            throws RemoteException
+            public int toggleStreamLike(String post_id)
             {
                 if (Facebook.getInstance(ClientService.this).loginCheck()) {
                     Message msg = new Message();
                     msg.what = MSG_ADD_STREAM_LIKE;
                     msg.obj = new String(post_id);
+                    msg.arg1 = -1;
                     handler.sendMessage(msg);
                     return RESULT_OK;
                 }
                 return RESULT_ERROR;
             }
 
-            public int addCommentLike(String post_id)
-            throws RemoteException
+            public int registStreamLike(String post_id)
+            {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_STREAM_LIKE;
+                    msg.obj = new String(post_id);
+                    msg.arg1 = 1;
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_ERROR;
+            }
+
+            public int unregistStreamLike(String post_id)
+            {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_STREAM_LIKE;
+                    msg.obj = new String(post_id);
+                    msg.arg1 = 0;
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_ERROR;
+            }
+
+            public int registCommentLike(String post_id)
             {
                 if (Facebook.getInstance(ClientService.this).loginCheck()) {
                     Message msg = new Message();
                     msg.what = MSG_ADD_COMMENT_LIKE;
                     msg.obj = new String(post_id);
+                    msg.arg1 = 1;
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_ERROR;
+            }
+
+            public int unregistCommentLike(String post_id)
+            {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_COMMENT_LIKE;
+                    msg.obj = new String(post_id);
+                    msg.arg1 = 0;
                     handler.sendMessage(msg);
                     return RESULT_OK;
                 }
@@ -224,28 +320,28 @@ public class ClientService
     private void sendLoggedIn(int sessionID)
     {
         String uid = Facebook.getInstance(this).getUserID();
-        int numListener = listeners.beginBroadcast();
+        int numListener = loginListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).loggedIn(sessionID, uid);
+                loginListeners.getBroadcastItem(i).loggedIn(uid);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
         }
-        listeners.finishBroadcast();
+        loginListeners.finishBroadcast();
     }
 
     private void sendLoginFail(int sessionID, String reason)
     {
-        int numListener = listeners.beginBroadcast();
+        int numListener = loginListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).loginFailed(sessionID, reason);
+                loginListeners.getBroadcastItem(i).loginFailed(reason);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
         }
-        listeners.finishBroadcast();
+        loginListeners.finishBroadcast();
     }
 
     public void login(int sessionID)
@@ -264,16 +360,18 @@ public class ClientService
             {
                 public void onProgress(int now, int max, String msg)
                 {
-                    int numListener = listeners.beginBroadcast();
+                    /*
+                    int numListener = streamListeners.beginBroadcast();
                     for (int i = 0 ; i < numListener ; i++) {
                         try {
-                            listeners.getBroadcastItem(i).updateProgress(
+                            streamListeners.getBroadcastItem(i).updateProgress(
                                 now, max, msg);
                         } catch (RemoteException e) {
                             Log.e(TAG, "RemoteException", e);
                         }
                     }
-                    listeners.finishBroadcast();
+                    streamListeners.finishBroadcast();
+                    */
                 }
             }).execute(
                 new Runnable()
@@ -281,15 +379,16 @@ public class ClientService
                     public void run()
                     {
                         Log.i(TAG, "finish update stream");
-                        int numListener = listeners.beginBroadcast();
+                        int numListener = streamListeners.beginBroadcast();
                         for (int i = 0 ; i < numListener ; i++) {
                             try {
-                                listeners.getBroadcastItem(i).updatedStream(null);
+                                streamListeners.getBroadcastItem(i).updatedStream(
+                                    null);
                             } catch (RemoteException e) {
                                 Log.e(TAG, "RemoteException", e);
                             }
                         }
-                        listeners.finishBroadcast();
+                        streamListeners.finishBroadcast();
                     }
                 });
     }
@@ -304,16 +403,18 @@ public class ClientService
             {
                 public void onProgress(int now, int max, String msg)
                 {
-                    int numListener = listeners.beginBroadcast();
+                    /*
+                    int numListener = commentListeners.beginBroadcast();
                     for (int i = 0 ; i < numListener ; i++) {
                         try {
-                            listeners.getBroadcastItem(i).updateProgress(
+                            commentListeners.getBroadcastItem(i).updateProgress(
                                 now, max, msg);
                         } catch (RemoteException e) {
                             Log.e(TAG, "RemoteException", e);
                         }
                     }
-                    listeners.finishBroadcast();
+                    commentListeners.finishBroadcast();
+                    */
                 }
             }).execute(
                 new Runnable()
@@ -321,16 +422,16 @@ public class ClientService
                     public void run()
                     {
                         Log.i(TAG, "finish update comment");
-                        int numListener = listeners.beginBroadcast();
+                        int numListener = commentListeners.beginBroadcast();
                         for (int i = 0 ; i < numListener ; i++) {
                             try {
-                                listeners.getBroadcastItem(i).updatedComment(
+                                commentListeners.getBroadcastItem(i).updatedComment(
                                     post_id, null);
                             } catch (RemoteException e) {
                                 Log.e(TAG, "RemoteException", e);
                             }
                         }
-                        listeners.finishBroadcast();
+                        commentListeners.finishBroadcast();
                     }
                 });
     }
@@ -341,15 +442,15 @@ public class ClientService
 
     private void addedStream(String errMessage)
     {
-        int numListener = listeners.beginBroadcast();
+        int numListener = streamListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).addedStream(errMessage);
+                streamListeners.getBroadcastItem(i).addedStream(errMessage);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
         }
-        listeners.finishBroadcast();
+        streamListeners.finishBroadcast();
     }
 
     public void addStream(String text)
@@ -371,15 +472,16 @@ public class ClientService
 
     public void addedComment(String post_id, String text, String errMessage)
     {
-        int numListener = listeners.beginBroadcast();
+        int numListener = commentListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).addedComment(post_id, errMessage);
+                commentListeners.getBroadcastItem(i).addedComment(
+                    post_id, errMessage);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
         }
-        listeners.finishBroadcast();
+        commentListeners.finishBroadcast();
     }
 
     public void addComment(final String post_id, final String text)
@@ -401,15 +503,15 @@ public class ClientService
 
     public void addedStreamLike(String post_id, String errMessage)
     {
-        int numListener = listeners.beginBroadcast();
+        int numListener = likeListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                listeners.getBroadcastItem(i).addedLike(post_id, errMessage);
+                likeListeners.getBroadcastItem(i).registedLike(post_id);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
         }
-        listeners.finishBroadcast();
+        likeListeners.finishBroadcast();
     }
 
     public void addStreamLike(final String post_id)

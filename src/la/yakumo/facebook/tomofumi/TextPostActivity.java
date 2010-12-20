@@ -17,7 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
-import la.yakumo.facebook.tomofumi.service.IClientServiceCallback;
+import la.yakumo.facebook.tomofumi.service.callback.*;
 
 public class TextPostActivity
     extends Activity
@@ -41,14 +41,15 @@ public class TextPostActivity
     private ProgressDialog progress = null;
     private Resources resources = null;
 
-    private IClientServiceCallback listener = new IClientServiceCallback.Stub() {
-        public void loggedIn(int sessionID, String userID)
+    private ILoginCallback loginListener = new ILoginCallback.Stub() {
+        public void loggedIn(String userID)
         {
-            Log.i(TAG, "loggedIn:"+sessionID+","+userID);
+            Log.i(TAG, "loggedIn:"+userID);
 
-            if (null == service &&
-                Constants.SESSION_POST != sessionID) {
-                return;
+            try {
+                service.unregisterLoginCallback(loginListener);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
             }
             handler.post(new Runnable() {
                 public void run()
@@ -87,28 +88,18 @@ public class TextPostActivity
             });
         }
 
-        public void loginFailed(int sessionID, String reason)
+        public void loginFailed(String reason)
         {
             Log.i(TAG, "loginFailed:"+reason);
         }
+    };
 
+    private IStreamCallback streamListener = new IStreamCallback.Stub() {
         public void updatedStream(String errorMessage)
         {
         }
 
-        public void updatedComment(String post_id, String errorMessage)
-        {
-        }
-
-        public void updatedLike(String post_id, String errorMessage)
-        {
-        }
-
-        public void updateProgress(int now, int max, String msg)
-        {
-        }
-
-        public void addedStream(String errorMessage)
+        public void addedStream(String errorMessagef)
         {
             handler.post(new Runnable() {
                 public void run()
@@ -118,7 +109,8 @@ public class TextPostActivity
                     }
                     try {
                         if (null != service) {
-                            service.unregisterCallback(listener);
+                            service.unregisterLoginCallback(loginListener);
+                            service.unregisterStreamCallback(streamListener);
                             unbindService(conn);
                         }
                     } catch (RemoteException e) {
@@ -128,14 +120,6 @@ public class TextPostActivity
                 }
             });
         }
-
-        public void addedComment(String post_id, String errorMessage)
-        {
-        }
-
-        public void addedLike(String post_id, String errorMessage)
-        {
-        }
     };
 
     private ServiceConnection conn = new ServiceConnection() {
@@ -143,7 +127,8 @@ public class TextPostActivity
         {
             service = IClientService.Stub.asInterface(binder);
             try {
-                service.registerCallback(listener);
+                service.registerLoginCallback(loginListener);
+                service.registerStreamCallback(streamListener);
                 service.login(Constants.SESSION_POST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
