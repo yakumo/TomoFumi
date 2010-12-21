@@ -16,7 +16,9 @@ public class StatusLikeRegister
     private String post_id;
     private Context context;
 
-    public StatusLikeRegister(Context context, String post_id)
+    public StatusLikeRegister(
+        Context context,
+        String post_id)
     {
         super(context);
         this.post_id = post_id;
@@ -49,6 +51,13 @@ public class StatusLikeRegister
             like_count = c.getInt(0);
             like_posted = c.getInt(1);
             can_like = c.getInt(2);
+        }
+        for (OnSendFinish f : params) {
+            if (f instanceof OnLikeRegisterSendFinish) {
+                OnLikeRegisterSendFinish lf = (OnLikeRegisterSendFinish) f;
+                lf.onPosted(like_posted == 0? 1: 0);
+            }
+            f.onStartSend();
         }
 
         try {
@@ -94,5 +103,11 @@ public class StatusLikeRegister
             f.onSended(errStr);
         }
         return 0;
+    }
+
+    public static interface OnLikeRegisterSendFinish
+        extends OnSendFinish
+    {
+        public void onPosted(int mode);
     }
 }

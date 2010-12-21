@@ -37,6 +37,7 @@ public class ItemRegister
 
     public static interface OnSendFinish
     {
+        public void onStartSend();
         public void onSended(String reason);
     }
 }

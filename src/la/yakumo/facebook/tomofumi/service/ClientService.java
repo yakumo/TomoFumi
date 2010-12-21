@@ -451,6 +451,10 @@ public class ClientService
         Log.i(TAG, "addStream:"+text);
         new StatusRegister(this, text)
             .execute(new ItemRegister.OnSendFinish() {
+                public void onStartSend()
+                {
+                }
+
                 public void onSended(String reason)
                 {
                     addedStream(reason);
@@ -477,6 +481,10 @@ public class ClientService
         Log.i(TAG, "addComment:"+post_id+", "+text);
         new CommentRegister(this, post_id, text)
             .execute(new ItemRegister.OnSendFinish() {
+                public void onStartSend()
+                {
+                }
+
                 public void onSended(String reason)
                 {
                     addedComment(post_id, text, reason);
@@ -484,12 +492,35 @@ public class ClientService
             });
     }
 
-    public void addedStreamLike(String post_id, String errMessage)
+    private void startAddStreamLike(String post_id, int mode)
     {
         int numListener = likeListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                likeListeners.getBroadcastItem(i).registedLike(post_id);
+                if (0 == mode) {
+                    likeListeners.getBroadcastItem(i).unregisterLike(post_id);
+                }
+                else {
+                    likeListeners.getBroadcastItem(i).registerLike(post_id);
+                }
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+        likeListeners.finishBroadcast();
+    }
+
+    private void addedStreamLike(String post_id, String errMessage, int mode)
+    {
+        int numListener = likeListeners.beginBroadcast();
+        for (int i = 0 ; i < numListener ; i++) {
+            try {
+                if (0 == mode) {
+                    likeListeners.getBroadcastItem(i).unregistedLike(post_id);
+                }
+                else {
+                    likeListeners.getBroadcastItem(i).registedLike(post_id);
+                }
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -500,11 +531,24 @@ public class ClientService
     public void addStreamLike(final String post_id)
     {
         Log.i(TAG, "addStreamLike:"+post_id);
+        int mode = 0;
         new StatusLikeRegister(this, post_id)
-            .execute(new ItemRegister.OnSendFinish() {
+            .execute(new StatusLikeRegister.OnLikeRegisterSendFinish() {
+                private int mode = 0;
+
+                public void onPosted(int mode)
+                {
+                    this.mode = mode;
+                }
+
+                public void onStartSend()
+                {
+                    startAddStreamLike(post_id, mode);
+                }
+
                 public void onSended(String reason)
                 {
-                    addedStreamLike(post_id, reason);
+                    addedStreamLike(post_id, reason, mode);
                 }
             });
     }

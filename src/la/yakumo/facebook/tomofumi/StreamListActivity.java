@@ -197,20 +197,86 @@ public class StreamListActivity extends Activity
     };
 
     private ILikeCallback likeListener = new ILikeCallback.Stub() {
-        public void registerLike(String post_id)
+        public void registerLike(final String post_id)
         {
+            Log.i(TAG, "registerLike:"+post_id);
+            if (likePosting.containsKey(post_id)) {
+                final TextView tv = (TextView) likePosting.get(post_id);
+                if (post_id.equals(tv.getTag())) {
+                    handler.post(new Runnable() {
+                        public void run()
+                        {
+                            if (null != tv) {
+                                tv.setEnabled(false);
+                                tv.setCompoundDrawablesWithIntrinsicBounds(
+                                    R.drawable.like_press, 0, 0, 0);
+                            }
+                        }
+                    });
+                }
+            }
         }
 
-        public void registedLike(String post_id)
+        public void registedLike(final String post_id)
         {
+            Log.i(TAG, "registedLike:"+post_id);
+            if (likePosting.containsKey(post_id)) {
+                final TextView tv = (TextView) likePosting.get(post_id);
+                if (post_id.equals(tv.getTag())) {
+                    handler.post(new Runnable() {
+                        public void run()
+                        {
+                            if (null != tv) {
+                                tv.setEnabled(true);
+                                tv.setCompoundDrawablesWithIntrinsicBounds(
+                                    R.drawable.like_light, 0, 0, 0);
+                            }
+                        }
+                    });
+                }
+                likePosting.remove(post_id);
+            }
         }
 
-        public void unregisterLike(String post_id)
+        public void unregisterLike(final String post_id)
         {
+            Log.i(TAG, "unregisterLike:"+post_id);
+            if (likePosting.containsKey(post_id)) {
+                final TextView tv = (TextView) likePosting.get(post_id);
+                if (post_id.equals(tv.getTag())) {
+                    handler.post(new Runnable() {
+                        public void run()
+                        {
+                            if (null != tv) {
+                                tv.setEnabled(false);
+                                tv.setCompoundDrawablesWithIntrinsicBounds(
+                                    R.drawable.like_press, 0, 0, 0);
+                            }
+                        }
+                    });
+                }
+            }
         }
 
-        public void unregistedLike(String post_id)
+        public void unregistedLike(final String post_id)
         {
+            Log.i(TAG, "unregistedLike:"+post_id);
+            if (likePosting.containsKey(post_id)) {
+                final TextView tv = (TextView) likePosting.get(post_id);
+                if (post_id.equals(tv.getTag())) {
+                    handler.post(new Runnable() {
+                        public void run()
+                        {
+                            if (null != tv) {
+                                tv.setEnabled(true);
+                                tv.setCompoundDrawablesWithIntrinsicBounds(
+                                    R.drawable.like_dark, 0, 0, 0);
+                            }
+                        }
+                    });
+                }
+                likePosting.remove(post_id);
+            }
         }
     };
 
@@ -221,6 +287,7 @@ public class StreamListActivity extends Activity
             try {
                 service.registerLoginCallback(loginListener);
                 service.registerStreamCallback(streamListener);
+                service.registerLikeCallback(likeListener);
                 service.login(Constants.SESSION_STREAM_LIST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
@@ -289,6 +356,7 @@ public class StreamListActivity extends Activity
             if (null != service) {
                 service.unregisterLoginCallback(loginListener);
                 service.unregisterStreamCallback(streamListener);
+                service.unregisterLikeCallback(likeListener);
                 unbindService(conn);
             }
         } catch (RemoteException e) {
@@ -311,12 +379,7 @@ public class StreamListActivity extends Activity
             return;
         }
         try {
-            if (null != v) {
-                v.setEnabled(false);
-            }
             likePosting.put(post_id, v);
-            ((TextView)v).setCompoundDrawablesWithIntrinsicBounds(
-                R.drawable.like_press, 0, 0, 0);
             service.toggleStreamLike(post_id);
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
