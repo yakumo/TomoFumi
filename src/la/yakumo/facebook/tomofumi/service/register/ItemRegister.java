@@ -1,10 +1,11 @@
-package la.yakumo.facebook.tomofumi.service;
+package la.yakumo.facebook.tomofumi.service.register;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 import la.yakumo.facebook.tomofumi.Constants;
+import la.yakumo.facebook.tomofumi.service.Facebook;
 
 public class ItemRegister
     extends AsyncTask<ItemRegister.OnSendFinish,Integer,Integer>
@@ -36,7 +37,6 @@ public class ItemRegister
 
     public static interface OnSendFinish
     {
-        public void onSendSuccess();
-        public void onSendFail(String reason);
+        public void onSended(String reason);
     }
 }

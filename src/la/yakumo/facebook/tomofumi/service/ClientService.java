@@ -14,6 +14,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.service.callback.*;
+import la.yakumo.facebook.tomofumi.service.register.*;
+import la.yakumo.facebook.tomofumi.service.updator.*;
 
 public class ClientService
     extends Service
@@ -86,22 +88,6 @@ public class ClientService
     private final IClientService.Stub stub =
         new IClientService.Stub()
         {
-            /*
-            public void registerCallback(IClientServiceCallback callback)
-            throws RemoteException
-            {
-                Log.i(TAG, "registerCallback:"+callback);
-                listeners.register(callback);
-            }
-
-            public void unregisterCallback(IClientServiceCallback callback)
-            throws RemoteException
-            {
-                Log.i(TAG, "unregisterCallback:"+callback);
-                listeners.unregister(callback);
-            }
-            */
-
             public void registerLoginCallback(ILoginCallback callback)
             {
                 Log.i(TAG, "registerLoginCallback:"+callback);
@@ -465,12 +451,7 @@ public class ClientService
         Log.i(TAG, "addStream:"+text);
         new StatusRegister(this, text)
             .execute(new ItemRegister.OnSendFinish() {
-                public void onSendSuccess()
-                {
-                    addedStream(null);
-                }
-
-                public void onSendFail(String reason)
+                public void onSended(String reason)
                 {
                     addedStream(reason);
                 }
@@ -496,12 +477,7 @@ public class ClientService
         Log.i(TAG, "addComment:"+post_id+", "+text);
         new CommentRegister(this, post_id, text)
             .execute(new ItemRegister.OnSendFinish() {
-                public void onSendSuccess()
-                {
-                    addedComment(post_id, text, null);
-                }
-
-                public void onSendFail(String reason)
+                public void onSended(String reason)
                 {
                     addedComment(post_id, text, reason);
                 }
@@ -526,12 +502,7 @@ public class ClientService
         Log.i(TAG, "addStreamLike:"+post_id);
         new StatusLikeRegister(this, post_id)
             .execute(new ItemRegister.OnSendFinish() {
-                public void onSendSuccess()
-                {
-                    addedStreamLike(post_id, null);
-                }
-
-                public void onSendFail(String reason)
+                public void onSended(String reason)
                 {
                     addedStreamLike(post_id, reason);
                 }

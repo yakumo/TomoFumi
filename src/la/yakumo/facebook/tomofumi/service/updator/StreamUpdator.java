@@ -1,4 +1,4 @@
-package la.yakumo.facebook.tomofumi.service;
+package la.yakumo.facebook.tomofumi.service.updator;
 
 import android.content.ContentValues;
 import android.content.Context;

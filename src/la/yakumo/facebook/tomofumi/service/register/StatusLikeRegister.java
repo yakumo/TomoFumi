@@ -1,4 +1,4 @@
-package la.yakumo.facebook.tomofumi.service;
+package la.yakumo.facebook.tomofumi.service.register;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -91,12 +91,7 @@ public class StatusLikeRegister
         }
 
         for (OnSendFinish f : params) {
-            if (null == errStr) {
-                f.onSendSuccess();
-            }
-            else {
-                f.onSendFail(errStr);
-            }
+            f.onSended(errStr);
         }
         return 0;
     }

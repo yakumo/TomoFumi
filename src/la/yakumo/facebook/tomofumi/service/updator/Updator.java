@@ -1,4 +1,4 @@
-package la.yakumo.facebook.tomofumi.service;
+package la.yakumo.facebook.tomofumi.service.updator;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -8,6 +8,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import la.yakumo.facebook.tomofumi.Constants;
+import la.yakumo.facebook.tomofumi.service.Facebook;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
