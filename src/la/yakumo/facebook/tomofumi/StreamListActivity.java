@@ -200,83 +200,67 @@ public class StreamListActivity extends Activity
         public void registerLike(final String post_id)
         {
             Log.i(TAG, "registerLike:"+post_id);
-            if (likePosting.containsKey(post_id)) {
-                final TextView tv = (TextView) likePosting.get(post_id);
-                if (post_id.equals(tv.getTag())) {
-                    handler.post(new Runnable() {
-                        public void run()
-                        {
-                            if (null != tv) {
-                                tv.setEnabled(false);
-                                tv.setCompoundDrawablesWithIntrinsicBounds(
-                                    R.drawable.like_press, 0, 0, 0);
-                            }
-                        }
-                    });
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    final TextView tv = (TextView) likePosting.get(post_id);
+                    StreamListAdapter a =
+                        (StreamListAdapter)streamList.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeUpdating(((Integer)tv.getTag()).intValue(), tv);
+                    }
                 }
-            }
+            });
         }
 
         public void registedLike(final String post_id)
         {
             Log.i(TAG, "registedLike:"+post_id);
-            if (likePosting.containsKey(post_id)) {
-                final TextView tv = (TextView) likePosting.get(post_id);
-                if (post_id.equals(tv.getTag())) {
-                    handler.post(new Runnable() {
-                        public void run()
-                        {
-                            if (null != tv) {
-                                tv.setEnabled(true);
-                                tv.setCompoundDrawablesWithIntrinsicBounds(
-                                    R.drawable.like_light, 0, 0, 0);
-                            }
-                        }
-                    });
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) likePosting.get(post_id);
+                    StreamListAdapter a =
+                        (StreamListAdapter)streamList.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeRegisted(((Integer)tv.getTag()).intValue(), tv);
+                    }
+                    likePosting.remove(post_id);
                 }
-                likePosting.remove(post_id);
-            }
+            });
         }
 
         public void unregisterLike(final String post_id)
         {
             Log.i(TAG, "unregisterLike:"+post_id);
-            if (likePosting.containsKey(post_id)) {
-                final TextView tv = (TextView) likePosting.get(post_id);
-                if (post_id.equals(tv.getTag())) {
-                    handler.post(new Runnable() {
-                        public void run()
-                        {
-                            if (null != tv) {
-                                tv.setEnabled(false);
-                                tv.setCompoundDrawablesWithIntrinsicBounds(
-                                    R.drawable.like_press, 0, 0, 0);
-                            }
-                        }
-                    });
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) likePosting.get(post_id);
+                    StreamListAdapter a =
+                        (StreamListAdapter)streamList.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeUpdating(((Integer)tv.getTag()).intValue(), tv);
+                    }
                 }
-            }
+            });
         }
 
         public void unregistedLike(final String post_id)
         {
             Log.i(TAG, "unregistedLike:"+post_id);
-            if (likePosting.containsKey(post_id)) {
-                final TextView tv = (TextView) likePosting.get(post_id);
-                if (post_id.equals(tv.getTag())) {
-                    handler.post(new Runnable() {
-                        public void run()
-                        {
-                            if (null != tv) {
-                                tv.setEnabled(true);
-                                tv.setCompoundDrawablesWithIntrinsicBounds(
-                                    R.drawable.like_dark, 0, 0, 0);
-                            }
-                        }
-                    });
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) likePosting.get(post_id);
+                    StreamListAdapter a =
+                        (StreamListAdapter)streamList.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeUnregisted(((Integer)tv.getTag()).intValue(), tv);
+                    }
+                    likePosting.remove(post_id);
                 }
-                likePosting.remove(post_id);
-            }
+            });
         }
     };
 
@@ -374,7 +358,21 @@ public class StreamListActivity extends Activity
 
     public void onClickLike(View v)
     {
+        /*
         String post_id = (String) v.getTag();
+        if (likePosting.containsKey(post_id)) {
+            return;
+        }
+        try {
+            likePosting.put(post_id, v);
+            service.toggleStreamLike(post_id);
+        } catch (RemoteException e) {
+            Log.e(TAG, "RemoteException", e);
+        }
+        */
+        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
+        Integer idx = (Integer) v.getTag();
+        String post_id = a.getPostId(idx);
         if (likePosting.containsKey(post_id)) {
             return;
         }

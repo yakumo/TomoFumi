@@ -78,6 +78,65 @@ public class StreamListAdapter
         notifyDataSetChanged();
     }
 
+    private boolean likeViewUpdate(int position, View v)
+    {
+        if (((Integer) v.getTag()).intValue() == position) {
+            TextView likes = (TextView) v;
+            StreamListItem li = (StreamListItem) getItem(position);
+            int likeNum = li.like_count;
+            String likeFmt =
+                resources.getQuantityString(
+                    R.plurals.plural_like_format,
+                    likeNum);
+            likes.setText(String.format(likeFmt, likeNum));
+            likes.setCompoundDrawablesWithIntrinsicBounds(
+                ((li.like_posting)?
+                 R.drawable.like_press:
+                 ((li.like_posted)?
+                  R.drawable.like_light:
+                  R.drawable.like_dark)),
+                0, 0, 0);
+            return true;
+        }
+        return false;
+    }
+
+    public void likeUpdating(int position, View v)
+    {
+        StreamListItem li = (StreamListItem) getItem(position);
+        li.like_posting = true;
+        if (likeViewUpdate(position, v)) {
+            v.setEnabled(false);
+        }
+    }
+
+    public void likeRegisted(int position, View v)
+    {
+        StreamListItem li = (StreamListItem) getItem(position);
+        li.like_posting = false;
+        li.like_count++;
+        li.like_posted = true;
+        if (likeViewUpdate(position, v)) {
+            v.setEnabled(true);
+        }
+    }
+
+    public void likeUnregisted(int position, View v)
+    {
+        StreamListItem li = (StreamListItem) getItem(position);
+        li.like_posting = false;
+        li.like_count--;
+        li.like_posted = false;
+        if (likeViewUpdate(position, v)) {
+            v.setEnabled(true);
+        }
+    }
+
+    public String getPostId(int position)
+    {
+        return items.get(position).post_id;
+    }
+
     public int getCount()
     {
         return items.size();
@@ -261,7 +320,7 @@ public class StreamListAdapter
                             R.plurals.plural_like_format,
                             likeNum);
                     likes.setText(String.format(likeFmt, likeNum));
-                    likes.setTag(post_id);
+                    likes.setTag(new Integer(position));
                     likes.setVisibility(View.VISIBLE);
                     likes.setCompoundDrawablesWithIntrinsicBounds(
                         ((li.like_posting)?
