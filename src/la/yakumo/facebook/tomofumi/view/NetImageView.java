@@ -86,6 +86,8 @@ public class NetImageView
                         setImageResource(R.drawable.icon);
                     }
                 });
+
+                SQLiteDatabase wdb = db.getWritableDatabase();
                 try {
                     URL url = new URL(imgUri);
                     HttpURLConnection conn =
@@ -105,7 +107,7 @@ public class NetImageView
                     }
                     imageData = dst.toByteArray();
 
-                    SQLiteDatabase wdb = db.getWritableDatabase();
+                    wdb.beginTransaction();
                     ContentValues val = new ContentValues();
                     val.put("image_url", imgUri);
                     val.put("image_data", imageData);
@@ -114,8 +116,11 @@ public class NetImageView
                         null,
                         val,
                         SQLiteDatabase.CONFLICT_REPLACE);
+                    wdb.setTransactionSuccessful();
                 } catch (MalformedURLException e) {
                 } catch (IOException e) {
+                } finally {
+                    wdb.endTransaction();
                 }
             }
 

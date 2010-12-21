@@ -304,6 +304,13 @@ public class ClientService
         f.addAction(ACTION_LOGIN_SUCCESS);
         f.addAction(ACTION_LOGIN_FAIL);
         registerReceiver(loginStatusReceiver, f);
+        ImageDownloader.startDownloader(
+            this,
+            new ImageDownloader.OnDownloadCallback() {
+                public void downloaded(String url)
+                {
+                }
+            });
     }
 
     public void onDestroy()
