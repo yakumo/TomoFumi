@@ -49,11 +49,31 @@ public class CommentsUpdator
     private ArrayList<String> parseComment(
         SQLiteDatabase wdb,
         JSONArray comments,
-        JSONArray likes)
+        JSONArray likes,
+        JSONArray commentLikes)
     {
         ArrayList<String> ret = new ArrayList<String>();
         ContentValues val = new ContentValues();
         try {
+            HashMap<String,JSONArray> commentLikeData =
+                new HashMap<String,JSONArray>();
+            for (int i = 0 ; i < commentLikes.length() ; i++) {
+                JSONObject obj = commentLikes.getJSONObject(i);
+                Log.i(TAG, "comment like:"+obj);
+
+                val.clear();
+                try {
+                    String post_id = obj.getString("post_id");
+                    String user_id = obj.getString("user_id");
+                    if (!commentLikeData.containsKey(post_id)) {
+                        commentLikeData.put(post_id, new JSONArray());
+                    }
+                    JSONArray arr = commentLikeData.get(post_id);
+                    arr.put(user_id);
+                } catch (JSONException e) {
+                    Log.e(TAG, "JSONException", e);
+                }
+            }
             for (int i = 0 ; i < comments.length() ; i++) {
                 JSONObject obj = comments.getJSONObject(i);
                 Log.i(TAG, "comment:"+obj);
@@ -69,6 +89,14 @@ public class CommentsUpdator
                     val.put("like_count", 0);
                     val.put("time", obj.getLong("time"));
                     val.put("message", obj.getString("text"));
+                    JSONArray arr;
+                    if (commentLikeData.containsKey(itemId)) {
+                        arr = commentLikeData.get(itemId);
+                    }
+                    else {
+                        arr = new JSONArray();
+                    }
+                    val.put("likes", arr.toString());
                 } catch (JSONException e) {
                     Log.e(TAG, "JSONException", e);
                 }
@@ -164,7 +192,7 @@ public class CommentsUpdator
         try {
             ret = res.getJSONObject(idx).getJSONArray("fql_result_set");
         } catch (JSONException e) {
-            Log.e(TAG, "JSONException", e);
+            //Log.e(TAG, "JSONException", e);
             ret = new JSONArray();
         }
         return ret;
@@ -187,6 +215,7 @@ public class CommentsUpdator
             ",fromid"+
             ",time"+
             ",text"+
+            ",xid"+
             " FROM comment"+
             " WHERE post_id=\""+post_id+"\""+
             "";
@@ -197,6 +226,17 @@ public class CommentsUpdator
             " WHERE post_id=\""+post_id+"\""+
             "";
         String query3 =
+            "SELECT"+
+            " user_id"+
+            ",post_id"+
+            " FROM like"+
+            " WHERE "+
+            " post_id IN "+
+            "(SELECT"+
+            " id"+
+            " FROM #query1)"+
+            "";
+        String query4 =
             "SELECT"+
             " id"+
             ",name"+
@@ -213,8 +253,13 @@ public class CommentsUpdator
             "(SELECT"+
             " user_id"+
             " FROM #query2)"+
+            " OR"+
+            " id IN "+
+            "(SELECT"+
+            " user_id"+
+            " FROM #query3)"+
             "";
-        String query4 =
+        String query5 =
             "SELECT"+
             " uid"+
             ",profile_url"+
@@ -229,10 +274,15 @@ public class CommentsUpdator
             "(SELECT"+
             " user_id"+
             " FROM #query2)"+
+            " OR"+
+            " uid IN "+
+            "(SELECT"+
+            " user_id"+
+            " FROM #query3)"+
             "";
         String resp = "{}";
         try {
-            resp = fqlMultiQuery(query1, query2, query3, query4);
+            resp = fqlMultiQuery(query1, query2, query3, query4, query5);
         } catch (MalformedURLException e) {
             Log.e(TAG, "MalformedURLException", e);
         } catch (IOException e) {
@@ -249,8 +299,9 @@ public class CommentsUpdator
                     JSONArray q1 = getResult(resps, 1);
                     JSONArray q2 = getResult(resps, 2);
                     JSONArray q3 = getResult(resps, 3);
-                    commentIds = parseComment(wdb, q0, q1);
-                    parseUsers(wdb, q2, q3);
+                    JSONArray q4 = getResult(resps, 4);
+                    commentIds = parseComment(wdb, q0, q1, q2);
+                    parseUsers(wdb, q3, q4);
                 } catch (JSONException e) {
                     Log.e(TAG, "JSONException", e);
                 }
@@ -258,45 +309,6 @@ public class CommentsUpdator
             } finally {
                 wdb.endTransaction();
             }
-        }
-
-        HashMap<String,String> commentLikes = new HashMap<String,String>();
-        for (String id : commentIds) {
-            try {
-                String path = String.format("/%s/likes", id);
-                resp = facebook.request(path, "GET");
-                JSONObject likeTmp = new JSONObject();
-                JSONObject likes = new JSONObject(resp);
-                JSONArray data = likes.getJSONArray("data");
-                for (int i = 0 ; i < data.length() ; i++) {
-                    JSONObject obj = data.getJSONObject(i);
-                    try {
-                        likeTmp.put(
-                            obj.getString("id"),
-                            obj.getString("name"));
-                    } catch (JSONException e) {
-                    }
-                }
-                commentLikes.put(id, likeTmp.toString());
-            } catch (MalformedURLException e) {
-                Log.e(TAG, "MalformedURLException", e);
-            } catch (IOException e) {
-                Log.e(TAG, "IOException", e);
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException", e);
-            }
-        }
-        try {
-            ContentValues val = new ContentValues();
-            wdb.beginTransaction();
-            for (String key : commentLikes.keySet()) {
-                val.clear();
-                val.put("likes", commentLikes.get(key));
-                wdb.update("comments", val, "item_id=?", new String[] {key});
-            }
-            wdb.setTransactionSuccessful();
-        } finally {
-            wdb.endTransaction();
         }
 
         if (null != handler) {

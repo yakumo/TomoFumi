@@ -27,6 +27,7 @@ interface IClientService
     int toggleStreamLike(String post_id);
     int registStreamLike(String post_id);
     int unregistStreamLike(String post_id);
+    int toggleCommentLike(String post_id);
     int registCommentLike(String post_id);
     int unregistCommentLike(String post_id);
 }

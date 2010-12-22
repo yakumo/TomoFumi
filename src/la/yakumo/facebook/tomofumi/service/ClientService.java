@@ -78,7 +78,7 @@ public class ClientService
                 addStreamLike((String)msg.obj);
                 break;
             case MSG_ADD_COMMENT_LIKE:
-                addCommentLike((String)msg.obj);
+                addCommentLike((String)msg.obj, msg.arg1);
                 break;
             default:
                 break;
@@ -233,6 +233,19 @@ public class ClientService
                     msg.what = MSG_ADD_STREAM_LIKE;
                     msg.obj = new String(post_id);
                     msg.arg1 = 0;
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_ERROR;
+            }
+
+            public int toggleCommentLike(String post_id)
+            {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_COMMENT_LIKE;
+                    msg.obj = new String(post_id);
+                    msg.arg1 = -1;
                     handler.sendMessage(msg);
                     return RESULT_OK;
                 }
@@ -552,7 +565,6 @@ public class ClientService
     public void addStreamLike(final String post_id)
     {
         Log.i(TAG, "addStreamLike:"+post_id);
-        int mode = 0;
         new StatusLikeRegister(this, post_id)
             .execute(new ItemRegister.OnSendFinish() {
                 public void onStartSend(Bundle info)
@@ -567,8 +579,18 @@ public class ClientService
             });
     }
 
-    public void addCommentLike(String post_id)
+    public void addCommentLike(final String post_id, final int add_mode)
     {
         Log.i(TAG, "addCommentLike:"+post_id);
+        new CommentLikeRegister(this, post_id, add_mode)
+            .execute(new ItemRegister.OnSendFinish() {
+                public void onStartSend(Bundle info)
+                {
+                }
+
+                public void onSended(String reason, Bundle info)
+                {
+                }
+            });
     }
 }

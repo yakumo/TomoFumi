@@ -72,6 +72,10 @@ public class StreamItemActivity
             Log.i(TAG, "loggedIn:"+userID);
             StreamItemActivity.this.userId = userId;
 
+            CommentListAdapter ca = (CommentListAdapter)
+                commentListView.getAdapter();
+            ca.setUserId(userID);
+
             try {
                 service.unregisterLoginCallback(loginListener);
             } catch (RemoteException e) {
@@ -419,14 +423,12 @@ public class StreamItemActivity
     public void onClickLike(View v)
     {
         Log.i(TAG, "add like to comment:"+v.getTag());
-        /*
         try {
             if (null != service) {
-                service.addCommentLike((String) v.getTag());
+                service.toggleCommentLike((String) v.getTag());
             }
         } catch (RemoteException e) {
             Log.i(TAG, "RemoteException", e);
         }
-        */
     }
 }
