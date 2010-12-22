@@ -582,7 +582,11 @@ public class ClientService
     public void addCommentLike(final String post_id, final int add_mode)
     {
         Log.i(TAG, "addCommentLike:"+post_id);
-        new CommentLikeRegister(this, post_id, add_mode)
+        new CommentLikeRegister(
+            this,
+            post_id,
+            add_mode,
+            Facebook.getInstance(this).getUserID())
             .execute(new ItemRegister.OnSendFinish() {
                 public void onStartSend(Bundle info)
                 {
