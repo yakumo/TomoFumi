@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -451,24 +452,40 @@ public class ClientService
         Log.i(TAG, "addStream:"+text);
         new StatusRegister(this, text)
             .execute(new ItemRegister.OnSendFinish() {
-                public void onStartSend()
+                public void onStartSend(Bundle info)
                 {
                 }
 
-                public void onSended(String reason)
+                public void onSended(String reason, Bundle info)
                 {
                     addedStream(reason);
                 }
             });
     }
 
-    public void addedComment(String post_id, String text, String errMessage)
+    public void startAddComment(String post_id)
     {
         int numListener = commentListeners.beginBroadcast();
         for (int i = 0 ; i < numListener ; i++) {
             try {
-                commentListeners.getBroadcastItem(i).addedComment(
-                    post_id, errMessage);
+                commentListeners.getBroadcastItem(i).registerComment(post_id);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+        }
+        commentListeners.finishBroadcast();
+    }
+
+    public void addedComment(
+        String post_id,
+        String comment_post_id,
+        String errMessage)
+    {
+        int numListener = commentListeners.beginBroadcast();
+        for (int i = 0 ; i < numListener ; i++) {
+            try {
+                commentListeners.getBroadcastItem(i).registedComment(
+                    post_id, comment_post_id, errMessage);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -481,13 +498,17 @@ public class ClientService
         Log.i(TAG, "addComment:"+post_id+", "+text);
         new CommentRegister(this, post_id, text)
             .execute(new ItemRegister.OnSendFinish() {
-                public void onStartSend()
+                public void onStartSend(Bundle info)
                 {
+                    startAddComment(post_id);
                 }
 
-                public void onSended(String reason)
+                public void onSended(String reason, Bundle info)
                 {
-                    addedComment(post_id, text, reason);
+                    addedComment(
+                        post_id,
+                        info.getString("comment_post_id"),
+                        reason);
                 }
             });
     }
@@ -533,22 +554,15 @@ public class ClientService
         Log.i(TAG, "addStreamLike:"+post_id);
         int mode = 0;
         new StatusLikeRegister(this, post_id)
-            .execute(new StatusLikeRegister.OnLikeRegisterSendFinish() {
-                private int mode = 0;
-
-                public void onPosted(int mode)
+            .execute(new ItemRegister.OnSendFinish() {
+                public void onStartSend(Bundle info)
                 {
-                    this.mode = mode;
+                    startAddStreamLike(post_id, info.getInt("like_posted"));
                 }
 
-                public void onStartSend()
+                public void onSended(String reason, Bundle info)
                 {
-                    startAddStreamLike(post_id, mode);
-                }
-
-                public void onSended(String reason)
-                {
-                    addedStreamLike(post_id, reason, mode);
+                    addedStreamLike(post_id, reason, info.getInt("like_posted"));
                 }
             });
     }

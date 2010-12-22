@@ -29,6 +29,7 @@ public class StatusLikeRegister
     protected Integer doInBackground(OnSendFinish... params)
     {
         String errStr = null;
+        Bundle info = new Bundle();
 
         int like_count = 0;
         int like_posted = 0;
@@ -52,12 +53,9 @@ public class StatusLikeRegister
             like_posted = c.getInt(1);
             can_like = c.getInt(2);
         }
+        info.putInt("like_posted", like_posted == 0? 1: 0);
         for (OnSendFinish f : params) {
-            if (f instanceof OnLikeRegisterSendFinish) {
-                OnLikeRegisterSendFinish lf = (OnLikeRegisterSendFinish) f;
-                lf.onPosted(like_posted == 0? 1: 0);
-            }
-            f.onStartSend();
+            f.onStartSend(info);
         }
 
         try {
@@ -100,14 +98,8 @@ public class StatusLikeRegister
         }
 
         for (OnSendFinish f : params) {
-            f.onSended(errStr);
+            f.onSended(errStr, info);
         }
         return 0;
-    }
-
-    public static interface OnLikeRegisterSendFinish
-        extends OnSendFinish
-    {
-        public void onPosted(int mode);
     }
 }

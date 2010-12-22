@@ -93,6 +93,7 @@
        android:layout_height="wrap_content"
        android:layout_toLeftOf="@id/send_button"
        android:id="@+id/comment_text"
+       android:inputType="textMultiLine"
        />
   </RelativeLayout>
   <ListView

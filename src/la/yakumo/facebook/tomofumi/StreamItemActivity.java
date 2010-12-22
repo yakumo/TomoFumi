@@ -14,12 +14,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.text.Editable;
+import android.text.InputType;
 import android.text.Spannable;
+import android.text.method.KeyListener;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
@@ -92,39 +96,6 @@ public class StreamItemActivity
                         progress.dismiss();
                         progress = null;
 
-                        /*
-                        SQLiteDatabase rdb = db.getReadableDatabase();
-                        Cursor c =
-                            rdb.rawQuery(
-                                "SELECT *"+
-                                " FROM comments"+
-                                " LEFT JOIN user"+
-                                " ON comments.user_id=user._id"+
-                                " WHERE comments.post_id=?"+
-                                " ORDER BY"+
-                                " data_mode DESC"+
-                                ",time ASC"+
-                                ",name ASC"+
-                                "",
-                                new String[] {
-                                    postId
-                                });
-                        if (c.moveToFirst()) {
-                            do {
-                                Log.i(
-                                    TAG,
-                                    "post_id:"+
-                                    c.getString(c.getColumnIndex("post_id"))+
-                                    ", name:"+
-                                    c.getString(c.getColumnIndex("name"))+
-                                    ", message:"+
-                                    c.getString(c.getColumnIndex("message"))+
-                                    ", pic_square:"+
-                                    c.getString(c.getColumnIndex("pic_square")));
-                            } while (c.moveToNext());
-                        }
-                        */
-
                         CommentListAdapter ca = (CommentListAdapter)
                             commentListView.getAdapter();
                         ca.reloadData(postId);
@@ -133,8 +104,27 @@ public class StreamItemActivity
             }
         }
 
-        public void addedComment(String post_id, String errorMessage)
+        public void registerComment(
+            String post_id)
         {
+            Log.i(TAG, "registerComment:"+post_id);
+        }
+
+        public void registedComment(
+            String post_id,
+            String comment_post_id,
+            String errMsg)
+        {
+            Log.i(TAG, "registedComment:"+post_id+","+comment_post_id);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) findViewById(R.id.comment_text);
+                    if (null != tv) {
+                        tv.setText("");
+                    }
+                }
+            });
         }
     };
 
@@ -163,6 +153,58 @@ public class StreamItemActivity
 
         resources = getResources();
         setContentView(R.layout.stream_item_comment);
+
+        TextView tv = (TextView) findViewById(R.id.comment_text);
+        if (null != tv) {
+            tv.setKeyListener(new KeyListener() {
+                public void clearMetaKeyState(
+                    View view,
+                    Editable content,
+                    int states)
+                {
+                }
+
+                public boolean onKeyDown(
+                    View view,
+                    Editable text,
+                    int keyCode,
+                    KeyEvent event)
+                {
+                    return false;
+                }
+
+                public boolean onKeyOther(
+                    View view,
+                    Editable text,
+                    KeyEvent event)
+                {
+                    return false;
+                }
+
+                public boolean onKeyUp(
+                    View view,
+                    Editable text,
+                    int keyCode,
+                    KeyEvent event)
+                {
+                    switch (keyCode) {
+                    case KeyEvent.KEYCODE_ENTER:
+                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                        onClickSendComment(view);
+                        return false;
+                    default:
+                        break;
+                    }
+
+                    return false;
+                }
+
+                public int getInputType()
+                {
+                    return InputType.TYPE_CLASS_TEXT;
+                }
+            });
+        }
 
         messageSpan =
             new TextAppearanceSpan(
@@ -314,22 +356,6 @@ public class StreamItemActivity
             }
         }
 
-        /*
-        c = rdb.rawQuery(
-                "SELECT *"+
-                " FROM comments"+
-                " LEFT JOIN user"+
-                " ON comments.user_id=user._id"+
-                " WHERE comments.post_id=?"+
-                " ORDER BY"+
-                " data_mode DESC"+
-                ",time ASC"+
-                ",name ASC"+
-                "",
-                new String[] {
-                    postId
-                });
-        */
         commentListView = (ListView) findViewById(R.id.comment_list);
         commentListView.setAdapter(new CommentListAdapter(this));
 

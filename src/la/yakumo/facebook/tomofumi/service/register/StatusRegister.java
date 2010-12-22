@@ -21,6 +21,7 @@ public class StatusRegister
     protected Integer doInBackground(OnSendFinish... params)
     {
         String errStr = null;
+        Bundle info = new Bundle();
 
         try {
             Bundle b = new Bundle();
@@ -37,7 +38,7 @@ public class StatusRegister
         }
 
         for (OnSendFinish f : params) {
-            f.onSended(errStr);
+            f.onSended(errStr, info);
         }
         return 0;
     }
