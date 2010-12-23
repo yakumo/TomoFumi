@@ -76,12 +76,19 @@ public class CommentLikeRegister
 
         try {
             Bundle b = new Bundle();
-            String path = post_id+"/likes";
+            String path = "/"+post_id+"/likes";
             String ret = facebook.request(
                 path,
                 b,
                 (add_mode == 0)? "DELETE": "POST");
             Log.i(TAG, "regist result:"+ret);
+
+            b = new Bundle();
+            ret = facebook.request(
+                "/"+post_id+"/likes",
+                b,
+                "GET");
+            Log.i(TAG, "likes result:"+ret);
         } catch (MalformedURLException e) {
             Log.i(TAG, "MalformedURLException", e);
             errStr = e.getMessage();

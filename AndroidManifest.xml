@@ -36,6 +36,9 @@
        android:configChanges="keyboard|orientation|keyboardHidden"
        android:windowSoftInputMode="stateHidden|adjustResize"
        >
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+      </intent-filter>
     </activity>
 
     <activity

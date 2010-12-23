@@ -215,7 +215,7 @@ public class CommentsUpdator
             ",fromid"+
             ",time"+
             ",text"+
-            ",xid"+
+            ",likes"+
             " FROM comment"+
             " WHERE post_id=\""+post_id+"\""+
             "";
@@ -227,8 +227,9 @@ public class CommentsUpdator
             "";
         String query3 =
             "SELECT"+
-            " user_id"+
+            " object_id"+
             ",post_id"+
+            ",user_id"+
             " FROM like"+
             " WHERE "+
             " post_id IN "+
@@ -309,6 +310,41 @@ public class CommentsUpdator
             } finally {
                 wdb.endTransaction();
             }
+        }
+
+        int len = commentIds.size();
+        String[] queries = new String[len];
+        for (int i = 0 ; i < len ; i++) {
+            queries[i] =
+                "SELECT"+
+                " post_id"+
+                ",user_id"+
+                " FROM like"+
+                " WHERE "+
+                " post_id=\""+commentIds.get(i)+"\""+
+                "";
+        }
+        try {
+            resp = fqlMultiQuery(queries);
+            try {
+                JSONArray resps = new JSONArray(resp);
+                for (int j = 0 ; j < resps.length() ; j++) {
+                    JSONObject res = resps.getJSONObject(j);
+                    try {
+                        JSONArray resArr = res.getJSONArray("fql_result_set");
+                        for (int i = 0 ; i < resArr.length() ; i++) {
+                            Log.i(TAG, "res"+j+"-"+i+":"+resArr.getJSONObject(i));
+                        }
+                    } catch (JSONException e) {
+                    }
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, "JSONException", e);
+            }
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "MalformedURLException", e);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException", e);
         }
 
         if (null != handler) {
