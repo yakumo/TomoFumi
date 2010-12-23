@@ -37,10 +37,6 @@ public class CommentLikeRegister
         String errStr = null;
         Bundle info = new Bundle();
 
-        for (OnSendFinish f : params) {
-            f.onStartSend(info);
-        }
-
         if (add_mode == -1) {
             add_mode = 1;
             SQLiteDatabase rdb = db.getReadableDatabase();
@@ -71,6 +67,11 @@ public class CommentLikeRegister
                     add_mode = 1;
                 }
             }
+        }
+
+        info.putInt("like_posted", add_mode);
+        for (OnSendFinish f : params) {
+            f.onStartSend(info);
         }
 
         try {

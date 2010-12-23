@@ -63,6 +63,67 @@ public class CommentListAdapter
                 R.style.StreamMessageUser);
     }
 
+    private boolean likeViewUpdate(int position, View v)
+    {
+        if (((Integer) v.getTag()).intValue() == position) {
+            TextView likes = (TextView) v;
+            CommentItem ci = (CommentItem) getItem(position);
+            String tmp = "[";
+            String sep = "";
+            for (String i : ci.like_users) {
+                tmp = tmp + sep + i;
+                sep = ",";
+            }
+            tmp = tmp + "]";
+            Log.i(TAG, "comment likes:"+tmp);
+            int likeNum = ci.like_users.size();
+            String likeFmt =
+                resources.getQuantityString(
+                    R.plurals.plural_like_format,
+                    likeNum);
+            likes.setText(String.format(likeFmt, likeNum));
+            likes.setVisibility(View.VISIBLE);
+            likes.setCompoundDrawablesWithIntrinsicBounds(
+                ((ci.like_press)?
+                 R.drawable.like_press:
+                 ((ci.like_users.contains(user_id))?
+                  R.drawable.like_light:
+                  R.drawable.like_dark)),
+                0, 0, 0);
+            return true;
+        }
+        return false;
+    }
+
+    public void likeUpdating(int position, View v)
+    {
+        CommentItem ci = (CommentItem) getItem(position);
+        ci.like_press = true;
+        if (likeViewUpdate(position, v)) {
+            v.setEnabled(false);
+        }
+    }
+
+    public void likeRegisted(int position, View v)
+    {
+        CommentItem ci = (CommentItem) getItem(position);
+        ci.like_press = false;
+        ci.like_users.add(user_id);
+        if (likeViewUpdate(position, v)) {
+            v.setEnabled(true);
+        }
+    }
+
+    public void likeUnregisted(int position, View v)
+    {
+        CommentItem ci = (CommentItem) getItem(position);
+        ci.like_press = false;
+        ci.like_users.remove(user_id);
+        if (likeViewUpdate(position, v)) {
+            v.setEnabled(true);
+        }
+    }
+
     public void setUserId(String user_id)
     {
         this.user_id = user_id;
@@ -153,7 +214,7 @@ public class CommentListAdapter
             String commentId = ci.post_id;
             if (COMMENTMODE_COMMENT == ci.data_mode) {
                 TextView likes = (TextView) ret.findViewById(R.id.likes);
-                likes.setTag(commentId);
+                likes.setTag(position);
                 int likeNum = ci.like_users.size();
                 String likeFmt =
                     resources.getQuantityString(
@@ -162,7 +223,7 @@ public class CommentListAdapter
                 likes.setText(String.format(likeFmt, likeNum));
                 likes.setVisibility(View.VISIBLE);
                 likes.setCompoundDrawablesWithIntrinsicBounds(
-                    ((likePressed.containsKey(commentId))?
+                    ((ci.like_press)?
                      R.drawable.like_press:
                      ((ci.like_users.contains(user_id))?
                       R.drawable.like_light:
@@ -202,7 +263,7 @@ public class CommentListAdapter
         return ret;
     }
 
-    class CommentItem
+    public class CommentItem
     {
         public String post_id;
         public int data_mode;
@@ -215,6 +276,7 @@ public class CommentListAdapter
         public String username;
         public String profile_url;
         public byte[] pic_data;
+        public boolean like_press;
 
         public CommentItem(Cursor c)
         {
@@ -229,11 +291,13 @@ public class CommentListAdapter
             profile_url = c.getString(c.getColumnIndex("profile_url"));
             pic_data = c.getBlob(c.getColumnIndex("pic_data"));
 
+            like_press = false;
+
             like_users = new ArrayList<String>();
             String lu = c.getString(c.getColumnIndex("likes"));
             if (null != lu) {
                 try {
-                    Log.i(TAG, "likes:"+lu);
+                    Log.i(TAG, "comment likes:"+lu);
                     JSONArray a = new JSONArray(lu);
                     for (int i = 0 ; i < a.length() ; i++) {
                         like_users.add(a.getString(i));

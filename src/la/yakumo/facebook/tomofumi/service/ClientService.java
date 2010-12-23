@@ -327,28 +327,32 @@ public class ClientService
     private void sendLoggedIn(int sessionID)
     {
         String uid = Facebook.getInstance(this).getUserID();
-        int numListener = loginListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                loginListeners.getBroadcastItem(i).loggedIn(uid);
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
+        synchronized (loginListeners) {
+            int numListener = loginListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    loginListeners.getBroadcastItem(i).loggedIn(uid);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
+                }
             }
+            loginListeners.finishBroadcast();
         }
-        loginListeners.finishBroadcast();
     }
 
     private void sendLoginFail(int sessionID, String reason)
     {
-        int numListener = loginListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                loginListeners.getBroadcastItem(i).loginFailed(reason);
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
+        synchronized (loginListeners) {
+            int numListener = loginListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    loginListeners.getBroadcastItem(i).loginFailed(reason);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
+                }
             }
+            loginListeners.finishBroadcast();
         }
-        loginListeners.finishBroadcast();
     }
 
     public void login(int sessionID)
@@ -386,16 +390,17 @@ public class ClientService
                     public void run()
                     {
                         Log.i(TAG, "finish update stream");
-                        int numListener = streamListeners.beginBroadcast();
-                        for (int i = 0 ; i < numListener ; i++) {
-                            try {
-                                streamListeners.getBroadcastItem(i).updatedStream(
-                                    null);
-                            } catch (RemoteException e) {
-                                Log.e(TAG, "RemoteException", e);
+                        synchronized (streamListeners) {
+                            int numListener = streamListeners.beginBroadcast();
+                            for (int i = 0 ; i < numListener ; i++) {
+                                try {
+                                    streamListeners.getBroadcastItem(i).updatedStream(null);
+                                } catch (RemoteException e) {
+                                    Log.e(TAG, "RemoteException", e);
+                                }
                             }
+                            streamListeners.finishBroadcast();
                         }
-                        streamListeners.finishBroadcast();
                     }
                 });
     }
@@ -429,16 +434,18 @@ public class ClientService
                     public void run()
                     {
                         Log.i(TAG, "finish update comment");
-                        int numListener = commentListeners.beginBroadcast();
-                        for (int i = 0 ; i < numListener ; i++) {
-                            try {
-                                commentListeners.getBroadcastItem(i).updatedComment(
-                                    post_id, null);
-                            } catch (RemoteException e) {
-                                Log.e(TAG, "RemoteException", e);
+                        synchronized (commentListeners) {
+                            int numListener = commentListeners.beginBroadcast();
+                            for (int i = 0 ; i < numListener ; i++) {
+                                try {
+                                    commentListeners.getBroadcastItem(i).updatedComment(
+                                        post_id, null);
+                                } catch (RemoteException e) {
+                                    Log.e(TAG, "RemoteException", e);
+                                }
                             }
+                            commentListeners.finishBroadcast();
                         }
-                        commentListeners.finishBroadcast();
                     }
                 });
     }
@@ -449,15 +456,17 @@ public class ClientService
 
     private void addedStream(String errMessage)
     {
-        int numListener = streamListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                streamListeners.getBroadcastItem(i).addedStream(errMessage);
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
+        synchronized (streamListeners) {
+            int numListener = streamListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    streamListeners.getBroadcastItem(i).addedStream(errMessage);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
+                }
             }
+            streamListeners.finishBroadcast();
         }
-        streamListeners.finishBroadcast();
     }
 
     public void addStream(String text)
@@ -478,15 +487,17 @@ public class ClientService
 
     public void startAddComment(String post_id)
     {
-        int numListener = commentListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                commentListeners.getBroadcastItem(i).registerComment(post_id);
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
+        synchronized (commentListeners) {
+            int numListener = commentListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    commentListeners.getBroadcastItem(i).registerComment(post_id);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
+                }
             }
+            commentListeners.finishBroadcast();
         }
-        commentListeners.finishBroadcast();
     }
 
     public void addedComment(
@@ -494,16 +505,18 @@ public class ClientService
         String comment_post_id,
         String errMessage)
     {
-        int numListener = commentListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                commentListeners.getBroadcastItem(i).registedComment(
-                    post_id, comment_post_id, errMessage);
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
+        synchronized (commentListeners) {
+            int numListener = commentListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    commentListeners.getBroadcastItem(i).registedComment(
+                        post_id, comment_post_id, errMessage);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
+                }
             }
+            commentListeners.finishBroadcast();
         }
-        commentListeners.finishBroadcast();
     }
 
     public void addComment(final String post_id, final String text)
@@ -528,38 +541,42 @@ public class ClientService
 
     private void startAddStreamLike(String post_id, int mode)
     {
-        int numListener = likeListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                if (0 == mode) {
-                    likeListeners.getBroadcastItem(i).unregisterLike(post_id);
+        synchronized (likeListeners) {
+            int numListener = likeListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    if (0 == mode) {
+                        likeListeners.getBroadcastItem(i).unregisterLike(post_id);
+                    }
+                    else {
+                        likeListeners.getBroadcastItem(i).registerLike(post_id);
+                    }
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
                 }
-                else {
-                    likeListeners.getBroadcastItem(i).registerLike(post_id);
-                }
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
             }
+            likeListeners.finishBroadcast();
         }
-        likeListeners.finishBroadcast();
     }
 
     private void addedStreamLike(String post_id, String errMessage, int mode)
     {
-        int numListener = likeListeners.beginBroadcast();
-        for (int i = 0 ; i < numListener ; i++) {
-            try {
-                if (0 == mode) {
-                    likeListeners.getBroadcastItem(i).unregistedLike(post_id);
+        synchronized (likeListeners) {
+            int numListener = likeListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    if (0 == mode) {
+                        likeListeners.getBroadcastItem(i).unregistedLike(post_id);
+                    }
+                    else {
+                        likeListeners.getBroadcastItem(i).registedLike(post_id);
+                    }
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
                 }
-                else {
-                    likeListeners.getBroadcastItem(i).registedLike(post_id);
-                }
-            } catch (RemoteException e) {
-                Log.e(TAG, "RemoteException", e);
             }
+            likeListeners.finishBroadcast();
         }
-        likeListeners.finishBroadcast();
     }
 
     public void addStreamLike(final String post_id)
@@ -590,10 +607,12 @@ public class ClientService
             .execute(new ItemRegister.OnSendFinish() {
                 public void onStartSend(Bundle info)
                 {
+                    startAddStreamLike(post_id, info.getInt("like_posted"));
                 }
 
                 public void onSended(String reason, Bundle info)
                 {
+                    addedStreamLike(post_id, reason, info.getInt("like_posted"));
                 }
             });
     }

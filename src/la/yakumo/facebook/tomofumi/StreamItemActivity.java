@@ -58,7 +58,7 @@ public class StreamItemActivity
     private Resources resources;
     private ListView commentListView;
     private Database db;
-    private HashMap<String,View> likePressed = new HashMap<String,View>();
+    private HashMap<String,View> likePosting = new HashMap<String,View>();
     private Spannable.Factory factory = Spannable.Factory.getInstance();
     private TextAppearanceSpan messageSpan;
     private TextAppearanceSpan usernameSpan;
@@ -70,7 +70,7 @@ public class StreamItemActivity
         public void loggedIn(String userID)
         {
             Log.i(TAG, "loggedIn:"+userID);
-            StreamItemActivity.this.userId = userId;
+            StreamItemActivity.this.userId = userID;
 
             CommentListAdapter ca = (CommentListAdapter)
                 commentListView.getAdapter();
@@ -132,6 +132,74 @@ public class StreamItemActivity
         }
     };
 
+    private ILikeCallback likeListener = new ILikeCallback.Stub() {
+        public void registerLike(final String post_id)
+        {
+            Log.i(TAG, "registerLike:"+post_id);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    final TextView tv = (TextView) likePosting.get(post_id);
+                    CommentListAdapter a =
+                        (CommentListAdapter)commentListView.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeUpdating(((Integer)tv.getTag()).intValue(), tv);
+                    }
+                }
+            });
+        }
+
+        public void registedLike(final String post_id)
+        {
+            Log.i(TAG, "registedLike:"+post_id);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) likePosting.get(post_id);
+                    CommentListAdapter a =
+                        (CommentListAdapter)commentListView.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeRegisted(((Integer)tv.getTag()).intValue(), tv);
+                    }
+                    likePosting.remove(post_id);
+                }
+            });
+        }
+
+        public void unregisterLike(final String post_id)
+        {
+            Log.i(TAG, "unregisterLike:"+post_id);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) likePosting.get(post_id);
+                    CommentListAdapter a =
+                        (CommentListAdapter)commentListView.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeUpdating(((Integer)tv.getTag()).intValue(), tv);
+                    }
+                }
+            });
+        }
+
+        public void unregistedLike(final String post_id)
+        {
+            Log.i(TAG, "unregistedLike:"+post_id);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    TextView tv = (TextView) likePosting.get(post_id);
+                    CommentListAdapter a =
+                        (CommentListAdapter)commentListView.getAdapter();
+                    if (null != tv && null != tv.getTag()) {
+                        a.likeUnregisted(((Integer)tv.getTag()).intValue(), tv);
+                    }
+                    likePosting.remove(post_id);
+                }
+            });
+        }
+    };
+
     private ServiceConnection conn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder binder)
         {
@@ -139,6 +207,7 @@ public class StreamItemActivity
             try {
                 service.registerLoginCallback(loginListener);
                 service.registerCommentCallback(commentListener);
+                service.registerLikeCallback(likeListener);
                 service.login(Constants.SESSION_UPDATE_COMMENTS);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
@@ -160,6 +229,7 @@ public class StreamItemActivity
 
         TextView tv = (TextView) findViewById(R.id.comment_text);
         if (null != tv) {
+            /*
             tv.setKeyListener(new KeyListener() {
                 public void clearMetaKeyState(
                     View view,
@@ -208,6 +278,7 @@ public class StreamItemActivity
                     return InputType.TYPE_CLASS_TEXT;
                 }
             });
+            */
         }
 
         messageSpan =
@@ -399,6 +470,7 @@ public class StreamItemActivity
             if (null != service) {
                 service.unregisterLoginCallback(loginListener);
                 service.unregisterCommentCallback(commentListener);
+                service.unregisterLikeCallback(likeListener);
                 unbindService(conn);
             }
         } catch (RemoteException e) {
@@ -423,9 +495,25 @@ public class StreamItemActivity
     public void onClickLike(View v)
     {
         Log.i(TAG, "add like to comment:"+v.getTag());
+        if (null == v.getTag()) {
+            return;
+        }
+
+        CommentListAdapter a =
+            (CommentListAdapter)commentListView.getAdapter();
+        CommentListAdapter.CommentItem ci =
+            (CommentListAdapter.CommentItem) a.getItem(
+                ((Integer)v.getTag()).intValue());
+        String post_id = ci.post_id;
+        likePosting.put(post_id, v);
         try {
             if (null != service) {
-                service.toggleCommentLike((String) v.getTag());
+                if (ci.like_users.contains(userId)) {
+                    service.unregistCommentLike(post_id);
+                }
+                else {
+                    service.registCommentLike(post_id);
+                }
             }
         } catch (RemoteException e) {
             Log.i(TAG, "RemoteException", e);
