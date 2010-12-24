@@ -398,7 +398,7 @@ public class StreamDataView
             else {
                 likesView.setEnabled(true);
             }
-            if (listItem.comment_can_post) {
+            if (listItem.can_like) {
                 int likeNum = listItem.like_count;
                 String likeFmt =
                     resources.getQuantityString(
