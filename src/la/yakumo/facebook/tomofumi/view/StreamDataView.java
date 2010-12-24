@@ -253,6 +253,13 @@ public class StreamDataView
         privateInit(context);
     }
 
+    public void hideComments()
+    {
+        if (null != commentsView) {
+            commentsView.setVisibility(View.GONE);
+        }
+    }
+
     public void put(Database.StreamListItem li)
     {
         listItem = li;

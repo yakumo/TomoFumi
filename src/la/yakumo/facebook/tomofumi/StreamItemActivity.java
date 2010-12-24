@@ -39,6 +39,7 @@ import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.callback.*;
 import la.yakumo.facebook.tomofumi.view.NetImageView;
+import la.yakumo.facebook.tomofumi.view.StreamDataView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -306,6 +307,12 @@ public class StreamItemActivity
         }
 
         db = new Database(this);
+        Database.StreamListItem listItem = db.getStreamListItem(postId);
+        StreamDataView dv = (StreamDataView) findViewById(R.id.message_base);
+        dv.put(listItem);
+        dv.hideComments();
+
+        /*
         SQLiteDatabase rdb = db.getReadableDatabase();
 
         Cursor c =
@@ -430,6 +437,7 @@ public class StreamItemActivity
                 }
             }
         }
+        */
 
         commentListView = (ListView) findViewById(R.id.comment_list);
         commentListView.setAdapter(new CommentListAdapter(this));

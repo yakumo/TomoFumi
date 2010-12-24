@@ -33,6 +33,68 @@ public class Database
     {
     }
 
+    public StreamListItem getStreamListItem(String post_id)
+    {
+        StreamListItem li = new StreamListItem();
+        li.post_id = post_id;
+
+        SQLiteDatabase rdb = getReadableDatabase();
+        Cursor c =
+            rdb.rawQuery(
+                "SELECT *, stream._id as post_id"+
+                " FROM stream"+
+                " LEFT JOIN user"+
+                " ON stream.actor_id=user._id"+
+                " WHERE stream._id=?"+
+                "",
+                new String[] {post_id});
+        if (c.moveToFirst()) {
+            int idx_post_id = c.getColumnIndex("post_id");
+            int idx_created_time = c.getColumnIndex("created_time");
+            int idx_message = c.getColumnIndex("message");
+            int idx_description = c.getColumnIndex("description");
+            int idx_attachment_name = c.getColumnIndex("attachment_name");
+            int idx_attachment_caption = c.getColumnIndex("attachment_caption");
+            int idx_attachment_link = c.getColumnIndex("attachment_link");
+            int idx_attachment_image = c.getColumnIndex("attachment_image");
+            int idx_attachment_icon = c.getColumnIndex("attachment_icon");
+            int idx_comment_count = c.getColumnIndex("comment_count");
+            int idx_comment_can_post = c.getColumnIndex("comment_can_post");
+            int idx_like_count = c.getColumnIndex("like_count");
+            int idx_like_posted = c.getColumnIndex("like_posted");
+            int idx_can_like = c.getColumnIndex("can_like");
+            int idx_updated = c.getColumnIndex("updated");
+            int idx_name = c.getColumnIndex("name");
+            int idx_pic_square = c.getColumnIndex("pic_square");
+            int idx_username = c.getColumnIndex("username");
+            int idx_profile_url = c.getColumnIndex("profile_url");
+            int idx_pic_data = c.getColumnIndex("pic_data");
+            li.post_id = c.getString(idx_post_id);
+            li.created_time = c.getLong(idx_created_time);
+            li.message = c.getString(idx_message);
+            li.description = c.getString(idx_description);
+            li.attachment_name = c.getString(idx_attachment_name);
+            li.attachment_caption = c.getString(idx_attachment_caption);
+            li.attachment_link = c.getString(idx_attachment_link);
+            li.attachment_image = c.getString(idx_attachment_image);
+            li.attachment_icon = c.getString(idx_attachment_icon);
+            li.comment_count = c.getInt(idx_comment_count);
+            li.comment_can_post = (c.getInt(idx_comment_can_post) != 0);
+            li.like_count = c.getInt(idx_like_count);
+            li.like_posted = (c.getInt(idx_like_posted) != 0);
+            li.can_like = (c.getInt(idx_can_like) != 0);
+            li.like_posting = false;
+            li.updated = (c.getInt(idx_updated) != 0);
+            li.name = c.getString(idx_name);
+            li.pic_square = c.getString(idx_pic_square);
+            li.username = c.getString(idx_username);
+            li.profile_url = c.getString(idx_profile_url);
+            li.pic_data = c.getBlob(idx_pic_data);
+        }
+
+        return li;
+    }
+
     public StreamListItem[] getStreamListItems()
     {
         ArrayList<StreamListItem> items = new ArrayList<StreamListItem>();

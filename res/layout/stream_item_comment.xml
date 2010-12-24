@@ -4,7 +4,7 @@
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
    >
-  <LinearLayout
+  <la.yakumo.facebook.tomofumi.view.StreamDataView
      android:orientation="horizontal"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
@@ -12,71 +12,11 @@
      android:minHeight="@dimen/stream_comment_commentarea_height"
      android:id="@+id/message_base"
      >
-    <LinearLayout
-       android:orientation="vertical"
-       android:layout_width="wrap_content"
-       android:layout_height="fill_parent"
-       android:padding="4dp"
-       >
-      <FrameLayout
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:id="@+id/image_base"
-         android:padding="1px"
-         android:background="@color/stream_image_frame_color"
-         >
-        <FrameLayout
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:padding="3dp"
-           android:background="#fff"
-           >
-          <la.yakumo.facebook.tomofumi.view.NetImageView
-             android:layout_width="@dimen/stream_image_width"
-             android:layout_height="@dimen/stream_image_width"
-             android:scaleType="fitXY"
-             android:id="@+id/stream_icon"
-             />
-        </FrameLayout>
-      </FrameLayout>
-    </LinearLayout>
-    <LinearLayout
-       android:orientation="vertical"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       >
-      <TextView
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:id="@+id/message"
-         style="@style/StreamMessage"/>
-      <LinearLayout
-         android:orientation="horizontal"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:id="@+id/summary_base"
-         >
-        <la.yakumo.facebook.tomofumi.view.NetImageView
-           android:layout_width="@dimen/stream_image_width"
-           android:layout_height="wrap_content"
-           android:id="@+id/summary_icon"
-           />
-        <TextView
-           android:layout_width="fill_parent"
-           android:layout_height="wrap_content"
-           android:id="@+id/summary"
-           style="@style/StreamSummary"/>
-      </LinearLayout>
-      <TextView
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:id="@+id/description"
-         style="@style/StreamDescription"/>
-    </LinearLayout>
-  </LinearLayout>
+  </la.yakumo.facebook.tomofumi.view.StreamDataView>
   <RelativeLayout
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
+     android:layout_gravity="bottom"
      android:layout_alignParentBottom="true"
      android:id="@+id/input_base"
      >
@@ -96,13 +36,22 @@
        android:inputType="textMultiLine"
        />
   </RelativeLayout>
-  <ListView
+  <FrameLayout
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
      android:layout_below="@id/message_base"
      android:layout_above="@+id/input_base"
-     android:id="@+id/comment_list"
-     android:footerDividersEnabled="true"
-     android:headerDividersEnabled="true"
-     />
+     android:paddingTop="1px"
+     android:paddingBottom="1px"
+     android:background="@color/list_fading_color"
+     >
+    <la.yakumo.facebook.tomofumi.view.CommonListView
+       android:layout_width="fill_parent"
+       android:layout_height="fill_parent"
+       android:id="@+id/comment_list"
+       android:footerDividersEnabled="true"
+       android:headerDividersEnabled="true"
+       android:background="#fff"
+       />
+  </FrameLayout>
 </RelativeLayout>

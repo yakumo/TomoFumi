@@ -107,76 +107,6 @@ public class StreamListActivity extends Activity
         }
     };
 
-    /*
-    private ILikeCallback likeListener = new ILikeCallback.Stub() {
-        public void registerLike(final String post_id)
-        {
-            Log.i(TAG, "registerLike:"+post_id);
-            handler.post(new Runnable() {
-                public void run()
-                {
-                    final TextView tv = (TextView) likePosting.get(post_id);
-                    StreamListAdapter a =
-                        (StreamListAdapter)streamList.getAdapter();
-                    if (null != tv && null != tv.getTag()) {
-                        a.likeUpdating(((Integer)tv.getTag()).intValue(), tv);
-                    }
-                }
-            });
-        }
-
-        public void registedLike(final String post_id)
-        {
-            Log.i(TAG, "registedLike:"+post_id);
-            handler.post(new Runnable() {
-                public void run()
-                {
-                    TextView tv = (TextView) likePosting.get(post_id);
-                    StreamListAdapter a =
-                        (StreamListAdapter)streamList.getAdapter();
-                    if (null != tv && null != tv.getTag()) {
-                        a.likeRegisted(((Integer)tv.getTag()).intValue(), tv);
-                    }
-                    likePosting.remove(post_id);
-                }
-            });
-        }
-
-        public void unregisterLike(final String post_id)
-        {
-            Log.i(TAG, "unregisterLike:"+post_id);
-            handler.post(new Runnable() {
-                public void run()
-                {
-                    TextView tv = (TextView) likePosting.get(post_id);
-                    StreamListAdapter a =
-                        (StreamListAdapter)streamList.getAdapter();
-                    if (null != tv && null != tv.getTag()) {
-                        a.likeUpdating(((Integer)tv.getTag()).intValue(), tv);
-                    }
-                }
-            });
-        }
-
-        public void unregistedLike(final String post_id)
-        {
-            Log.i(TAG, "unregistedLike:"+post_id);
-            handler.post(new Runnable() {
-                public void run()
-                {
-                    TextView tv = (TextView) likePosting.get(post_id);
-                    StreamListAdapter a =
-                        (StreamListAdapter)streamList.getAdapter();
-                    if (null != tv && null != tv.getTag()) {
-                        a.likeUnregisted(((Integer)tv.getTag()).intValue(), tv);
-                    }
-                    likePosting.remove(post_id);
-                }
-            });
-        }
-    };
-    */
-
     private ServiceConnection conn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder binder)
         {
@@ -184,7 +114,6 @@ public class StreamListActivity extends Activity
             try {
                 service.registerLoginCallback(loginListener);
                 service.registerStreamCallback(streamListener);
-                //service.registerLikeCallback(likeListener);
                 service.login(Constants.SESSION_STREAM_LIST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
@@ -214,19 +143,6 @@ public class StreamListActivity extends Activity
             wdb.endTransaction();
         }
 
-        /*
-        SQLiteDatabase rdb = db.getReadableDatabase();
-        Cursor c =
-            rdb.rawQuery(
-                "SELECT *, stream._id as post_id"+
-                " FROM stream"+
-                " LEFT JOIN user"+
-                " ON stream.actor_id=user._id"+
-                " ORDER BY created_time DESC"+
-                " LIMIT 400"+
-                "",
-                null);
-        */
         streamList = (ListView) findViewById(R.id.stream_list);
         streamList.setAdapter(new StreamListAdapter(this));
 
@@ -253,51 +169,12 @@ public class StreamListActivity extends Activity
             if (null != service) {
                 service.unregisterLoginCallback(loginListener);
                 service.unregisterStreamCallback(streamListener);
-                //service.unregisterLikeCallback(likeListener);
                 unbindService(conn);
             }
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
         }
     }
-
-    /*
-    public void onClickComment(View v)
-    {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setClass(this, StreamItemActivity.class);
-        intent.putExtra("post_id", (String)v.getTag());
-        startActivity(intent);
-    }
-
-    public void onClickLike(View v)
-    {
-        /*
-        String post_id = (String) v.getTag();
-        if (likePosting.containsKey(post_id)) {
-            return;
-        }
-        try {
-            likePosting.put(post_id, v);
-            service.toggleStreamLike(post_id);
-        } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException", e);
-        }
-        * /
-        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
-        Integer idx = (Integer) v.getTag();
-        String post_id = a.getPostId(idx);
-        if (likePosting.containsKey(post_id)) {
-            return;
-        }
-        try {
-            likePosting.put(post_id, v);
-            service.toggleStreamLike(post_id);
-        } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException", e);
-        }
-    }
-    */
 
     public boolean onCreateOptionsMenu(Menu menu)
     {
