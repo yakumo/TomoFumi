@@ -107,6 +107,7 @@ public class StreamListActivity extends Activity
         }
     };
 
+    /*
     private ILikeCallback likeListener = new ILikeCallback.Stub() {
         public void registerLike(final String post_id)
         {
@@ -174,6 +175,7 @@ public class StreamListActivity extends Activity
             });
         }
     };
+    */
 
     private ServiceConnection conn = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder binder)
@@ -182,7 +184,7 @@ public class StreamListActivity extends Activity
             try {
                 service.registerLoginCallback(loginListener);
                 service.registerStreamCallback(streamListener);
-                service.registerLikeCallback(likeListener);
+                //service.registerLikeCallback(likeListener);
                 service.login(Constants.SESSION_STREAM_LIST);
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
@@ -251,7 +253,7 @@ public class StreamListActivity extends Activity
             if (null != service) {
                 service.unregisterLoginCallback(loginListener);
                 service.unregisterStreamCallback(streamListener);
-                service.unregisterLikeCallback(likeListener);
+                //service.unregisterLikeCallback(likeListener);
                 unbindService(conn);
             }
         } catch (RemoteException e) {
@@ -259,6 +261,7 @@ public class StreamListActivity extends Activity
         }
     }
 
+    /*
     public void onClickComment(View v)
     {
         Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -280,7 +283,7 @@ public class StreamListActivity extends Activity
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
         }
-        */
+        * /
         StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
         Integer idx = (Integer) v.getTag();
         String post_id = a.getPostId(idx);
@@ -294,6 +297,7 @@ public class StreamListActivity extends Activity
             Log.e(TAG, "RemoteException", e);
         }
     }
+    */
 
     public boolean onCreateOptionsMenu(Menu menu)
     {
