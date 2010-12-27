@@ -400,6 +400,7 @@ public class ClientService
     {
         new CommentsUpdator(
             ClientService.this,
+            Facebook.getInstance(this).getUserID(),
             post_id,
             new Updator.OnEventCallback()
             {

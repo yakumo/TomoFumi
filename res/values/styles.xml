@@ -24,6 +24,9 @@
   <style name="StreamComment" parent="@android:style/TextAppearance.Small">
     <item name="android:textSize">@dimen/stream_comment_text_size</item>
     <item name="android:textColor">@color/stream_comment_text_color</item>
+  </style>
+
+  <style name="StreamCommentBase" parent="@android:style/TextAppearance.Small">
     <item name="android:background">@drawable/fukidashi</item>
   </style>
 

@@ -19,7 +19,9 @@ import android.util.Log;
 import android.view.View.OnClickListener;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -47,10 +49,13 @@ public class StreamDataView
     private TextView descriptionView;
     private TextView commentsView;
     private TextView likesView;
+    private ImageView likesImageView;
+    private ProgressBar likesProgressView;
     private NetImageView streamIconView;
     private NetImageView summaryIconView;
     private NetImageView appIconView;
     private View summaryBaseView;
+    private View commentsBaseView;
 
     private Database.StreamListItem listItem;
     private IClientService service = null;
@@ -204,10 +209,13 @@ public class StreamDataView
         descriptionView = (TextView) findViewById(R.id.description);
         commentsView = (TextView) findViewById(R.id.comments);
         likesView = (TextView) findViewById(R.id.likes);
+        likesImageView = (ImageView) findViewById(R.id.likes_image);
+        likesProgressView = (ProgressBar) findViewById(R.id.likes_progress);
         streamIconView = (NetImageView) findViewById(R.id.stream_icon);
         summaryIconView = (NetImageView) findViewById(R.id.summary_icon);
         appIconView = (NetImageView) findViewById(R.id.app_icon);
         summaryBaseView = findViewById(R.id.summary_base);
+        commentsBaseView = findViewById(R.id.comments_base);
 
         if (!Constants.IS_FREE) {
             if (null != messageView) {
@@ -383,7 +391,7 @@ public class StreamDataView
                 streamIconView.setVisibility(View.GONE);
             }
         }
-        if (null != commentsView) {
+        if (null != commentsView && null != commentsBaseView) {
             if (listItem.comment_can_post) {
                 int comNum = listItem.comment_count;
                 String comFmt =
@@ -392,10 +400,10 @@ public class StreamDataView
                         comNum);
                 commentsView.setText(String.format(comFmt, comNum));
                 commentsView.setTag(listItem.post_id);
-                commentsView.setVisibility(View.VISIBLE);
+                commentsBaseView.setVisibility(View.VISIBLE);
             }
             else {
-                commentsView.setVisibility(View.GONE);
+                commentsBaseView.setVisibility(View.GONE);
             }
         }
         if (null != likesView) {
@@ -414,6 +422,16 @@ public class StreamDataView
                 likesView.setText(String.format(likeFmt, likeNum));
                 likesView.setTag(listItem.post_id);
                 likesView.setVisibility(View.VISIBLE);
+                if (null != likesImageView) {
+                    likesImageView.setImageResource(
+                        ((listItem.like_posting)?
+                         R.drawable.like_press:
+                         ((listItem.like_posted)?
+                          R.drawable.like_light:
+                          R.drawable.like_dark)));
+                }
+
+                /*
                 likesView.setCompoundDrawablesWithIntrinsicBounds(
                     ((listItem.like_posting)?
                      R.drawable.like_press:
@@ -421,6 +439,7 @@ public class StreamDataView
                       R.drawable.like_light:
                       R.drawable.like_dark)),
                     0, 0, 0);
+                */
             }
             else {
                 likesView.setVisibility(View.GONE);
