@@ -9,7 +9,8 @@
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
      android:layout_alignParentTop="true"
-     android:minHeight="@dimen/stream_comment_commentarea_height"
+     android:minHeight="@dimen/stream_comment_commentarea_min_height"
+     android:maxHeight="@dimen/stream_comment_commentarea_max_height"
      android:id="@+id/message_base"
      >
   </la.yakumo.facebook.tomofumi.view.StreamDataView>
@@ -45,7 +46,7 @@
      android:paddingBottom="1px"
      android:background="@color/list_fading_color"
      >
-    <la.yakumo.facebook.tomofumi.view.CommonListView
+    <ListView
        android:layout_width="fill_parent"
        android:layout_height="fill_parent"
        android:id="@+id/comment_list"

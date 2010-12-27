@@ -43,14 +43,42 @@
        android:gravity="left|top"
        android:id="@+id/message"
        />
-    <TextView
+    <LinearLayout
+       android:orientation="horizontal"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
        android:layout_gravity="left|top"
-       android:id="@+id/likes"
+       android:gravity="center"
+       android:id="@+id/likes_base"
        android:clickable="true"
        android:onClick="onClickLike"
-       style="@style/StreamComment"
-       />
+       style="@style/StreamCommentBase"
+       >
+      <FrameLayout
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         >
+        <ImageView
+           android:layout_width="@dimen/like_image_size"
+           android:layout_height="@dimen/like_image_size"
+           android:src="@drawable/like_dark"
+           android:id="@+id/likes_image"
+           />
+        <ProgressBar
+           android:layout_width="@dimen/like_image_size"
+           android:layout_height="@dimen/like_image_size"
+           android:indeterminate="true"
+           android:visibility="visible"
+           android:id="@+id/likes_progress"
+           />
+      </FrameLayout>
+      <TextView
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:id="@+id/likes"
+         android:clickable="true"
+         style="@style/StreamComment"
+         />
+    </LinearLayout>
   </LinearLayout>
 </LinearLayout>

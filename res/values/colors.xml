@@ -9,5 +9,5 @@
   <color name="stream_updated_background_color">#fff</color>
   <color name="stream_no_updated_background_color">#eee</color>
   <color name="post_splitter_color">#fff</color>
-  <color name="list_fading_color">#444</color>
+  <color name="list_fading_color">#222</color>
 </resources>
