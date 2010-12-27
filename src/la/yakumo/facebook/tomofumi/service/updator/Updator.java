@@ -14,48 +14,64 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Updator
-    extends AsyncTask<Runnable,Integer,Integer>
+    extends AsyncTask<Void,Bundle,Integer>
 {
     protected static final String TAG = Constants.LOG_TAG;
     protected Facebook facebook;
-    private Resources resources = null;
-    private OnProgress progress = null;
+    protected Context context;
+    protected Resources resources = null;
+    private OnEventCallback callback = null;
+    private boolean showProgress = true;
 
     public Updator(Context context)
     {
         facebook = Facebook.getInstance(context);
-        resources = null;
-        progress = null;
-    }
-
-    public Updator(Context context, OnProgress progress)
-    {
-        this.facebook = Facebook.getInstance(context);
+        this.context = context;
         this.resources = context.getResources();
-        this.progress = progress;
     }
 
-    protected Integer doInBackground(Runnable... params)
+    public Updator(Context context, OnEventCallback callback)
+    {
+        this(context);
+        this.callback = callback;
+    }
+
+    public Updator(Context context, OnEventCallback callback, boolean pShow)
+    {
+        this(context, callback);
+        this.showProgress = pShow;
+    }
+
+    protected Integer doInBackground(Void... params)
     {
         return -1;
     }
 
-    protected void onProgressUpdate(Integer... values)
+    protected void onProgressUpdate(Bundle... values)
     {
         Log.i(TAG, ""+this.getClass().toString()+"#onProgressUpdate");
-        if (null != progress) {
-            if (values.length == 3) {
-                progress.onProgress(
-                    values[0],
-                    values[1],
-                    resources.getString(values[2]));
-            }
+        if (null != callback && values.length > 0) {
+            callback.onProgress(values[0]);
         }
     }
 
     protected void onPostExecute(Integer result)
     {
         Log.i(TAG, ""+this.getClass().toString()+"#onPostExecute:"+result);
+    }
+
+    protected void start(Bundle info)
+    {
+        if (null != callback) {
+            callback.onStartEvent(info);
+        }
+    }
+
+    protected void finish(Bundle info, boolean cancelled)
+    {
+        if (null != callback) {
+            callback.onFinishEvent(info, cancelled);
+        }
     }
 
     protected String fqlQuery(String query)
@@ -88,8 +104,10 @@ public class Updator
         return ret;
     }
 
-    public static interface OnProgress
+    public static interface OnEventCallback
     {
-        public void onProgress(int now, int max, String msg);
+        public void onStartEvent(Bundle info);
+        public void onProgress(Bundle info);
+        public void onFinishEvent(Bundle info, boolean isCancel);
     }
 }

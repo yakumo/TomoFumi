@@ -159,6 +159,13 @@ public class StreamDataView
                 }
             }
         }
+
+        public void commentLikeDataReaded(
+            String comment_post_id,
+            int likes,
+            boolean liked)
+        {
+        }
     };
 
     private ServiceConnection conn = new ServiceConnection() {

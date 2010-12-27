@@ -366,43 +366,34 @@ public class ClientService
     {
         new StreamUpdator(
             ClientService.this,
-            handler,
-            new Updator.OnProgress()
+            new Updator.OnEventCallback()
             {
-                public void onProgress(int now, int max, String msg)
+                public void onStartEvent(Bundle info)
                 {
-                    /*
-                    int numListener = streamListeners.beginBroadcast();
-                    for (int i = 0 ; i < numListener ; i++) {
-                        try {
-                            streamListeners.getBroadcastItem(i).updateProgress(
-                                now, max, msg);
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "RemoteException", e);
-                        }
-                    }
-                    streamListeners.finishBroadcast();
-                    */
                 }
-            }).execute(
-                new Runnable()
+
+                public void onProgress(Bundle info)
                 {
-                    public void run()
-                    {
-                        Log.i(TAG, "finish update stream");
-                        synchronized (streamListeners) {
-                            int numListener = streamListeners.beginBroadcast();
-                            for (int i = 0 ; i < numListener ; i++) {
-                                try {
-                                    streamListeners.getBroadcastItem(i).updatedStream(null);
-                                } catch (RemoteException e) {
-                                    Log.e(TAG, "RemoteException", e);
-                                }
+                }
+
+                public void onFinishEvent(Bundle info, boolean isCancel)
+                {
+                    Log.i(TAG, "finish update stream");
+                    synchronized (streamListeners) {
+                        int numListener = streamListeners.beginBroadcast();
+                        for (int i = 0 ; i < numListener ; i++) {
+                            IStreamCallback cb =
+                                streamListeners.getBroadcastItem(i);
+                            try {
+                                cb.updatedStream(null);
+                            } catch (RemoteException e) {
+                                Log.e(TAG, "RemoteException", e);
                             }
-                            streamListeners.finishBroadcast();
                         }
+                        streamListeners.finishBroadcast();
                     }
-                });
+                }
+            }).execute();
     }
 
     public void updateComment(final String post_id)
@@ -410,36 +401,29 @@ public class ClientService
         new CommentsUpdator(
             ClientService.this,
             post_id,
-            handler,
-            new Updator.OnProgress()
+            new Updator.OnEventCallback()
             {
-                public void onProgress(int now, int max, String msg)
+                public void onStartEvent(Bundle info)
                 {
-                    /*
-                    int numListener = commentListeners.beginBroadcast();
-                    for (int i = 0 ; i < numListener ; i++) {
-                        try {
-                            commentListeners.getBroadcastItem(i).updateProgress(
-                                now, max, msg);
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "RemoteException", e);
-                        }
-                    }
-                    commentListeners.finishBroadcast();
-                    */
                 }
-            }).execute(
-                new Runnable()
+
+                public void onProgress(Bundle info)
                 {
-                    public void run()
-                    {
-                        Log.i(TAG, "finish update comment");
+                }
+
+                public void onFinishEvent(Bundle info, boolean isCancel)
+                {
+                    Log.i(TAG, "finish update stream");
+                    if (info.containsKey("post_id")) {
                         synchronized (commentListeners) {
                             int numListener = commentListeners.beginBroadcast();
                             for (int i = 0 ; i < numListener ; i++) {
+                                ICommentCallback cb =
+                                    commentListeners.getBroadcastItem(i);
                                 try {
-                                    commentListeners.getBroadcastItem(i).updatedComment(
-                                        post_id, null);
+                                    cb.updatedComment(
+                                        info.getString("post_id"),
+                                        null);
                                 } catch (RemoteException e) {
                                     Log.e(TAG, "RemoteException", e);
                                 }
@@ -447,7 +431,26 @@ public class ClientService
                             commentListeners.finishBroadcast();
                         }
                     }
-                });
+                    else {
+                        synchronized (likeListeners) {
+                            int numListener = likeListeners.beginBroadcast();
+                            for (int i = 0 ; i < numListener ; i++) {
+                                ILikeCallback cb =
+                                    likeListeners.getBroadcastItem(i);
+                                try {
+                                    cb.commentLikeDataReaded(
+                                        info.getString("comment_post_id"),
+                                        info.getInt("likes"),
+                                        info.getBoolean("liked"));
+                                } catch (RemoteException e) {
+                                    Log.e(TAG, "RemoteException", e);
+                                }
+                            }
+                            likeListeners.finishBroadcast();
+                        }
+                    }
+                }
+            }).execute();
     }
 
     public void updateLike(String post_id)

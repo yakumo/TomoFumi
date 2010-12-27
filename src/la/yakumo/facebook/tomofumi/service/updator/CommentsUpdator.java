@@ -3,7 +3,7 @@ package la.yakumo.facebook.tomofumi.service.updator;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Handler;
+import android.os.Bundle;
 import android.util.Log;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,29 +20,17 @@ public class CommentsUpdator
     extends Updator
 {
     private Context context;
-    private Handler handler;
+    private String user_id;
     private String post_id;
 
     public CommentsUpdator(
         Context context,
+        String user_id,
         String post_id,
-        Handler handler)
+        OnEventCallback cb)
     {
-        super(context);
-        this.context = context;
-        this.handler = handler;
-        this.post_id = post_id;
-    }
-
-    public CommentsUpdator(
-        Context context,
-        String post_id,
-        Handler handler,
-        OnProgress progress)
-    {
-        super(context, progress);
-        this.context = context;
-        this.handler = handler;
+        super(context, cb);
+        this.user_id = user_id;
         this.post_id = post_id;
     }
 
@@ -198,13 +186,16 @@ public class CommentsUpdator
         return ret;
     }
 
-    protected Integer doInBackground(Runnable... params)
+    @Override
+    protected Integer doInBackground(Void... params)
     {
         if (!facebook.loginCheck()) {
             return -1;
         }
 
-        publishProgress(0, 3, R.string.progress_wall_reading_message);
+        Bundle info = new Bundle();
+        info.putString("post_id", post_id);
+        start(info);
 
         Database db = new Database(context);
 
@@ -312,29 +303,27 @@ public class CommentsUpdator
             }
         }
 
-        query1 =
-            "SELECT"+
-            " id"+
-            ",fromid"+
-            ",time"+
-            ",text"+
-            ",likes"+
-            ",user_liked"+
-            " FROM comment"+
-            " WHERE post_id=\""+post_id+"\""+
-            "";
-        try {
-            resp = fqlQuery(query1);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "MalformedURLException", e);
-        } catch (IOException e) {
-            Log.e(TAG, "IOException", e);
-        }
+        finish(info, false);
+        info.remove("post_id");
 
-        if (null != handler) {
-            for (Runnable r : params) {
-                handler.post(r);
+        for (String cid : commentIds) {
+            info.putString("comment_post_id", cid);
+            info.putInt("likes", 0);
+            info.putBoolean("liked", false);
+            try {
+                Bundle b = new Bundle();
+                resp = facebook.request(
+                    String.format("%s/likes", cid),
+                    b,
+                    "GET");
+                Log.i(TAG, "resp:"+resp);
+            } catch (MalformedURLException e) {
+                Log.e(TAG, "MalformedURLException", e);
+            } catch (IOException e) {
+                Log.e(TAG, "IOException", e);
             }
+
+            finish(info, false);
         }
 
         return 0;

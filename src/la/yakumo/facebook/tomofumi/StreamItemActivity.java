@@ -199,6 +199,14 @@ public class StreamItemActivity
                 }
             });
         }
+
+        public void commentLikeDataReaded(
+            String comment_post_id,
+            int likes,
+            boolean liked)
+        {
+            Log.i(TAG, "commentLikeDataReaded:"+comment_post_id+","+likes+","+liked);
+        }
     };
 
     private ServiceConnection conn = new ServiceConnection() {

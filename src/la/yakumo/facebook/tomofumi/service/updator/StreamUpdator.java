@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Handler;
+import android.os.Bundle;
 import android.util.Log;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,20 +20,15 @@ public class StreamUpdator
     extends Updator
 {
     private Context context;
-    private Handler handler;
 
-    public StreamUpdator(Context context, Handler handler)
+    public StreamUpdator(Context context)
     {
         super(context);
-        this.context = context;
-        this.handler = handler;
     }
 
-    public StreamUpdator(Context context, Handler handler, OnProgress progress)
+    public StreamUpdator(Context context, OnEventCallback cb)
     {
-        super(context, progress);
-        this.context = context;
-        this.handler = handler;
+        super(context, cb);
     }
 
     private void setVariable(
@@ -179,11 +174,14 @@ public class StreamUpdator
     }
 
     @Override
-    protected Integer doInBackground(Runnable... params)
+    protected Integer doInBackground(Void... params)
     {
         if (!facebook.loginCheck()) {
             return -1;
         }
+
+        Bundle info = new Bundle();
+        start(info);
 
         Database db = new Database(context);
         SQLiteDatabase rdb = db.getReadableDatabase();
@@ -282,15 +280,7 @@ public class StreamUpdator
             }
         }
 
-        publishProgress(2, 3, R.string.progress_app_reading_message);
-        publishProgress(3, 3, R.string.progress_finish_message);
-
-        if (null != handler) {
-            for (Runnable r : params) {
-                handler.post(r);
-            }
-        }
-
+        finish(info, false);
         return 0;
     }
 }
