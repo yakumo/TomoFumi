@@ -423,23 +423,19 @@ public class StreamDataView
                 likesView.setTag(listItem.post_id);
                 likesView.setVisibility(View.VISIBLE);
                 if (null != likesImageView) {
-                    likesImageView.setImageResource(
-                        ((listItem.like_posting)?
-                         R.drawable.like_press:
-                         ((listItem.like_posted)?
-                          R.drawable.like_light:
-                          R.drawable.like_dark)));
+                    if (listItem.like_posting) {
+                        likesProgressView.setVisibility(View.VISIBLE);
+                        likesImageView.setVisibility(View.INVISIBLE);
+                    }
+                    else {
+                        likesProgressView.setVisibility(View.INVISIBLE);
+                        likesImageView.setVisibility(View.VISIBLE);
+                        likesImageView.setImageResource(
+                            ((listItem.like_posted)?
+                             R.drawable.like_light:
+                             R.drawable.like_dark));
+                    }
                 }
-
-                /*
-                likesView.setCompoundDrawablesWithIntrinsicBounds(
-                    ((listItem.like_posting)?
-                     R.drawable.like_press:
-                     ((listItem.like_posted)?
-                      R.drawable.like_light:
-                      R.drawable.like_dark)),
-                    0, 0, 0);
-                */
             }
             else {
                 likesView.setVisibility(View.GONE);
