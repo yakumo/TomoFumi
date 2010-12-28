@@ -47,15 +47,12 @@ public class StreamDataView
     private TextView messageView;
     private TextView summaryView;
     private TextView descriptionView;
-    private TextView commentsView;
-    private TextView likesView;
-    private ImageView likesImageView;
-    private ProgressBar likesProgressView;
     private NetImageView streamIconView;
     private NetImageView summaryIconView;
     private NetImageView appIconView;
     private View summaryBaseView;
-    private View commentsBaseView;
+    private PostItemView commentView;
+    private PostItemView likeView;
 
     private Database.StreamListItem listItem;
     private IClientService service = null;
@@ -69,7 +66,7 @@ public class StreamDataView
             try {
                 service.unregisterLoginCallback(loginListener);
                 service.registerLikeCallback(likeListener);
-                if (listItem.like_posted) {
+                if (/* listItem.like_posted */ listItem.like.enable_item) {
                     service.unregistStreamLike(listItem.post_id);
                 }
                 else {
@@ -100,7 +97,7 @@ public class StreamDataView
                 handler.post(new Runnable() {
                     public void run()
                     {
-                        listItem.like_posting = true;
+                        listItem.like.state_changing = true;
                         updateData();
                     }
                 });
@@ -114,9 +111,9 @@ public class StreamDataView
                 handler.post(new Runnable() {
                     public void run()
                     {
-                        listItem.like_posting = false;
-                        listItem.like_count++;
-                        listItem.like_posted = true;
+                        listItem.like.state_changing = false;
+                        listItem.like.count++;
+                        listItem.like.enable_item = true;
                         updateData();
                     }
                 });
@@ -136,7 +133,7 @@ public class StreamDataView
                 handler.post(new Runnable() {
                     public void run()
                     {
-                        listItem.like_posting = true;
+                        listItem.like.state_changing = true;
                         updateData();
                     }
                 });
@@ -150,9 +147,9 @@ public class StreamDataView
                 handler.post(new Runnable() {
                     public void run()
                     {
-                        listItem.like_posting = false;
-                        listItem.like_count--;
-                        listItem.like_posted = false;
+                        listItem.like.state_changing = false;
+                        listItem.like.count--;
+                        listItem.like.enable_item = false;
                         updateData();
                     }
                 });
@@ -207,15 +204,12 @@ public class StreamDataView
         messageView = (TextView) findViewById(R.id.message);
         summaryView = (TextView) findViewById(R.id.summary);
         descriptionView = (TextView) findViewById(R.id.description);
-        commentsView = (TextView) findViewById(R.id.comments);
-        likesView = (TextView) findViewById(R.id.likes);
-        likesImageView = (ImageView) findViewById(R.id.likes_image);
-        likesProgressView = (ProgressBar) findViewById(R.id.likes_progress);
         streamIconView = (NetImageView) findViewById(R.id.stream_icon);
         summaryIconView = (NetImageView) findViewById(R.id.summary_icon);
         appIconView = (NetImageView) findViewById(R.id.app_icon);
         summaryBaseView = findViewById(R.id.summary_base);
-        commentsBaseView = findViewById(R.id.comments_base);
+        commentView = (PostItemView) findViewById(R.id.comment_item);
+        likeView = (PostItemView) findViewById(R.id.like_item);
 
         if (!Constants.IS_FREE) {
             if (null != messageView) {
@@ -226,12 +220,12 @@ public class StreamDataView
             }
         }
 
-        if (null != likesView) {
-            likesView.setOnClickListener(new OnClickListener() {
+        if (null != likeView) {
+            likeView.setOnClickListener(new OnClickListener() {
                 public void onClick (View v)
                 {
                     Context context = getContext();
-                    listItem.like_posting = true;
+                    listItem.like.state_changing = true;
                     updateData();
                     Intent intent = new Intent(context, ClientService.class);
                     if (context.bindService(
@@ -242,8 +236,8 @@ public class StreamDataView
                 }
             });
         }
-        if (null != commentsView) {
-            commentsView.setOnClickListener(new OnClickListener() {
+        if (null != commentView) {
+            commentView.setOnClickListener(new OnClickListener() {
                 public void onClick (View v)
                 {
                     Context context = getContext();
@@ -270,8 +264,8 @@ public class StreamDataView
 
     public void hideComments()
     {
-        if (null != commentsView) {
-            commentsView.setVisibility(View.GONE);
+        if (null != commentView) {
+            commentView.setVisibility(View.GONE);
         }
     }
 
@@ -391,55 +385,11 @@ public class StreamDataView
                 streamIconView.setVisibility(View.GONE);
             }
         }
-        if (null != commentsView && null != commentsBaseView) {
-            if (listItem.comment_can_post) {
-                int comNum = listItem.comment_count;
-                String comFmt =
-                    resources.getQuantityString(
-                        R.plurals.plural_comment_format,
-                        comNum);
-                commentsView.setText(String.format(comFmt, comNum));
-                commentsView.setTag(listItem.post_id);
-                commentsBaseView.setVisibility(View.VISIBLE);
-            }
-            else {
-                commentsBaseView.setVisibility(View.GONE);
-            }
+        if (null != commentView) {
+            commentView.setPostItem(listItem.comment);
         }
-        if (null != likesView) {
-            if (listItem.like_posting) {
-                likesView.setEnabled(false);
-            }
-            else {
-                likesView.setEnabled(true);
-            }
-            if (listItem.can_like) {
-                int likeNum = listItem.like_count;
-                String likeFmt =
-                    resources.getQuantityString(
-                        R.plurals.plural_like_format,
-                        likeNum);
-                likesView.setText(String.format(likeFmt, likeNum));
-                likesView.setTag(listItem.post_id);
-                likesView.setVisibility(View.VISIBLE);
-                if (null != likesImageView) {
-                    if (listItem.like_posting) {
-                        likesProgressView.setVisibility(View.VISIBLE);
-                        likesImageView.setVisibility(View.INVISIBLE);
-                    }
-                    else {
-                        likesProgressView.setVisibility(View.INVISIBLE);
-                        likesImageView.setVisibility(View.VISIBLE);
-                        likesImageView.setImageResource(
-                            ((listItem.like_posted)?
-                             R.drawable.like_light:
-                             R.drawable.like_dark));
-                    }
-                }
-            }
-            else {
-                likesView.setVisibility(View.GONE);
-            }
+        if (null != likeView) {
+            likeView.setPostItem(listItem.like);
         }
 
         if (listItem.updated) {

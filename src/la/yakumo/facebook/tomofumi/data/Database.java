@@ -49,47 +49,8 @@ public class Database
                 "",
                 new String[] {post_id});
         if (c.moveToFirst()) {
-            int idx_post_id = c.getColumnIndex("post_id");
-            int idx_created_time = c.getColumnIndex("created_time");
-            int idx_message = c.getColumnIndex("message");
-            int idx_description = c.getColumnIndex("description");
-            int idx_attachment_name = c.getColumnIndex("attachment_name");
-            int idx_attachment_caption = c.getColumnIndex("attachment_caption");
-            int idx_attachment_link = c.getColumnIndex("attachment_link");
-            int idx_attachment_image = c.getColumnIndex("attachment_image");
-            int idx_attachment_icon = c.getColumnIndex("attachment_icon");
-            int idx_comment_count = c.getColumnIndex("comment_count");
-            int idx_comment_can_post = c.getColumnIndex("comment_can_post");
-            int idx_like_count = c.getColumnIndex("like_count");
-            int idx_like_posted = c.getColumnIndex("like_posted");
-            int idx_can_like = c.getColumnIndex("can_like");
-            int idx_updated = c.getColumnIndex("updated");
-            int idx_name = c.getColumnIndex("name");
-            int idx_pic_square = c.getColumnIndex("pic_square");
-            int idx_username = c.getColumnIndex("username");
-            int idx_profile_url = c.getColumnIndex("profile_url");
-            int idx_pic_data = c.getColumnIndex("pic_data");
-            li.post_id = c.getString(idx_post_id);
-            li.created_time = c.getLong(idx_created_time);
-            li.message = c.getString(idx_message);
-            li.description = c.getString(idx_description);
-            li.attachment_name = c.getString(idx_attachment_name);
-            li.attachment_caption = c.getString(idx_attachment_caption);
-            li.attachment_link = c.getString(idx_attachment_link);
-            li.attachment_image = c.getString(idx_attachment_image);
-            li.attachment_icon = c.getString(idx_attachment_icon);
-            li.comment_count = c.getInt(idx_comment_count);
-            li.comment_can_post = (c.getInt(idx_comment_can_post) != 0);
-            li.like_count = c.getInt(idx_like_count);
-            li.like_posted = (c.getInt(idx_like_posted) != 0);
-            li.can_like = (c.getInt(idx_can_like) != 0);
-            li.like_posting = false;
-            li.updated = (c.getInt(idx_updated) != 0);
-            li.name = c.getString(idx_name);
-            li.pic_square = c.getString(idx_pic_square);
-            li.username = c.getString(idx_username);
-            li.profile_url = c.getString(idx_profile_url);
-            li.pic_data = c.getBlob(idx_pic_data);
+            StreamItemIndexs idx = new StreamItemIndexs(c);
+            li.readFromDatabase(c, idx);
         }
 
         return li;
@@ -110,49 +71,10 @@ public class Database
                 "",
                 null);
         if (c.moveToFirst()) {
-            int idx_post_id = c.getColumnIndex("post_id");
-            int idx_created_time = c.getColumnIndex("created_time");
-            int idx_message = c.getColumnIndex("message");
-            int idx_description = c.getColumnIndex("description");
-            int idx_attachment_name = c.getColumnIndex("attachment_name");
-            int idx_attachment_caption = c.getColumnIndex("attachment_caption");
-            int idx_attachment_link = c.getColumnIndex("attachment_link");
-            int idx_attachment_image = c.getColumnIndex("attachment_image");
-            int idx_attachment_icon = c.getColumnIndex("attachment_icon");
-            int idx_comment_count = c.getColumnIndex("comment_count");
-            int idx_comment_can_post = c.getColumnIndex("comment_can_post");
-            int idx_like_count = c.getColumnIndex("like_count");
-            int idx_like_posted = c.getColumnIndex("like_posted");
-            int idx_can_like = c.getColumnIndex("can_like");
-            int idx_updated = c.getColumnIndex("updated");
-            int idx_name = c.getColumnIndex("name");
-            int idx_pic_square = c.getColumnIndex("pic_square");
-            int idx_username = c.getColumnIndex("username");
-            int idx_profile_url = c.getColumnIndex("profile_url");
-            int idx_pic_data = c.getColumnIndex("pic_data");
+            StreamItemIndexs idx = new StreamItemIndexs(c);
             do {
                 StreamListItem li = new StreamListItem();
-                li.post_id = c.getString(idx_post_id);
-                li.created_time = c.getLong(idx_created_time);
-                li.message = c.getString(idx_message);
-                li.description = c.getString(idx_description);
-                li.attachment_name = c.getString(idx_attachment_name);
-                li.attachment_caption = c.getString(idx_attachment_caption);
-                li.attachment_link = c.getString(idx_attachment_link);
-                li.attachment_image = c.getString(idx_attachment_image);
-                li.attachment_icon = c.getString(idx_attachment_icon);
-                li.comment_count = c.getInt(idx_comment_count);
-                li.comment_can_post = (c.getInt(idx_comment_can_post) != 0);
-                li.like_count = c.getInt(idx_like_count);
-                li.like_posted = (c.getInt(idx_like_posted) != 0);
-                li.can_like = (c.getInt(idx_can_like) != 0);
-                li.like_posting = false;
-                li.updated = (c.getInt(idx_updated) != 0);
-                li.name = c.getString(idx_name);
-                li.pic_square = c.getString(idx_pic_square);
-                li.username = c.getString(idx_username);
-                li.profile_url = c.getString(idx_profile_url);
-                li.pic_data = c.getBlob(idx_pic_data);
+                li.readFromDatabase(c, idx);
                 items.add(li);
             } while (c.moveToNext());
         }
@@ -236,6 +158,63 @@ public class Database
         }
     }
 
+    class StreamItemIndexs
+    {
+        public int post_id; /* post_id */
+        public int created_time; /* created_time */
+        public int message; /* message */
+        public int description; /* description */
+        public int attachment_name; /* attachment_name */
+        public int attachment_caption; /* attachment_caption */
+        public int attachment_link; /* attachment_link */
+        public int attachment_image; /* attachment_image */
+        public int attachment_icon; /* attachment_icon */
+        public int comment_count; /* comment_count */
+        public int comment_can_post; /* comment_can_post */
+        public int like_count; /* like_count */
+        public int like_posted; /* like_posted */
+        public int can_like; /* can_like */
+        public int updated; /* updated */
+        public int name; /* name */
+        public int pic_square; /* pic_square */
+        public int username; /* username */
+        public int profile_url; /* profile_url */
+        public int pic_data; /* pic_data */
+
+        StreamItemIndexs(Cursor c)
+        {
+            post_id = c.getColumnIndex("post_id");
+            created_time = c.getColumnIndex("created_time");
+            message = c.getColumnIndex("message");
+            description = c.getColumnIndex("description");
+            attachment_name = c.getColumnIndex("attachment_name");
+            attachment_caption = c.getColumnIndex("attachment_caption");
+            attachment_link = c.getColumnIndex("attachment_link");
+            attachment_image = c.getColumnIndex("attachment_image");
+            attachment_icon = c.getColumnIndex("attachment_icon");
+            comment_count = c.getColumnIndex("comment_count");
+            comment_can_post = c.getColumnIndex("comment_can_post");
+            like_count = c.getColumnIndex("like_count");
+            like_posted = c.getColumnIndex("like_posted");
+            can_like = c.getColumnIndex("can_like");
+            updated = c.getColumnIndex("updated");
+            name = c.getColumnIndex("name");
+            pic_square = c.getColumnIndex("pic_square");
+            username = c.getColumnIndex("username");
+            profile_url = c.getColumnIndex("profile_url");
+            pic_data = c.getColumnIndex("pic_data");
+        }
+    }
+
+    public class PostItem
+    {
+        public boolean enable_item;
+        public boolean can_do;
+        public boolean have_item;
+        public boolean state_changing;
+        public int count;
+    }
+
     public class StreamListItem
     {
         public String post_id;
@@ -247,17 +226,44 @@ public class Database
         public String attachment_link;
         public String attachment_image;
         public String attachment_icon;
-        public int comment_count;
-        public boolean comment_can_post;
-        public int like_count;
-        public boolean like_posted;
-        public boolean can_like;
-        public boolean like_posting;
         public boolean updated;
+
         public String name;
         public String pic_square;
         public String username;
         public String profile_url;
         public byte[] pic_data;
+
+        public PostItem comment = new PostItem();
+        public PostItem like = new PostItem();
+
+        void readFromDatabase(Cursor c, StreamItemIndexs idx)
+        {
+            post_id = c.getString(idx.post_id);
+            created_time = c.getLong(idx.created_time);
+            message = c.getString(idx.message);
+            description = c.getString(idx.description);
+            attachment_name = c.getString(idx.attachment_name);
+            attachment_caption = c.getString(idx.attachment_caption);
+            attachment_link = c.getString(idx.attachment_link);
+            attachment_image = c.getString(idx.attachment_image);
+            attachment_icon = c.getString(idx.attachment_icon);
+            updated = (c.getInt(idx.updated) != 0);
+            name = c.getString(idx.name);
+            pic_square = c.getString(idx.pic_square);
+            username = c.getString(idx.username);
+            profile_url = c.getString(idx.profile_url);
+            pic_data = c.getBlob(idx.pic_data);
+            comment.enable_item = true;
+            comment.count = c.getInt(idx.comment_count);
+            comment.have_item = (comment.count > 0);
+            comment.can_do = (c.getInt(idx.comment_can_post) != 0);
+            comment.state_changing = false;
+            like.enable_item = (c.getInt(idx.like_posted) != 0);
+            like.count = c.getInt(idx.like_count);
+            like.have_item = (like.count > 0);
+            like.can_do = (c.getInt(idx.can_like) != 0);
+            like.state_changing = false;
+        }
     }
 }

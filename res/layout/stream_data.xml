@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res/la.yakumo.facebook.tomofumi"
    android:orientation="horizontal"
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
@@ -77,55 +78,22 @@
          android:layout_gravity="left|center_vertical"
          android:id="@+id/app_icon"
          />
-      <FrameLayout
+      <la.yakumo.facebook.tomofumi.view.PostItemView
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:id="@+id/comments_base"
-         android:clickable="true"
-         style="@style/StreamCommentBase"
+         android:id="@+id/comment_item"
+         app:puralText="@plurals/plural_comment_format"
          >
-        <TextView
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:id="@+id/comments"
-           style="@style/StreamComment"
-           />
-      </FrameLayout>
-      <LinearLayout
-         android:orientation="horizontal"
+      </la.yakumo.facebook.tomofumi.view.PostItemView>
+      <la.yakumo.facebook.tomofumi.view.PostItemView
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:gravity="center"
-         android:id="@+id/likes_base"
-         android:clickable="true"
-         style="@style/StreamCommentBase"
+         android:id="@+id/like_item"
+         app:enabledIcon="@drawable/like_light"
+         app:disabledIcon="@drawable/like_dark"
+         app:puralText="@plurals/plural_like_format"
          >
-        <FrameLayout
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           >
-          <ImageView
-             android:layout_width="@dimen/like_image_size"
-             android:layout_height="@dimen/like_image_size"
-             android:src="@drawable/like_dark"
-             android:id="@+id/likes_image"
-             />
-          <ProgressBar
-             android:layout_width="@dimen/like_image_size"
-             android:layout_height="@dimen/like_image_size"
-             android:indeterminate="true"
-             android:visibility="invisible"
-             android:id="@+id/likes_progress"
-             />
-        </FrameLayout>
-        <TextView
-           android:layout_width="wrap_content"
-           android:layout_height="wrap_content"
-           android:id="@+id/likes"
-           android:clickable="true"
-           style="@style/StreamComment"
-           />
-      </LinearLayout>
+      </la.yakumo.facebook.tomofumi.view.PostItemView>
     </LinearLayout>
   </LinearLayout>
 </LinearLayout>
