@@ -4,7 +4,8 @@
    xmlns:app="http://schemas.android.com/apk/res/la.yakumo.facebook.tomofumi"
    android:orientation="horizontal"
    android:layout_width="fill_parent"
-   android:layout_height="fill_parent"
+   android:layout_height="wrap_content"
+   android:minHeight="@dimen/stream_item_min_height"
    >
   <LinearLayout
      android:orientation="vertical"
@@ -28,8 +29,12 @@
         <la.yakumo.facebook.tomofumi.view.NetImageView
            android:layout_width="@dimen/stream_image_width"
            android:layout_height="@dimen/stream_image_width"
+           android:width="@dimen/stream_image_width"
+           android:height="@dimen/stream_image_width"
            android:scaleType="fitXY"
            android:id="@+id/stream_icon"
+           app:imageWidth="@dimen/stream_image_width"
+           app:imageHeight="@dimen/stream_image_width"
            />
       </FrameLayout>
     </FrameLayout>

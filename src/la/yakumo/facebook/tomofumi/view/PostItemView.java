@@ -52,14 +52,6 @@ public class PostItemView
         privateInit(context);
     }
 
-    /*
-    public PostItemView(Context context, AttributeSet attrs, int defStyle)
-    {
-        super(context, attrs, defStyle);
-        privateInit(context);
-    }
-    */
-
     private void privateInit(Context context)
     {
         View.OnClickListener clickListener = new View.OnClickListener()

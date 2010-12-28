@@ -34,25 +34,9 @@ import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.callback.*;
 
 public class StreamDataView
-    extends LinearLayout
+    extends ItemDataView
 {
     private static final String TAG = Constants.LOG_TAG;
-
-    private Spannable.Factory factory = Spannable.Factory.getInstance();
-    private MovementMethod movementmethod = LinkMovementMethod.getInstance();
-    private Resources resources;
-    private TextAppearanceSpan messageSpan;
-    private TextAppearanceSpan usernameSpan;
-    private TextAppearanceSpan summarySpan;
-    private TextView messageView;
-    private TextView summaryView;
-    private TextView descriptionView;
-    private NetImageView streamIconView;
-    private NetImageView summaryIconView;
-    private NetImageView appIconView;
-    private View summaryBaseView;
-    private PostItemView commentView;
-    private PostItemView likeView;
 
     private Database.StreamListItem listItem;
     private IClientService service = null;
@@ -187,79 +171,14 @@ public class StreamDataView
         }
     };
 
-    private void privateInit(Context context)
-    {
-        resources = context.getResources();
-
-        messageSpan = new TextAppearanceSpan(context, R.style.StreamMessage);
-        usernameSpan = new TextAppearanceSpan(context, R.style.StreamMessageUser);
-        summarySpan = new TextAppearanceSpan(context, R.style.StreamSummary);
-
-        addView(
-            View.inflate(context, R.layout.stream_data, null),
-            new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.FILL_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        messageView = (TextView) findViewById(R.id.message);
-        summaryView = (TextView) findViewById(R.id.summary);
-        descriptionView = (TextView) findViewById(R.id.description);
-        streamIconView = (NetImageView) findViewById(R.id.stream_icon);
-        summaryIconView = (NetImageView) findViewById(R.id.summary_icon);
-        appIconView = (NetImageView) findViewById(R.id.app_icon);
-        summaryBaseView = findViewById(R.id.summary_base);
-        commentView = (PostItemView) findViewById(R.id.comment_item);
-        likeView = (PostItemView) findViewById(R.id.like_item);
-
-        if (!Constants.IS_FREE) {
-            if (null != messageView) {
-                messageView.setMovementMethod(movementmethod);
-            }
-            if (null != summaryView) {
-                summaryView.setMovementMethod(movementmethod);
-            }
-        }
-
-        if (null != likeView) {
-            likeView.setOnClickListener(new OnClickListener() {
-                public void onClick (View v)
-                {
-                    Context context = getContext();
-                    listItem.like.state_changing = true;
-                    updateData();
-                    Intent intent = new Intent(context, ClientService.class);
-                    if (context.bindService(
-                            intent,
-                            conn,
-                            Context.BIND_AUTO_CREATE)) {
-                    }
-                }
-            });
-        }
-        if (null != commentView) {
-            commentView.setOnClickListener(new OnClickListener() {
-                public void onClick (View v)
-                {
-                    Context context = getContext();
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.setClass(context, StreamItemActivity.class);
-                    intent.putExtra("post_id", listItem.post_id);
-                    context.startActivity(intent);
-                }
-            });
-        }
-    }
-
     public StreamDataView(Context context)
     {
         super(context);
-        privateInit(context);
     }
 
     public StreamDataView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
-        privateInit(context);
     }
 
     public void hideComments()
@@ -269,13 +188,35 @@ public class StreamDataView
         }
     }
 
-    public void put(Database.StreamListItem li)
+    public void put(Object o)
     {
-        listItem = li;
+        listItem = (Database.StreamListItem) o;
         updateData();
     }
 
-    private void updateData()
+    protected void onClickCommentView()
+    {
+        Context context = getContext();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClass(context, StreamItemActivity.class);
+        intent.putExtra("post_id", listItem.post_id);
+        context.startActivity(intent);
+    }
+
+    protected void onClickLikeView()
+    {
+        Context context = getContext();
+        listItem.like.state_changing = true;
+        updateData();
+        Intent intent = new Intent(context, ClientService.class);
+        if (context.bindService(
+                intent,
+                conn,
+                Context.BIND_AUTO_CREATE)) {
+        }
+    }
+
+    void updateData()
     {
         if (null != streamIconView) {
             streamIconView.setImageResource(R.drawable.clear_image);

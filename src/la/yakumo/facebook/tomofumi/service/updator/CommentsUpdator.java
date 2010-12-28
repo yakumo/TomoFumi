@@ -73,8 +73,7 @@ public class CommentsUpdator
                     val.put("post_id", post_id);
                     val.put("data_mode", Constants.COMMENTMODE_COMMENT);
                     val.put("item_id", itemId);
-                    val.put("user_id", obj.getString("fromid"));
-                    val.put("like_count", 0);
+                    val.put("user_id", obj.getLong("fromid"));
                     val.put("time", obj.getLong("time"));
                     val.put("message", obj.getString("text"));
                     JSONArray arr;
@@ -85,6 +84,8 @@ public class CommentsUpdator
                         arr = new JSONArray();
                     }
                     val.put("likes", arr.toString());
+                    val.put("like_count", 0);
+                    val.put("like_posted", 0);
                 } catch (JSONException e) {
                     Log.e(TAG, "JSONException", e);
                 }
@@ -104,9 +105,11 @@ public class CommentsUpdator
                     val.put("data_mode", Constants.COMMENTMODE_LIKE);
                     val.put("item_id", (String)null);
                     val.put("user_id", obj.getString("user_id"));
-                    val.put("like_count", 0);
                     val.put("time", 0);
                     val.put("message", (String)null);
+                    val.put("likes", (String)null);
+                    val.put("like_count", 0);
+                    val.put("like_posted", 0);
                 } catch (JSONException e) {
                     Log.e(TAG, "JSONException", e);
                 }

@@ -85,6 +85,40 @@ public class Database
         return ret;
     }
 
+    public CommentListItem[] getCommentListItems(String post_id)
+    {
+        ArrayList<CommentListItem> items = new ArrayList<CommentListItem>();
+        SQLiteDatabase rdb = getReadableDatabase();
+        Cursor c =
+            rdb.rawQuery(
+                "SELECT *"+
+                " FROM comments"+
+                " LEFT JOIN user"+
+                " ON comments.user_id=user._id"+
+                " WHERE comments.post_id=?"+
+                " ORDER BY"+
+                " data_mode DESC"+
+                ",time ASC"+
+                ",name ASC"+
+                "",
+                new String[] {
+                    post_id
+                });
+        if (c.moveToFirst()) {
+            CommentItemIndexs idx = new CommentItemIndexs(c);
+            do {
+                CommentListItem li = new CommentListItem();
+                li.readFromDatabase(c, idx);
+                items.add(li);
+            } while (c.moveToNext());
+        }
+        int cnt = items.size();
+        CommentListItem[] ret = new CommentListItem[cnt];
+        System.arraycopy(items.toArray(), 0, ret, 0, cnt);
+
+        return ret;
+    }
+
     class DatabaseHelper
         extends SQLiteOpenHelper
     {
@@ -124,6 +158,19 @@ public class Database
                 ",updated INTEGER default 0"+
                 ");");
             db.execSQL(
+                "CREATE TABLE comments "+
+                "(_id INTEGER primary key unique"+
+                ",post_id TEXT"+
+                ",item_id TEXT"+
+                ",data_mode INTEGER"+
+                ",user_id INTEGER"+
+                ",time INTEGER default 0"+
+                ",message TEXT default ''"+
+                ",likes TEXT default '[]'"+
+                ",like_count INTEGER default 0"+
+                ",like_posted INTEGER default 0"+
+                ");");
+            db.execSQL(
                 "CREATE TABLE user "+
                 "(_id INTEGER primary key unique"+
                 ",name TEXT"+
@@ -138,18 +185,6 @@ public class Database
                 ",read_time INTEGER"+
                 ",image_url TEXT"+
                 ",image_data BLOB"+
-                ");");
-            db.execSQL(
-                "CREATE TABLE comments "+
-                "(_id INTEGER primary key unique"+
-                ",post_id TEXT"+
-                ",item_id TEXT"+
-                ",data_mode INTEGER"+
-                ",user_id INTEGER"+
-                ",like_count INTEGER"+
-                ",time INTEGER default 0"+
-                ",message TEXT default ''"+
-                ",likes TEXT default '[]'"+
                 ");");
         }
 
@@ -203,6 +238,38 @@ public class Database
             username = c.getColumnIndex("username");
             profile_url = c.getColumnIndex("profile_url");
             pic_data = c.getColumnIndex("pic_data");
+        }
+    }
+
+    class CommentItemIndexs
+    {
+        public int item_id;
+        public int data_mode;
+        public int time;
+        public int message;
+        public int name;
+        public int pic_square;
+        public int username;
+        public int profile_url;
+        public int pic_data;
+        public int likes;
+        public int like_count;
+        public int like_posted;
+
+        CommentItemIndexs(Cursor c)
+        {
+            item_id = c.getColumnIndex("item_id");
+            data_mode = c.getColumnIndex("data_mode");
+            time = c.getColumnIndex("time");
+            message = c.getColumnIndex("message");
+            name = c.getColumnIndex("name");
+            pic_square = c.getColumnIndex("pic_square");
+            username = c.getColumnIndex("username");
+            profile_url = c.getColumnIndex("profile_url");
+            pic_data = c.getColumnIndex("pic_data");
+            likes = c.getColumnIndex("likes");
+            like_count = c.getColumnIndex("like_count");
+            like_posted = c.getColumnIndex("like_posted");
         }
     }
 
@@ -263,6 +330,39 @@ public class Database
             like.count = c.getInt(idx.like_count);
             like.have_item = (like.count > 0);
             like.can_do = (c.getInt(idx.can_like) != 0);
+            like.state_changing = false;
+        }
+    }
+
+    public class CommentListItem
+    {
+        public String post_id;
+        public String item_id;
+        public int data_mode;
+        public long time;
+        public String message;
+        public String name;
+        public String pic_square;
+        public String username;
+        public String profile_url;
+        public byte[] pic_data;
+        public PostItem like = new PostItem();
+
+        void readFromDatabase(Cursor c, CommentItemIndexs idx)
+        {
+            post_id = c.getString(idx.item_id);
+            data_mode = c.getInt(idx.data_mode);
+            time = c.getLong(idx.time);
+            message = c.getString(idx.message);
+            name = c.getString(idx.name);
+            pic_square = c.getString(idx.pic_square);
+            username = c.getString(idx.username);
+            profile_url = c.getString(idx.profile_url);
+            pic_data = c.getBlob(idx.pic_data);
+            like.enable_item = (c.getInt(idx.like_posted) != 0);
+            like.count = c.getInt(idx.like_count);
+            like.have_item = true;
+            like.can_do = true;
             like.state_changing = false;
         }
     }

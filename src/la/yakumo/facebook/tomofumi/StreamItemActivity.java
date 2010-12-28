@@ -367,6 +367,7 @@ public class StreamItemActivity
         }
     }
 
+    /*
     public void onClickSendComment(View v)
     {
         TextView tv = (TextView) findViewById(R.id.comment_text);
@@ -408,4 +409,5 @@ public class StreamItemActivity
             Log.i(TAG, "RemoteException", e);
         }
     }
+    */
 }

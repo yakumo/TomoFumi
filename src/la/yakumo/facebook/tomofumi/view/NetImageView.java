@@ -2,10 +2,12 @@ package la.yakumo.facebook.tomofumi.view;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -28,6 +30,8 @@ public class NetImageView
     private static final String TAG = Constants.LOG_TAG;
 
     private Handler handler = new Handler();
+    private float imageWidth;
+    private float imageHeight;
 
     public NetImageView(Context context)
     {
@@ -36,12 +40,23 @@ public class NetImageView
 
     public NetImageView(Context context, AttributeSet attrs)
     {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public NetImageView(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
+        TypedArray a =
+            context.obtainStyledAttributes(
+                attrs,
+                R.styleable.PostItemView);
+        imageWidth =
+            a.getFloat(
+                R.styleable.NetImageView_imageWidth, 0);
+        imageHeight =
+            a.getFloat(
+                R.styleable.NetImageView_imageHeight, 0);
+        a.recycle();
     }
 
     @Override
@@ -131,7 +146,9 @@ public class NetImageView
                     {
                         Bitmap bmp = BitmapFactory.decodeByteArray(
                             img, 0, img.length);
-                        setImageBitmap(bmp);
+                        BitmapDrawable bd = new BitmapDrawable(bmp);
+                        bd.setBounds(0, 0, (int)imageWidth, (int)imageHeight);
+                        setImageDrawable(bd);
                     }
                 });
             }
