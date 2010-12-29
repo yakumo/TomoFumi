@@ -164,6 +164,11 @@ public class StreamListActivity extends Activity
     @Override
     public void onDestroy()
     {
+        StreamListAdapter a =
+            (StreamListAdapter)streamList.getAdapter();
+        if (null != a) {
+            a.releaseData();
+        }
         super.onDestroy();
         try {
             if (null != service) {

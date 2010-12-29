@@ -9,6 +9,7 @@ import android.text.method.MovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View.OnClickListener;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,7 +61,7 @@ public abstract class ItemDataView
         summarySpan = new TextAppearanceSpan(context, R.style.StreamSummary);
 
         addView(
-            View.inflate(context, layoutResourceId(), null),
+            LayoutInflater.from(context).inflate(layoutResourceId(), null),
             new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));

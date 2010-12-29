@@ -91,6 +91,7 @@ public class StreamDataView
         public void registedLike(final String post_id)
         {
             Log.i(TAG, "(1)registedLike:"+post_id+","+listItem.post_id);
+            /*
             if (post_id.equals(listItem.post_id)) {
                 handler.post(new Runnable() {
                     public void run()
@@ -108,6 +109,7 @@ public class StreamDataView
                     Log.e(TAG, "RemoteException", e);
                 }
             }
+            */
         }
 
         public void unregisterLike(final String post_id)
@@ -127,6 +129,7 @@ public class StreamDataView
         public void unregistedLike(final String post_id)
         {
             Log.i(TAG, "(1)unregistedLike:"+post_id+","+listItem.post_id);
+            /*
             if (post_id.equals(listItem.post_id)) {
                 handler.post(new Runnable() {
                     public void run()
@@ -144,13 +147,25 @@ public class StreamDataView
                     Log.e(TAG, "RemoteException", e);
                 }
             }
+            */
         }
 
-        public void commentLikeDataReaded(
-            String comment_post_id,
-            int likes,
-            boolean liked)
+        public void likeDataUpdated(String post_id, int likes, boolean liked)
         {
+            Log.i(TAG, "(1)likeDataUpdated:"+post_id+","+likes+","+liked);
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    listItem.like.state_changing = false;
+                    updateData();
+                }
+            });
+            try {
+                service.unregisterLikeCallback(likeListener);
+                getContext().unbindService(conn);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
         }
     };
 

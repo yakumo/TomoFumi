@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -67,8 +68,7 @@ public class PostItemView
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         addView(
-            View.inflate(
-                context,
+            LayoutInflater.from(context).inflate(
                 R.layout.post_item_view,
                 null),
             new LinearLayout.LayoutParams(

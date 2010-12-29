@@ -76,10 +76,12 @@ public class StatusLikeRegister
                 if (like_posted == 0) {
                     val.put("like_count", like_count + 1);
                     val.put("like_posted", 1);
+                    info.putInt("like_count", like_count + 1);
                 }
                 else {
                     val.put("like_count", like_count - 1);
                     val.put("like_posted", 0);
+                    info.putInt("like_count", like_count - 1);
                 }
                 wdb.update(
                     "stream",

@@ -200,12 +200,9 @@ public class StreamItemActivity
             });
         }
 
-        public void commentLikeDataReaded(
-            String comment_post_id,
-            int likes,
-            boolean liked)
+        public void likeDataUpdated(String post_id, int likes, boolean liked)
         {
-            Log.i(TAG, "commentLikeDataReaded:"+comment_post_id+","+likes+","+liked);
+            Log.i(TAG, "likeDataUpdated:"+post_id+","+likes+","+liked);
         }
     };
 

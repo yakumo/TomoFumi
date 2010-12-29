@@ -439,7 +439,7 @@ public class ClientService
                                 ILikeCallback cb =
                                     likeListeners.getBroadcastItem(i);
                                 try {
-                                    cb.commentLikeDataReaded(
+                                    cb.likeDataUpdated(
                                         info.getString("comment_post_id"),
                                         info.getInt("likes"),
                                         info.getBoolean("liked"));
@@ -583,6 +583,22 @@ public class ClientService
         }
     }
 
+    private void reloadedLike(String post_id, int likes, boolean liked)
+    {
+        synchronized (likeListeners) {
+            int numListener = likeListeners.beginBroadcast();
+            for (int i = 0 ; i < numListener ; i++) {
+                try {
+                    likeListeners.getBroadcastItem(i).likeDataUpdated(
+                        post_id, likes, liked);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException", e);
+                }
+            }
+            likeListeners.finishBroadcast();
+        }
+    }
+
     public void addStreamLike(final String post_id)
     {
         Log.i(TAG, "addStreamLike:"+post_id);
@@ -595,7 +611,14 @@ public class ClientService
 
                 public void onSended(String reason, Bundle info)
                 {
-                    addedStreamLike(post_id, reason, info.getInt("like_posted"));
+                    addedStreamLike(
+                        post_id,
+                        reason,
+                        info.getInt("like_posted"));
+                    reloadedLike(
+                        post_id,
+                        info.getInt("like_count"),
+                        (info.getInt("like_posted") != 0));
                 }
             });
     }
