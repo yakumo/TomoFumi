@@ -137,6 +137,7 @@ public class StreamItemActivity
         public void registerLike(final String post_id)
         {
             Log.i(TAG, "registerLike:"+post_id);
+            /*
             handler.post(new Runnable() {
                 public void run()
                 {
@@ -148,11 +149,13 @@ public class StreamItemActivity
                     }
                 }
             });
+            */
         }
 
         public void registedLike(final String post_id)
         {
             Log.i(TAG, "registedLike:"+post_id);
+            /*
             handler.post(new Runnable() {
                 public void run()
                 {
@@ -165,11 +168,13 @@ public class StreamItemActivity
                     likePosting.remove(post_id);
                 }
             });
+            */
         }
 
         public void unregisterLike(final String post_id)
         {
             Log.i(TAG, "unregisterLike:"+post_id);
+            /*
             handler.post(new Runnable() {
                 public void run()
                 {
@@ -181,11 +186,13 @@ public class StreamItemActivity
                     }
                 }
             });
+            */
         }
 
         public void unregistedLike(final String post_id)
         {
             Log.i(TAG, "unregistedLike:"+post_id);
+            /*
             handler.post(new Runnable() {
                 public void run()
                 {
@@ -198,11 +205,23 @@ public class StreamItemActivity
                     likePosting.remove(post_id);
                 }
             });
+            */
         }
 
         public void likeDataUpdated(String post_id, int likes, boolean liked)
         {
             Log.i(TAG, "likeDataUpdated:"+post_id+","+likes+","+liked);
+            final String pid = post_id;
+            final int ls = likes;
+            final boolean ld = liked;
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    CommentListAdapter a =
+                        (CommentListAdapter)commentListView.getAdapter();
+                    a.updateLikeCount(commentListView, pid, ls, ld);
+                }
+            });
         }
     };
 

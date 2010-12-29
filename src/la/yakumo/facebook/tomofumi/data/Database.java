@@ -337,7 +337,6 @@ public class Database
     public class CommentListItem
     {
         public String post_id;
-        public String item_id;
         public int data_mode;
         public long time;
         public String message;

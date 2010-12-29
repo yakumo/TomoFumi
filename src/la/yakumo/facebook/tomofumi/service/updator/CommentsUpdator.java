@@ -320,6 +320,45 @@ public class CommentsUpdator
                     b,
                     "GET");
                 Log.i(TAG, "resp:"+resp);
+
+                try {
+                    wdb.beginTransaction();
+                    boolean liked_flag = false;
+                    JSONArray ids = new JSONArray();
+                    try {
+                        JSONObject respObj = new JSONObject(resp);
+                        JSONArray datas = respObj.getJSONArray("data");
+                        for (int i = 0 ; i < datas.length() ; i++) {
+                            try {
+                                JSONObject user = datas.getJSONObject(i);
+                                String uid = user.getString("id");
+                                if (user_id.equals(uid)) {
+                                    liked_flag = true;
+                                }
+                                ids.put(uid);
+                            } catch (JSONException e) {
+                            }
+                        }
+                    } catch (JSONException e) {
+                    }
+                    Log.i(TAG, "id list:"+ids.toString());
+                    info.putInt("likes", ids.length());
+                    info.putBoolean("liked", liked_flag);
+                    ContentValues val = new ContentValues();
+                    val.put("likes", ids.toString());
+                    val.put("like_count", ids.length());
+                    val.put("like_posted", liked_flag);
+                    wdb.update(
+                        "comments",
+                        val,
+                        "item_id=?",
+                        new String[] {
+                            cid,
+                        });
+                    wdb.setTransactionSuccessful();
+                } finally {
+                    wdb.endTransaction();
+                }
             } catch (MalformedURLException e) {
                 Log.e(TAG, "MalformedURLException", e);
             } catch (IOException e) {

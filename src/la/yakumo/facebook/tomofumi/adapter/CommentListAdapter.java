@@ -98,42 +98,36 @@ public class CommentListAdapter
         }
         return false;
     }
-    */
 
     public void likeUpdating(int position, View v)
     {
-        /*
         CommentItem ci = (CommentItem) getItem(position);
         ci.like_press = true;
         if (likeViewUpdate(position, v)) {
             v.setEnabled(false);
         }
-        */
     }
 
     public void likeRegisted(int position, View v)
     {
-        /*
         CommentItem ci = (CommentItem) getItem(position);
         ci.like_press = false;
         ci.like_users.add(user_id);
         if (likeViewUpdate(position, v)) {
             v.setEnabled(true);
         }
-        */
     }
 
     public void likeUnregisted(int position, View v)
     {
-        /*
         CommentItem ci = (CommentItem) getItem(position);
         ci.like_press = false;
         ci.like_users.remove(user_id);
         if (likeViewUpdate(position, v)) {
             v.setEnabled(true);
         }
-        */
     }
+    */
 
     public void setUserId(String user_id)
     {
@@ -150,6 +144,28 @@ public class CommentListAdapter
             isFirstRead = false;
         }
         notifyDataSetChanged();
+    }
+
+    public void updateLikeCount(
+        View topView,
+        String post_id,
+        int likes,
+        boolean liked)
+    {
+        int len = items.length;
+        for (int i = 0 ; i < len ; i++) {
+            if (post_id.equals(items[i].post_id)) {
+                items[i].like.state_changing = false;
+                items[i].like.enable_item = liked;
+                items[i].like.count = likes;
+                View v = topView.findViewWithTag(i);
+                if (null != v) {
+                    Log.i(TAG, "find view:"+v);
+                    CommentDataView cv = (CommentDataView) v;
+                    cv.put(items[i]);
+                }
+            }
+        }
     }
 
     public int getCount()
