@@ -364,7 +364,6 @@ public class StreamItemActivity
         }
     }
 
-    /*
     public void onClickSendComment(View v)
     {
         TextView tv = (TextView) findViewById(R.id.comment_text);
@@ -379,6 +378,7 @@ public class StreamItemActivity
         }
     }
 
+    /*
     public void onClickLike(View v)
     {
         Log.i(TAG, "add like to comment:"+v.getTag());
