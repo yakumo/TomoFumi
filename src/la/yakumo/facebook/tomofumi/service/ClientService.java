@@ -617,8 +617,8 @@ public class ClientService
                         info.getInt("like_posted"));
                     reloadedLike(
                         post_id,
-                        info.getInt("likes"),
-                        info.getBoolean("liked"));
+                        info.getInt("like_count"),
+                        (info.getInt("like_posted") != 0)? true: false);
                 }
             });
     }

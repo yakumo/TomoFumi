@@ -152,6 +152,10 @@ public class CommentListAdapter
         int likes,
         boolean liked)
     {
+        if (null == items) {
+            return;
+        }
+
         int len = items.length;
         for (int i = 0 ; i < len ; i++) {
             if (post_id.equals(items[i].post_id)) {
@@ -204,6 +208,10 @@ public class CommentListAdapter
 
     public View getView (int position, View convertView, ViewGroup parent)
     {
+        if (null == items) {
+            return null;
+        }
+
         Database.CommentListItem ci = items[position];
         ItemDataView ret = (ItemDataView) convertView;
         if (null == ret) {
