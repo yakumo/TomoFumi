@@ -12,6 +12,7 @@ import android.text.method.MovementMethod;
 import android.text.style.TextAppearanceSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -33,6 +34,7 @@ public class StreamListAdapter
     private Database.StreamListItem[] items = null;
     private Context context;
     private Resources resources;
+    private LayoutInflater layoutInflater;
     private Database db;
 
     public StreamListAdapter(Context context)
@@ -40,6 +42,7 @@ public class StreamListAdapter
         super();
         this.context = context;
         this.resources = context.getResources();
+        this.layoutInflater = LayoutInflater.from(context);
         this.db = new Database(context);
     }
 
@@ -81,7 +84,10 @@ public class StreamListAdapter
 
         Database.StreamListItem li = (Database.StreamListItem) getItem(position);
         if (null == ret) {
-            ret = View.inflate(context, R.layout.stream_list_item, null);
+            ret =
+                layoutInflater.inflate(
+                    R.layout.stream_list_item,
+                    null);
         }
         if (null != ret) {
             StreamDataView liv = (StreamDataView) ret;

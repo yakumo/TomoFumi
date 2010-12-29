@@ -210,12 +210,6 @@ public class StreamDataView
         }
     }
 
-    @Override
-    protected int layoutResourceId()
-    {
-        return R.layout.item_data;
-    }
-
     public void put(Object o)
     {
         listItem = (Database.StreamListItem) o;

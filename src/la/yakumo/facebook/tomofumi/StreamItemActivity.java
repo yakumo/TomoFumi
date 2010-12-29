@@ -316,8 +316,8 @@ public class StreamItemActivity
 
         db = new Database(this);
         Database.StreamListItem listItem = db.getStreamListItem(postId);
-        StreamDataView dv = (StreamDataView) findViewById(R.id.message_base);
         listItem.comment.can_do = false;
+        StreamDataView dv = (StreamDataView) findViewById(R.id.message_base);
         dv.put(listItem);
 
         commentListView = (ListView) findViewById(R.id.comment_list);
