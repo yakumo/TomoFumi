@@ -617,8 +617,8 @@ public class ClientService
                         info.getInt("like_posted"));
                     reloadedLike(
                         post_id,
-                        info.getInt("like_count"),
-                        (info.getInt("like_posted") != 0));
+                        info.getInt("likes"),
+                        info.getBoolean("liked"));
                 }
             });
     }
@@ -639,7 +639,14 @@ public class ClientService
 
                 public void onSended(String reason, Bundle info)
                 {
-                    addedStreamLike(post_id, reason, info.getInt("like_posted"));
+                    addedStreamLike(
+                        post_id,
+                        reason,
+                        info.getInt("like_posted"));
+                    reloadedLike(
+                        post_id,
+                        info.getInt("likes"),
+                        info.getBoolean("liked"));
                 }
             });
     }

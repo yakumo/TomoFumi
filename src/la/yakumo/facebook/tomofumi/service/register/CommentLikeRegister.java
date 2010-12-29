@@ -1,5 +1,6 @@
 package la.yakumo.facebook.tomofumi.service.register;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,6 +11,7 @@ import java.net.MalformedURLException;
 import la.yakumo.facebook.tomofumi.data.Database;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CommentLikeRegister
     extends ItemRegister
@@ -84,11 +86,51 @@ public class CommentLikeRegister
             Log.i(TAG, "regist result:"+ret);
 
             b = new Bundle();
-            ret = facebook.request(
+            String resp = facebook.request(
                 "/"+post_id+"/likes",
                 b,
                 "GET");
-            Log.i(TAG, "likes result:"+ret);
+            Log.i(TAG, "likes result:"+resp);
+
+            SQLiteDatabase wdb = db.getWritableDatabase();
+            try {
+                wdb.beginTransaction();
+                boolean liked_flag = false;
+                JSONArray ids = new JSONArray();
+                try {
+                    JSONObject respObj = new JSONObject(resp);
+                    JSONArray datas = respObj.getJSONArray("data");
+                    for (int i = 0 ; i < datas.length() ; i++) {
+                        try {
+                            JSONObject user = datas.getJSONObject(i);
+                            String uid = user.getString("id");
+                            if (user_id.equals(uid)) {
+                                liked_flag = true;
+                            }
+                            ids.put(uid);
+                        } catch (JSONException e) {
+                        }
+                    }
+                } catch (JSONException e) {
+                }
+                Log.i(TAG, "id list:"+ids.toString());
+                info.putInt("likes", ids.length());
+                info.putBoolean("liked", liked_flag);
+                ContentValues val = new ContentValues();
+                val.put("likes", ids.toString());
+                val.put("like_count", ids.length());
+                val.put("like_posted", liked_flag);
+                wdb.update(
+                    "comments",
+                    val,
+                    "item_id=?",
+                    new String[] {
+                        post_id,
+                    });
+                wdb.setTransactionSuccessful();
+            } finally {
+                wdb.endTransaction();
+            }
         } catch (MalformedURLException e) {
             Log.i(TAG, "MalformedURLException", e);
             errStr = e.getMessage();

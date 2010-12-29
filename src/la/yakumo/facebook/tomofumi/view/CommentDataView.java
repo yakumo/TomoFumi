@@ -148,6 +148,10 @@ public class CommentDataView
     {
         Log.i(TAG, "CommentDataView#onClickLikeView");
 
+        if (listItem.like.state_changing) {
+            return;
+        }
+
         Context context = getContext();
         Intent intent = new Intent(context, ClientService.class);
         if (context.bindService(intent, conn, Context.BIND_AUTO_CREATE)) {

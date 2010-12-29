@@ -183,6 +183,10 @@ public class StreamDataView
 
     protected void onClickLikeView()
     {
+        if (listItem.like.state_changing) {
+            return;
+        }
+
         Context context = getContext();
         listItem.like.state_changing = true;
         updateData();
