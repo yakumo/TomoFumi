@@ -60,7 +60,7 @@ public abstract class ItemDataView
         summarySpan = new TextAppearanceSpan(context, R.style.StreamSummary);
 
         addView(
-            View.inflate(context, R.layout.stream_data, null),
+            View.inflate(context, layoutResourceId(), null),
             new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.FILL_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -110,6 +110,11 @@ public abstract class ItemDataView
     protected void onClickLikeView()
     {
         Log.i(TAG, "ItemDataView#onClickLikeView");
+    }
+
+    protected int layoutResourceId()
+    {
+        return R.layout.item_data;
     }
 
     public abstract void put(Object o);

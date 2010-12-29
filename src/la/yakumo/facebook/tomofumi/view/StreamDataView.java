@@ -188,12 +188,6 @@ public class StreamDataView
         }
     }
 
-    public void put(Object o)
-    {
-        listItem = (Database.StreamListItem) o;
-        updateData();
-    }
-
     protected void onClickCommentView()
     {
         Context context = getContext();
@@ -214,6 +208,18 @@ public class StreamDataView
                 conn,
                 Context.BIND_AUTO_CREATE)) {
         }
+    }
+
+    @Override
+    protected int layoutResourceId()
+    {
+        return R.layout.item_data;
+    }
+
+    public void put(Object o)
+    {
+        listItem = (Database.StreamListItem) o;
+        updateData();
     }
 
     void updateData()
