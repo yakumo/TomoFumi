@@ -26,6 +26,7 @@ import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.view.ItemDataView;
 import la.yakumo.facebook.tomofumi.view.CommentDataView;
 import la.yakumo.facebook.tomofumi.view.LikeDataView;
+import la.yakumo.facebook.tomofumi.view.StreamDataView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,13 +36,14 @@ public class CommentListAdapter
 {
     private static final String TAG = Constants.LOG_TAG;
 
+    public static final int COMMENTMODE_MESSAGE = 2;
     public static final int COMMENTMODE_COMMENT = 1;
     public static final int COMMENTMODE_LIKE = 0;
 
     private HashMap<Integer,View> updateChecker = new HashMap<Integer,View>();
     private Spannable.Factory factory = Spannable.Factory.getInstance();
     private MovementMethod movementmethod = LinkMovementMethod.getInstance();
-    private Database.CommentListItem[] items = null;
+    private Database.MessageItem[] items = null;
     private Context context;
     private Resources resources;
     private Database db;
@@ -66,69 +68,6 @@ public class CommentListAdapter
                 R.style.StreamMessageUser);
     }
 
-    /*
-    private boolean likeViewUpdate(int position, View v)
-    {
-        if (((Integer) v.getTag()).intValue() == position) {
-            TextView likes = (TextView) v;
-            CommentItem ci = (CommentItem) getItem(position);
-            String tmp = "[";
-            String sep = "";
-            for (String i : ci.like_users) {
-                tmp = tmp + sep + i;
-                sep = ",";
-            }
-            tmp = tmp + "]";
-            Log.i(TAG, "comment likes:"+tmp);
-            int likeNum = ci.like_users.size();
-            String likeFmt =
-                resources.getQuantityString(
-                    R.plurals.plural_like_format,
-                    likeNum);
-            likes.setText(String.format(likeFmt, likeNum));
-            likes.setVisibility(View.VISIBLE);
-            likes.setCompoundDrawablesWithIntrinsicBounds(
-                ((ci.like_press)?
-                 R.drawable.like_press:
-                 ((ci.like_users.contains(user_id))?
-                  R.drawable.like_light:
-                  R.drawable.like_dark)),
-                0, 0, 0);
-            return true;
-        }
-        return false;
-    }
-
-    public void likeUpdating(int position, View v)
-    {
-        CommentItem ci = (CommentItem) getItem(position);
-        ci.like_press = true;
-        if (likeViewUpdate(position, v)) {
-            v.setEnabled(false);
-        }
-    }
-
-    public void likeRegisted(int position, View v)
-    {
-        CommentItem ci = (CommentItem) getItem(position);
-        ci.like_press = false;
-        ci.like_users.add(user_id);
-        if (likeViewUpdate(position, v)) {
-            v.setEnabled(true);
-        }
-    }
-
-    public void likeUnregisted(int position, View v)
-    {
-        CommentItem ci = (CommentItem) getItem(position);
-        ci.like_press = false;
-        ci.like_users.remove(user_id);
-        if (likeViewUpdate(position, v)) {
-            v.setEnabled(true);
-        }
-    }
-    */
-
     public void setUserId(String user_id)
     {
         this.user_id = user_id;
@@ -136,10 +75,17 @@ public class CommentListAdapter
 
     public void reloadData(String postId)
     {
+        Database.CommentListItem[] list = db.getCommentListItems(postId);
+        items = new Database.MessageItem[list.length + 1];
+        System.arraycopy(list, 0, items, 1, list.length);
+        items[0] = db.getStreamListItem(postId);
         items = db.getCommentListItems(postId);
+
         if (isFirstRead) {
-            for (Database.CommentListItem item : items) {
-                item.like.state_changing = true;
+            for (Database.MessageItem item : items) {
+                if (item instanceof Database.CommentListItem) {
+                    item.like.state_changing = true;
+                }
             }
             isFirstRead = false;
         }
@@ -198,12 +144,15 @@ public class CommentListAdapter
         if (null == items) {
             return 0;
         }
-        return items[position].data_mode;
+        if (items[position] instanceof Database.CommentListItem) {
+            return ((Database.CommentListItem)items[position]).data_mode;
+        }
+        return COMMENTMODE_MESSAGE;
     }
 
     public int getViewTypeCount()
     {
-        return 2;
+        return 3;
     }
 
     public View getView (int position, View convertView, ViewGroup parent)
@@ -212,10 +161,14 @@ public class CommentListAdapter
             return null;
         }
 
-        Database.CommentListItem ci = items[position];
+        Database.MessageItem ci = items[position];
         ItemDataView ret = (ItemDataView) convertView;
+        int viewType = getItemViewType(position);
         if (null == ret) {
-            switch (ci.data_mode) {
+            switch (viewType) {
+            case COMMENTMODE_MESSAGE:
+                ret = new StreamDataView(context);
+                break;
             case COMMENTMODE_COMMENT:
                 ret = new CommentDataView(context);
                 break;
@@ -227,9 +180,20 @@ public class CommentListAdapter
             }
         }
         if (null != ret) {
-            ret.put(ci);
-            ret.setTag(position);
-            updateChecker.put(position, ret);
+            switch (viewType) {
+            case COMMENTMODE_MESSAGE:
+                ret.put(ci);
+                ret.setTag(position);
+                break;
+            case COMMENTMODE_COMMENT:
+            case COMMENTMODE_LIKE:
+                ret.put(ci);
+                ret.setTag(position);
+                updateChecker.put(position, ret);
+                break;
+            default:
+                break;
+            }
         }
         return ret;
     }

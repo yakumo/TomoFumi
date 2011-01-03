@@ -282,18 +282,11 @@ public class Database
         public int count;
     }
 
-    public class StreamListItem
+    public class MessageItem
     {
         public String post_id;
         public long created_time;
         public String message;
-        public String description;
-        public String attachment_name;
-        public String attachment_caption;
-        public String attachment_link;
-        public String attachment_image;
-        public String attachment_icon;
-        public boolean updated;
 
         public String name;
         public String pic_square;
@@ -303,6 +296,18 @@ public class Database
 
         public PostItem comment = new PostItem();
         public PostItem like = new PostItem();
+    }
+
+    public class StreamListItem
+        extends MessageItem
+    {
+        public String description;
+        public String attachment_name;
+        public String attachment_caption;
+        public String attachment_link;
+        public String attachment_image;
+        public String attachment_icon;
+        public boolean updated;
 
         void readFromDatabase(Cursor c, StreamItemIndexs idx)
         {
@@ -335,23 +340,15 @@ public class Database
     }
 
     public class CommentListItem
+        extends MessageItem
     {
-        public String post_id;
         public int data_mode;
-        public long time;
-        public String message;
-        public String name;
-        public String pic_square;
-        public String username;
-        public String profile_url;
-        public byte[] pic_data;
-        public PostItem like = new PostItem();
 
         void readFromDatabase(Cursor c, CommentItemIndexs idx)
         {
             post_id = c.getString(idx.item_id);
             data_mode = c.getInt(idx.data_mode);
-            time = c.getLong(idx.time);
+            created_time = c.getLong(idx.time);
             message = c.getString(idx.message);
             name = c.getString(idx.name);
             pic_square = c.getString(idx.pic_square);

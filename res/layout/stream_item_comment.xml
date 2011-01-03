@@ -4,16 +4,6 @@
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
    >
-  <la.yakumo.facebook.tomofumi.view.StreamDataView
-     android:orientation="horizontal"
-     android:layout_width="fill_parent"
-     android:layout_height="wrap_content"
-     android:layout_alignParentTop="true"
-     android:minHeight="@dimen/stream_comment_commentarea_min_height"
-     android:maxHeight="@dimen/stream_comment_commentarea_max_height"
-     android:id="@+id/message_base"
-     >
-  </la.yakumo.facebook.tomofumi.view.StreamDataView>
   <RelativeLayout
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
@@ -40,7 +30,6 @@
   <FrameLayout
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
-     android:layout_below="@id/message_base"
      android:layout_above="@+id/input_base"
      android:paddingTop="1px"
      android:paddingBottom="1px"
