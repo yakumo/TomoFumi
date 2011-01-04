@@ -177,14 +177,14 @@ public class Database
                 ",pic_square TEXT"+
                 ",username TEXT"+
                 ",profile_url TEXT"+
-                ",pic_data BLOB"+
+                ",pic_data BLOB default null"+
                 ");");
             db.execSQL(
                 "CREATE TABLE images "+
                 "(_id INTEGER primary key unique"+
                 ",read_time INTEGER"+
                 ",image_url TEXT"+
-                ",image_data BLOB"+
+                ",image_data BLOB default null"+
                 ");");
         }
 
