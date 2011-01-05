@@ -309,6 +309,9 @@ public class CommentsUpdator
         finish(info, false);
         info.remove("post_id");
 
+        if (null == commentIds) {
+            commentIds = new ArrayList<String>();
+        }
         for (String cid : commentIds) {
             info.putString("comment_post_id", cid);
             info.putInt("likes", 0);

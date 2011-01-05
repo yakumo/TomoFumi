@@ -5,6 +5,7 @@
 
   <string name="text_post_title">Post to Facebook</string>
   <string name="stream_item_title">Wall Item</string>
+  <string name="link_check_title">Link Chcek</string>
 
   <string name="send_button_text">Send</string>
   <string name="link_check">Check</string>
@@ -14,6 +15,7 @@
   <string name="modestr_myplaces">My Places</string>
   <string name="modestr_addlink">Add Link</string>
 
+  <string name="progress_cancel_message">Cancelled</string>
   <string name="progress_stream_update_title">Wall Update</string>
   <string name="progress_wall_reading_message">Reading wall data</string>
   <string name="progress_user_reading_message">Reading user data</string>
@@ -21,6 +23,10 @@
   <string name="progress_finish_message">Read finished</string>
   <string name="progress_posting_message">Registing message</string>
   <string name="progress_updating_comment_message">Reading comment data</string>
+  <string name="progress_link_check_message">Link checking...</string>
+
+  <string name="linkcheck_title_label">Title:</string>
+  <string name="linkcheck_image_label">Select Images:</string>
 
   <string name="menu_post_stream">Post</string>
   <string name="menu_refresh">Refresh</string>

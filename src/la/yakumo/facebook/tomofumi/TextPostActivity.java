@@ -12,9 +12,11 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import java.net.MalformedURLException;
 import java.net.URL;
+import la.yakumo.facebook.tomofumi.activity.LinkCheckActivity;
 import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.callback.*;
@@ -24,6 +26,7 @@ public class TextPostActivity
 {
     private static final String TAG = Constants.LOG_TAG;
 
+    private static final int REQUEST_CODE_LINK_CHECK = 0;
     private static final int MODE_COMPOSE = 0;
     private static final int MODE_IMAGE = 1;
     private static final int MODE_MYPLACES = 2;
@@ -198,6 +201,21 @@ public class TextPostActivity
         }
     }
 
+    protected void onActivityResult(
+        int requestCode,
+        int resultCode,
+        Intent data)
+    {
+        Log.i(TAG, "result, request:"+requestCode+", result:"+resultCode+", data:"+data);
+        switch (requestCode) {
+        case REQUEST_CODE_LINK_CHECK:
+            break;
+        default:
+            break;
+        }
+
+    }
+
     public void onClickSend(View v)
     {
         Log.i(TAG, "onClickSend");
@@ -242,6 +260,19 @@ public class TextPostActivity
     public void onClickAddLink(View v)
     {
         updateMode(MODE_ADDLINK);
+    }
+
+    public void onClickLinkCheck(View v)
+    {
+        EditText et = (EditText) findViewById(R.id.link_text);
+        if (null == et) {
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClass(this, LinkCheckActivity.class);
+        intent.putExtra("link", et.getText().toString());
+        startActivityForResult(intent, REQUEST_CODE_LINK_CHECK);
     }
 
     private void updateMode(int mode)

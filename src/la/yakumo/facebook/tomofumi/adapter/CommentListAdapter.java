@@ -78,7 +78,9 @@ public class CommentListAdapter
         Database.CommentListItem[] list = db.getCommentListItems(postId);
         items = new Database.MessageItem[list.length + 1];
         System.arraycopy(list, 0, items, 1, list.length);
-        items[0] = db.getStreamListItem(postId);
+        Database.StreamListItem sli = db.getStreamListItem(postId);
+        sli.comment.can_do = false;
+        items[0] = sli;
 
         if (isFirstRead) {
             for (Database.MessageItem item : items) {
@@ -110,8 +112,10 @@ public class CommentListAdapter
                 View v = topView.findViewWithTag(i);
                 if (null != v) {
                     Log.i(TAG, "find view:"+v);
-                    CommentDataView cv = (CommentDataView) v;
-                    cv.put(items[i]);
+                    if (v instanceof CommentDataView) {
+                        CommentDataView cv = (CommentDataView) v;
+                        cv.put(items[i]);
+                    }
                 }
             }
         }

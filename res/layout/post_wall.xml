@@ -129,6 +129,7 @@
     <RelativeLayout
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
+       android:gravity="center"
        >
       <Button
          android:id="@+id/link_text_check"
@@ -136,6 +137,7 @@
          android:layout_height="wrap_content"
          android:layout_alignParentRight="true"
          android:text="@string/link_check"
+         android:onClick="onClickLinkCheck"
          />
       <EditText
          android:id="@+id/link_text"
