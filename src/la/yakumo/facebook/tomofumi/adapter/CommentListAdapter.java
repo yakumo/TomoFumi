@@ -79,7 +79,6 @@ public class CommentListAdapter
         items = new Database.MessageItem[list.length + 1];
         System.arraycopy(list, 0, items, 1, list.length);
         items[0] = db.getStreamListItem(postId);
-        items = db.getCommentListItems(postId);
 
         if (isFirstRead) {
             for (Database.MessageItem item : items) {
