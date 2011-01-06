@@ -90,5 +90,8 @@ public class LikeDataView
                 streamIconView.setVisibility(View.GONE);
             }
         }
+
+        setBackgroundResource(
+            R.color.stream_like_background_color);
     }
 }

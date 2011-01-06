@@ -87,6 +87,10 @@ public class CommentListAdapter
                 if (item instanceof Database.CommentListItem) {
                     item.like.state_changing = true;
                 }
+                else {
+                    sli = (Database.StreamListItem)item;
+                    sli.updated = true;
+                }
             }
             isFirstRead = false;
         }

@@ -223,6 +223,9 @@ public class CommentDataView
         if (null != likeView) {
             likeView.setPostItem(listItem.like);
         }
+
+        setBackgroundResource(
+            R.color.stream_comment_background_color);
     }
 
     private void registerCommentLike()

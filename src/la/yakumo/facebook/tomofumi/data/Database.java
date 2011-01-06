@@ -308,6 +308,7 @@ public class Database
         public String attachment_image;
         public String attachment_icon;
         public boolean updated;
+        public boolean show_share;
 
         void readFromDatabase(Cursor c, StreamItemIndexs idx)
         {
@@ -321,6 +322,7 @@ public class Database
             attachment_image = c.getString(idx.attachment_image);
             attachment_icon = c.getString(idx.attachment_icon);
             updated = (c.getInt(idx.updated) != 0);
+            show_share = false;
             name = c.getString(idx.name);
             pic_square = c.getString(idx.pic_square);
             username = c.getString(idx.username);

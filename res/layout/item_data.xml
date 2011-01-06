@@ -71,34 +71,58 @@
        android:layout_height="wrap_content"
        android:id="@+id/description"
        style="@style/StreamDescription"/>
-    <LinearLayout
-       android:orientation="horizontal"
-       android:layout_width="wrap_content"
+    <RelativeLayout
+       android:layout_width="fill_parent"
        android:layout_height="wrap_content"
-       android:gravity="left|center_vertical"
        >
-      <la.yakumo.facebook.tomofumi.view.NetImageView
-         android:layout_width="@dimen/stream_app_icon_size"
-         android:layout_height="@dimen/stream_app_icon_size"
-         android:layout_gravity="left|center_vertical"
-         android:id="@+id/app_icon"
-         />
-      <la.yakumo.facebook.tomofumi.view.PostItemView
+      <LinearLayout
+         android:orientation="horizontal"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:id="@+id/comment_item"
-         app:puralText="@plurals/plural_comment_format"
+         android:gravity="left|center_vertical"
+         android:layout_alignParentLeft="true"
          >
-      </la.yakumo.facebook.tomofumi.view.PostItemView>
-      <la.yakumo.facebook.tomofumi.view.PostItemView
+        <la.yakumo.facebook.tomofumi.view.NetImageView
+           android:layout_width="@dimen/stream_app_icon_size"
+           android:layout_height="@dimen/stream_app_icon_size"
+           android:layout_gravity="left|center_vertical"
+           android:id="@+id/app_icon"
+           />
+        <la.yakumo.facebook.tomofumi.view.PostItemView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/comment_item"
+           app:puralText="@plurals/plural_comment_format"
+           >
+        </la.yakumo.facebook.tomofumi.view.PostItemView>
+        <la.yakumo.facebook.tomofumi.view.PostItemView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:id="@+id/like_item"
+           app:enabledIcon="@drawable/like_light"
+           app:disabledIcon="@drawable/like_dark"
+           app:puralText="@plurals/plural_like_format"
+           >
+        </la.yakumo.facebook.tomofumi.view.PostItemView>
+      </LinearLayout>
+      <LinearLayout
+         android:orientation="horizontal"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:id="@+id/like_item"
-         app:enabledIcon="@drawable/like_light"
-         app:disabledIcon="@drawable/like_dark"
-         app:puralText="@plurals/plural_like_format"
+         android:layout_alignParentRight="true"
+         android:layout_alignParentBottom="true"
          >
-      </la.yakumo.facebook.tomofumi.view.PostItemView>
-    </LinearLayout>
+        <ImageView
+           android:layout_width="@dimen/post_icon_size"
+           android:layout_height="@dimen/post_icon_size"
+           android:layout_gravity="right|bottom"
+           android:visibility="gone"
+           android:src="@android:drawable/ic_menu_share"
+           android:clickable="true"
+           android:onClick="onClickShare"
+           android:id="@+id/share_button"
+           />
+      </LinearLayout>
+    </RelativeLayout>
   </LinearLayout>
 </LinearLayout>
