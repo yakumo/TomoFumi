@@ -32,4 +32,6 @@ interface IClientService
     int unregistCommentLike(String post_id);
 
     int addLink(String text, String linkUrl, String imageUrl);
+
+    int shareStream(String post_id);
 }

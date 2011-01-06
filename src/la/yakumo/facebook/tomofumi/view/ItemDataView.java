@@ -18,6 +18,7 @@ import android.widget.TextView;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.StreamItemActivity;
+import android.widget.ImageView;
 
 public abstract class ItemDataView
     extends LinearLayout
@@ -33,6 +34,7 @@ public abstract class ItemDataView
     protected TextView messageView;
     protected TextView summaryView;
     protected TextView descriptionView;
+    protected ImageView shareImageView;
     protected NetImageView streamIconView;
     protected NetImageView summaryIconView;
     protected NetImageView appIconView;
@@ -69,6 +71,7 @@ public abstract class ItemDataView
         messageView = (TextView) findViewById(R.id.message);
         summaryView = (TextView) findViewById(R.id.summary);
         descriptionView = (TextView) findViewById(R.id.description);
+        shareImageView = (ImageView) findViewById(R.id.share_button);
         streamIconView = (NetImageView) findViewById(R.id.stream_icon);
         summaryIconView = (NetImageView) findViewById(R.id.summary_icon);
         appIconView = (NetImageView) findViewById(R.id.app_icon);
@@ -101,6 +104,14 @@ public abstract class ItemDataView
                 }
             });
         }
+        if (null != shareImageView) {
+            shareImageView.setOnClickListener(new OnClickListener() {
+                public void onClick (View v)
+                {
+                    onClickShareView();
+                }
+            });
+        }
     }
 
     protected void onClickCommentView()
@@ -111,6 +122,11 @@ public abstract class ItemDataView
     protected void onClickLikeView()
     {
         Log.i(TAG, "ItemDataView#onClickLikeView");
+    }
+
+    protected void onClickShareView()
+    {
+        Log.i(TAG, "ItemDataView#onClickShareView");
     }
 
     protected int layoutResourceId()

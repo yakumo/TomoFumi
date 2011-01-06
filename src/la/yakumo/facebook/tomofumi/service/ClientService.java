@@ -14,9 +14,11 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 import la.yakumo.facebook.tomofumi.Constants;
+import la.yakumo.facebook.tomofumi.TextPostActivity;
 import la.yakumo.facebook.tomofumi.service.callback.*;
 import la.yakumo.facebook.tomofumi.service.register.*;
 import la.yakumo.facebook.tomofumi.service.updator.*;
+import la.yakumo.facebook.tomofumi.service.command.*;
 
 public class ClientService
     extends Service
@@ -49,11 +51,12 @@ public class ClientService
     private static final int MSG_UPDATE_STREAM = 2;
     private static final int MSG_UPDATE_COMMENT = 3;
     private static final int MSG_UPDATE_LIKE = 4;
-    private static final int MSG_ADD_STREAM = 5;
-    private static final int MSG_ADD_COMMENT = 6;
-    private static final int MSG_ADD_STREAM_LIKE = 7;
-    private static final int MSG_ADD_COMMENT_LIKE = 8;
-    private static final int MSG_ADD_LINK = 9;
+    private static final int MSG_ADD_STREAM = 11;
+    private static final int MSG_ADD_COMMENT = 12;
+    private static final int MSG_ADD_STREAM_LIKE = 13;
+    private static final int MSG_ADD_COMMENT_LIKE = 14;
+    private static final int MSG_ADD_LINK = 15;
+    private static final int MSG_SHARE_STREAM = 31;
     private Handler handler = new Handler() {
         public void handleMessage(Message msg)
         {
@@ -84,6 +87,9 @@ public class ClientService
             case MSG_ADD_LINK:
                 strs = (String[])msg.obj;
                 addLink(strs[0], strs[1], strs[2]);
+                break;
+            case MSG_SHARE_STREAM:
+                shareStream((String)msg.obj);
                 break;
             default:
                 break;
@@ -289,6 +295,18 @@ public class ClientService
                     Message msg = new Message();
                     msg.what = MSG_ADD_LINK;
                     msg.obj = new String[] {text, linkUrl, imageUrl};
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_ERROR;
+            }
+
+            public int shareStream(String post_id)
+            {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_SHARE_STREAM;
+                    msg.obj = post_id;
                     handler.sendMessage(msg);
                     return RESULT_OK;
                 }
@@ -686,5 +704,30 @@ public class ClientService
                     addedStream(reason);
                 }
             });
+    }
+
+    public void shareStream(String post_id)
+    {
+        Log.i(TAG, "shareStream:"+post_id);
+        new GetURL(
+            this,
+            post_id,
+            new Command.OnResult()
+            {
+                public void onResult(Bundle info)
+                {
+                    if (info.containsKey("url")) {
+                        Intent intent = new Intent(Intent.ACTION_MAIN);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setClass(
+                            ClientService.this,
+                            TextPostActivity.class);
+                        intent.putExtra(
+                            Intent.EXTRA_TEXT,
+                            (String) info.get("url"));
+                        ClientService.this.startActivity(intent);
+                    }
+                }
+            }).execute();
     }
 }

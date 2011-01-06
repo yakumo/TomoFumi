@@ -29,6 +29,10 @@ public class LinkRegister
 
         try {
             Bundle b = new Bundle();
+            /*
+            b.putString("method", "links.preview");
+            b.putString("url", link);
+            */
             b.putString("method", "links.post");
             b.putString("url", link);
             b.putString("comment", text);

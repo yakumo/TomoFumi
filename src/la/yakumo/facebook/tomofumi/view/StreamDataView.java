@@ -38,9 +38,14 @@ public class StreamDataView
 {
     private static final String TAG = Constants.LOG_TAG;
 
+    private static final int SERVERCOMMAND_NONE = 0;
+    private static final int SERVERCOMMAND_LIKE = 1;
+    private static final int SERVERCOMMAND_SHARE = 2;
+
     private Database.StreamListItem listItem;
     private IClientService service = null;
     private Handler handler = new Handler();
+    private int serverCommand = SERVERCOMMAND_NONE;
 
     private ILoginCallback loginListener = new ILoginCallback.Stub() {
         public void loggedIn(String userID)
@@ -50,12 +55,22 @@ public class StreamDataView
             try {
                 service.unregisterLoginCallback(loginListener);
                 service.registerLikeCallback(likeListener);
-                if (listItem.like.enable_item) {
-                    service.unregistStreamLike(listItem.post_id);
+                switch (serverCommand) {
+                case SERVERCOMMAND_LIKE:
+                    if (listItem.like.enable_item) {
+                        service.unregistStreamLike(listItem.post_id);
+                    }
+                    else {
+                        service.registStreamLike(listItem.post_id);
+                    }
+                    break;
+                case SERVERCOMMAND_SHARE:
+                    service.shareStream(listItem.post_id);
+                    break;
+                default:
+                    break;
                 }
-                else {
-                    service.registStreamLike(listItem.post_id);
-                }
+
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -172,6 +187,7 @@ public class StreamDataView
         }
     }
 
+    @Override
     protected void onClickCommentView()
     {
         Context context = getContext();
@@ -181,15 +197,30 @@ public class StreamDataView
         context.startActivity(intent);
     }
 
+    @Override
     protected void onClickLikeView()
     {
         if (listItem.like.state_changing) {
             return;
         }
 
+        serverCommand = SERVERCOMMAND_LIKE;
         Context context = getContext();
         listItem.like.state_changing = true;
         updateData();
+        Intent intent = new Intent(context, ClientService.class);
+        if (context.bindService(
+                intent,
+                conn,
+                Context.BIND_AUTO_CREATE)) {
+        }
+    }
+
+    @Override
+    protected void onClickShareView()
+    {
+        serverCommand = SERVERCOMMAND_SHARE;
+        Context context = getContext();
         Intent intent = new Intent(context, ClientService.class);
         if (context.bindService(
                 intent,
@@ -319,6 +350,9 @@ public class StreamDataView
         }
         if (null != likeView) {
             likeView.setPostItem(listItem.like);
+        }
+        if (null != shareImageView && listItem.show_share) {
+            shareImageView.setVisibility(View.VISIBLE);
         }
 
         if (listItem.updated) {
