@@ -7,6 +7,9 @@
   <string name="stream_item_title">Wall Item</string>
   <string name="link_check_title">Link Chcek</string>
 
+  <string name="message_ok">OK</string>
+  <string name="message_cancel">Cancel</string>
+
   <string name="send_button_text">Send</string>
   <string name="link_check">Check</string>
   <string name="modestr_compose">Compose</string>
@@ -25,6 +28,7 @@
   <string name="progress_updating_comment_message">Reading comment data</string>
   <string name="progress_link_check_message">Link checking...</string>
 
+  <string name="linkcheck_link_label">URL:</string>
   <string name="linkcheck_title_label">Title:</string>
   <string name="linkcheck_image_label">Select Images:</string>
 
@@ -33,6 +37,7 @@
 
   <string name="error_login_cancel">Login cancel</string>
   <string name="error_unknown_postid">Unknown Post ID</string>
+  <string name="error_unsupported">Unsupported</string>
 
   <plurals name="plural_comment_format">
     <item quantity="one">comment:%d</item>

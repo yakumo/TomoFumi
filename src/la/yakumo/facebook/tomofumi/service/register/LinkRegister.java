@@ -6,15 +6,19 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-public class StatusRegister
+public class LinkRegister
     extends ItemRegister
 {
-    private String statusText;
+    private String text = "";
+    private String link = "";
+    private String image = "";
 
-    public StatusRegister(Context context, String text)
+    public LinkRegister(Context context, String text, String link, String image)
     {
         super(context);
-        statusText = text;
+        this.text = text;
+        this.link = link;
+        this.image = image;
     }
 
     @Override
@@ -25,8 +29,12 @@ public class StatusRegister
 
         try {
             Bundle b = new Bundle();
-            b.putString("method", "stream.publish");
-            b.putString("message", statusText);
+            b.putString("method", "links.post");
+            b.putString("url", link);
+            b.putString("comment", text);
+            if (null != image) {
+                b.putString("image", image);
+            }
             String ret = facebook.request(b, "POST");
             Log.i(TAG, "regist result:"+ret);
         } catch (MalformedURLException e) {

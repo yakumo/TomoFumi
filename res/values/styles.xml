@@ -30,43 +30,16 @@
     <item name="android:background">@drawable/fukidashi</item>
   </style>
 
-<!-- old data start -->
-  <!-- style name="ThemeWhiteList" parent="android:Theme.Light">
-    <item name="android:listViewStyle">@style/ListWhiteList</item>
-  </style>
-
-  <style name="ListWhiteList" parent="@android:style/Widget.ListView">
-  </style>
-
-  <style name="TitleText" parent="@android:style/TextAppearance.Medium">
+  <style name="LinkCheckLabel" parent="@android:style/TextAppearance.Medium">
     <item name="android:textSize">14sp</item>
-    <item name="android:textColor">@color/title_color</item>
+    <item name="android:textColor">@color/link_check_title_color</item>
   </style>
 
-  <style name="TitleDescription" parent="@android:style/TextAppearance.Medium">
+  <style name="LinkCheckText" parent="@android:style/TextAppearance.Medium">
     <item name="android:textSize">16sp</item>
+    <item name="android:textColor">@color/link_check_message_color</item>
+    <item name="android:textStyle">bold</item>
+    <item name="android:paddingBottom">6sp</item>
+    <item name="android:paddingLeft">12sp</item>
   </style>
-
-  <style name="TextTime" parent="@android:style/TextAppearance.Small">
-    <item name="android:textColor">@color/time_gray</item>
-  </style>
-
-  <style name="LinkTitle" parent="@android:style/TextAppearance.Medium">
-    <item name="android:textSize">@dimen/link_title_size</item>
-    <item name="android:textColor">@color/link_color</item>
-  </style>
-
-  <style name="LinkSummary" parent="@android:style/TextAppearance.Small">
-    <item name="android:textSize">@dimen/link_summary_size</item>
-    <item name="android:textColor">@color/link_summary_color</item>
-  </style>
-
-  <style name="LinkNextPage" parent="@android:style/TextAppearance.Large">
-    <item name="android:textColor">@color/link_nextpage_color</item>
-  </style>
-
-  <style name="FriendItem" parent="@android:style/TextAppearance.Large">
-    <item name="android:textSize">@dimen/friend_list_item_text_size</item>
-  </style -->
-<!-- old data end -->
 </resources>

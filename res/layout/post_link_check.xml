@@ -5,35 +5,35 @@
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
    >
-  <RelativeLayout
+  <TextView
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
-     android:gravity="center"
-     >
-    <Button
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_alignParentRight="true"
-       android:id="@+id/link_text_check"
-       android:text="@string/link_check"
-       android:onClick="onClickLinkCheck"
-       />
-    <EditText
-       android:id="@+id/link_text"
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:layout_toLeftOf="@id/link_text_check"
-       />
-  </RelativeLayout>
+     android:text="@string/linkcheck_link_label"
+     style="@style/LinkCheckLabel"
+     />
+  <TextView
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:id="@+id/link_text"
+     style="@style/LinkCheckText"
+     />
   <TextView
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
      android:text="@string/linkcheck_title_label"
+     style="@style/LinkCheckLabel"
      />
   <TextView
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
      android:id="@+id/title_display_text"
+     style="@style/LinkCheckText"
+     />
+  <TextView
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:text="@string/linkcheck_image_label"
+     style="@style/LinkCheckLabel"
      />
   <GridView
      android:layout_width="fill_parent"

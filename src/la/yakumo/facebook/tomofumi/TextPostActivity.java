@@ -1,18 +1,24 @@
 package la.yakumo.facebook.tomofumi;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.View.OnClickListener;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -66,9 +72,12 @@ public class TextPostActivity
                         false,
                         false);
 
-                    TextView inputView =
-                        (TextView)findViewById(R.id.stream_text);
+                    EditText inputView =
+                        (EditText) findViewById(R.id.stream_text);
                     String text = inputView.getText().toString();
+
+                    EditText tmpEdit;
+                    ImageView tmpImageView;
 
                     try {
                         switch (postMode) {
@@ -80,6 +89,13 @@ public class TextPostActivity
                         case MODE_MYPLACES:
                             break;
                         case MODE_ADDLINK:
+                            tmpEdit = (EditText) findViewById(R.id.link_text);
+                            tmpImageView =
+                                (ImageView) findViewById(R.id.image_item);
+                            service.addLink(
+                                text,
+                                tmpEdit.getText().toString(),
+                                (String) tmpImageView.getTag());
                             break;
                         default:
                             break;
@@ -178,6 +194,19 @@ public class TextPostActivity
             }
         }
         else {
+            ImageView linkImage = (ImageView) findViewById(R.id.image_item);
+            if (null != linkImage) {
+                linkImage.setImageResource(R.drawable.no_image);
+                linkImage.setTag(null);
+                linkImage.setClickable(true);
+                linkImage.setOnClickListener(new OnClickListener() {
+                    public void onClick(View v)
+                    {
+                        onClickLinkCheck(v);
+                    }
+                });
+            }
+
             TextView urlText = (TextView) findViewById(R.id.link_text);
             while (true) {
                 if (null != urlText) {
@@ -209,6 +238,53 @@ public class TextPostActivity
         Log.i(TAG, "result, request:"+requestCode+", result:"+resultCode+", data:"+data);
         switch (requestCode) {
         case REQUEST_CODE_LINK_CHECK:
+            ImageView imgView = (ImageView) findViewById(R.id.image_item);
+            if (Activity.RESULT_OK == resultCode) {
+                String link = data.getStringExtra("link");
+                String imageUrl = data.getStringExtra("image_url");
+                byte[] image = data.getByteArrayExtra("image");
+
+                TextView urlText = (TextView) findViewById(R.id.link_text);
+                if (null != urlText) {
+                    urlText.setText(link);
+                }
+
+                if (null != imgView) {
+                    if (null != imageUrl &&
+                        null != image) {
+                        imgView.setTag(imageUrl);
+                        Bitmap bmp =
+                            BitmapFactory.decodeByteArray(
+                                image, 0, image.length);
+                        if (null != bmp) {
+                            Resources res = getResources();
+                            float imageWidth =
+                                res.getDimension(
+                                    R.dimen.link_check_image_width);
+                            float dh = imageWidth * bmp.getHeight();
+                            dh /= bmp.getWidth();
+                            Bitmap nimg =
+                                Bitmap.createScaledBitmap(
+                                    bmp,
+                                    (int)imageWidth,
+                                    (int)dh,
+                                    true);
+                            bmp.recycle();
+                            imgView.setImageBitmap(nimg);
+                        }
+                    }
+                    else {
+                        imgView.setImageResource(R.drawable.no_image);
+                        imgView.setTag(null);
+                    }
+                }
+            }
+            else {
+                if (null != imgView) {
+                    imgView.setImageResource(R.drawable.no_image);
+                    imgView.setTag(null);
+                }
+            }
             break;
         default:
             break;
@@ -299,8 +375,8 @@ public class TextPostActivity
         default:
             /*
              * all view is hidden
-              v = findViewById(R.id.compse_view);
-              v.setVisibility(View.VISIBLE);
+             v = findViewById(R.id.compse_view);
+             v.setVisibility(View.VISIBLE);
             */
             postMode = MODE_COMPOSE;
             break;
@@ -316,13 +392,35 @@ public class TextPostActivity
 
     private void sendImage()
     {
+        unsupported();
     }
 
     private void sendPlace()
     {
+        unsupported();
     }
 
     private void sendLink()
     {
+        Intent intent = new Intent(this, ClientService.class);
+        if (bindService(intent, conn, BIND_AUTO_CREATE)) {
+        }
+    }
+
+    private void unsupported()
+    {
+        new AlertDialog.Builder(this)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setTitle(R.string.error_unsupported)
+            .setMessage(R.string.error_unsupported)
+            .setPositiveButton(
+                R.string.message_cancel,
+                new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                    }
+                })
+            .show();
     }
 }

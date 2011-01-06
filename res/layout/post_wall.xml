@@ -126,38 +126,11 @@
      android:layout_height="wrap_content"
      android:visibility="gone"
      >
-    <RelativeLayout
+    <EditText
+       android:id="@+id/link_text"
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
-       android:gravity="center"
-       >
-      <Button
-         android:id="@+id/link_text_check"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_alignParentRight="true"
-         android:text="@string/link_check"
-         android:onClick="onClickLinkCheck"
-         />
-      <EditText
-         android:id="@+id/link_text"
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"
-         android:layout_toLeftOf="@id/link_text_check"
-         />
-    </RelativeLayout>
-    <LinearLayout
-       android:orientation="vertical"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:background="#f00"
-       >
-      <ImageView
-         android:id="@+id/image_icon"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:layout_gravity="top|left"
-         />
-    </LinearLayout>
+       />
+    <include layout="@layout/link_check_image"/>
   </LinearLayout>
 </LinearLayout>

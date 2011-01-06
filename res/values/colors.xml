@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <color name="title_back">#aaf</color>
+  <color name="title_color">#000</color>
+  <color name="message_color">#447</color>
   <color name="stream_image_frame_color">#555</color>
   <color name="stream_message_text_color">#225</color>
   <color name="stream_message_user_text_color">#7a7</color>
@@ -10,6 +12,8 @@
   <color name="stream_no_updated_background_color">#eee</color>
   <color name="post_splitter_color">#fff</color>
   <color name="list_fading_color">#222</color>
+  <color name="link_check_title_color">@color/title_color</color>
+  <color name="link_check_message_color">@color/message_color</color>
   <color name="link_check_image_frame">#444</color>
   <color name="link_check_image_normal_color">#fff</color>
   <color name="link_check_image_pressed_color">#0ff</color>

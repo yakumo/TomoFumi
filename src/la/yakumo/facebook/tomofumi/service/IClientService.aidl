@@ -30,4 +30,6 @@ interface IClientService
     int toggleCommentLike(String post_id);
     int registCommentLike(String post_id);
     int unregistCommentLike(String post_id);
+
+    int addLink(String text, String linkUrl, String imageUrl);
 }

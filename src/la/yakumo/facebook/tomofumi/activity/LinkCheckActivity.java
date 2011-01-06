@@ -16,8 +16,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -74,12 +77,40 @@ public class LinkCheckActivity
         }
 
         setContentView(R.layout.post_link_check);
-        EditText et = (EditText) findViewById(R.id.link_text);
+        TextView et = (TextView) findViewById(R.id.link_text);
         if (null != et) {
             et.setText(link);
         }
         grid = (GridView) findViewById(R.id.image_grid_list);
         grid.setAdapter(new ImageGridAdapter(this));
+        grid.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(
+                AdapterView<?> parent,
+                View view,
+                int position,
+                long id)
+            {
+                Adapter a = parent.getAdapter();
+                byte[] image = null;
+                String imageUrl = null;
+                if (0 < position) {
+                    ImageGridData imgData = (ImageGridData) a.getItem(position);
+                    image = imgData.getImage();
+                    imageUrl = imgData.getUrl();
+                }
+
+                Intent data = new Intent();
+                data.putExtra("link", link);
+                if (null != image) {
+                    data.putExtra("image", image);
+                }
+                if (null != imageUrl) {
+                    data.putExtra("image_url", imageUrl);
+                }
+                setResult(Activity.RESULT_OK, data);
+                finish();
+            }
+        });
     }
 
     @Override
@@ -104,7 +135,7 @@ public class LinkCheckActivity
 
     public void onClickLinkCheck(View v)
     {
-        EditText et = (EditText) findViewById(R.id.link_text);
+        TextView et = (TextView) findViewById(R.id.link_text);
         String link = et.getText().toString();
         isChecked = false;
         linkCheck(link);
@@ -137,6 +168,7 @@ public class LinkCheckActivity
                 public void run()
                 {
                     gridAdapter.clearImage();
+                    grid.setSelection(0);
                     progress = ProgressDialog.show(
                         LinkCheckActivity.this,
                         null,
@@ -212,12 +244,12 @@ public class LinkCheckActivity
                                     sLines = "";
                                     title = gm.group(1);
                                     titleReaded = true;
-                                    Log.i(TAG, "title:"+gm.group(1));
                                 }
                                 else {
                                     connectNext = true;
-                                    sLines = sLines + line;
+                                    sLines = line;
                                 }
+                                continue;
                             }
                         }
 
@@ -282,6 +314,7 @@ public class LinkCheckActivity
                     try {
                         URL url = new URL(image);
                         conn = (HttpURLConnection)url.openConnection();
+                        conn.addRequestProperty("Referer", link);
                         conn.setInstanceFollowRedirects(true);
                         conn.setDoInput(true);
                         conn.connect();
@@ -304,7 +337,8 @@ public class LinkCheckActivity
                         }
 
                         byte[] img = dst.toByteArray();
-                        gridAdapter.addImage(img);
+                        gridAdapter.addImage(
+                            new ImageGridData(image, img));
                     } catch (MalformedURLException e) {
                     } catch (IOException e) {
                     }
@@ -334,11 +368,33 @@ public class LinkCheckActivity
         }
     }
 
+    public class ImageGridData
+    {
+        private String url;
+        private byte[] image;
+
+        public ImageGridData(String url, byte[] image)
+        {
+            this.url = url;
+            this.image = image;
+        }
+
+        public String getUrl()
+        {
+            return url;
+        }
+
+        public byte[] getImage()
+        {
+            return image;
+        }
+    }
+
     public class ImageGridAdapter
         extends BaseAdapter
     {
         private Context context;
-        private ArrayList<byte[]> images = new ArrayList<byte[]>();
+        private ArrayList<ImageGridData> images = new ArrayList<ImageGridData>();
         private float imageWidth;
         private LayoutInflater layoutInflater;
 
@@ -350,9 +406,9 @@ public class LinkCheckActivity
             layoutInflater = LayoutInflater.from(context);
         }
 
-        public void addImage(byte[] img)
+        public void addImage(ImageGridData imgData)
         {
-            images.add(img);
+            images.add(imgData);
             handler.post(new Runnable() {
                 public void run()
                 {
@@ -364,6 +420,16 @@ public class LinkCheckActivity
         public void clearImage()
         {
             images.clear();
+
+            Resources res = context.getResources();
+            try {
+                InputStream is = res.openRawResource(R.drawable.no_image);
+                byte[] no_image = new byte[is.available()];
+                is.read(no_image);
+                images.add(new ImageGridData(null, no_image));
+            } catch (IOException e) {
+                Log.e(TAG, "IOException", e);
+            }
         }
 
         public int getCount()
@@ -401,9 +467,10 @@ public class LinkCheckActivity
                 img = (ImageView) ret.findViewById(R.id.image_item);
             }
             if (null != img) {
-                byte[] imgData = images.get(position);
+                ImageGridData imgData = images.get(position);
                 Bitmap bmp =
-                    BitmapFactory.decodeByteArray(imgData, 0, imgData.length);
+                    BitmapFactory.decodeByteArray(
+                        imgData.getImage(), 0, imgData.getImage().length);
                 if (null != bmp) {
                     float dh = imageWidth * bmp.getHeight();
                     dh /= bmp.getWidth();

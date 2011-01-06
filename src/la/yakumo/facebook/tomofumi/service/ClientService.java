@@ -53,6 +53,7 @@ public class ClientService
     private static final int MSG_ADD_COMMENT = 6;
     private static final int MSG_ADD_STREAM_LIKE = 7;
     private static final int MSG_ADD_COMMENT_LIKE = 8;
+    private static final int MSG_ADD_LINK = 9;
     private Handler handler = new Handler() {
         public void handleMessage(Message msg)
         {
@@ -79,6 +80,10 @@ public class ClientService
                 break;
             case MSG_ADD_COMMENT_LIKE:
                 addCommentLike((String)msg.obj, msg.arg1);
+                break;
+            case MSG_ADD_LINK:
+                strs = (String[])msg.obj;
+                addLink(strs[0], strs[1], strs[2]);
                 break;
             default:
                 break;
@@ -272,6 +277,18 @@ public class ClientService
                     msg.what = MSG_ADD_COMMENT_LIKE;
                     msg.obj = new String(post_id);
                     msg.arg1 = 0;
+                    handler.sendMessage(msg);
+                    return RESULT_OK;
+                }
+                return RESULT_ERROR;
+            }
+
+            public int addLink(String text, String linkUrl, String imageUrl)
+            {
+                if (Facebook.getInstance(ClientService.this).loginCheck()) {
+                    Message msg = new Message();
+                    msg.what = MSG_ADD_LINK;
+                    msg.obj = new String[] {text, linkUrl, imageUrl};
                     handler.sendMessage(msg);
                     return RESULT_OK;
                 }
@@ -647,6 +664,26 @@ public class ClientService
                         post_id,
                         info.getInt("likes"),
                         info.getBoolean("liked"));
+                }
+            });
+    }
+
+    public void addLink(final String text, final String link, final String img)
+    {
+        Log.i(TAG, "addLink:"+text+", "+link+", "+img);
+        new LinkRegister(
+            this,
+            text,
+            link,
+            img)
+            .execute(new ItemRegister.OnSendFinish() {
+                public void onStartSend(Bundle info)
+                {
+                }
+
+                public void onSended(String reason, Bundle info)
+                {
+                    addedStream(reason);
                 }
             });
     }
