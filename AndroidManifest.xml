@@ -8,11 +8,13 @@
   <application
      android:theme="@android:style/Theme.Light"
      android:label="@string/app_name"
-     android:icon="@drawable/icon">
+     android:icon="@drawable/icon"
+     android:process=":main">
     <activity
-       android:name=".StreamListActivity"
+       android:name=".activity.StreamListActivity"
        android:label="@string/app_name"
        android:configChanges="keyboard|orientation|keyboardHidden"
+       android:process=":main"
        >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -21,8 +23,10 @@
     </activity>
 
     <activity
-       android:name=".TextPostActivity"
-       android:label="@string/text_post_title">
+       android:name=".activity.TextPostActivity"
+       android:label="@string/text_post_title"
+       android:process=":main"
+       >
       <intent-filter>
         <action android:name="android.intent.action.SEND" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -34,14 +38,16 @@
     <activity
        android:name=".activity.LinkCheckActivity"
        android:label="@string/link_check_title"
-       android:noHistory="true">
+       android:noHistory="true"
+       android:process=":main">
     </activity>
 
     <activity
-       android:name=".StreamItemActivity"
+       android:name=".activity.StreamItemActivity"
        android:label="@string/stream_item_title"
        android:configChanges="keyboard|orientation|keyboardHidden"
        android:windowSoftInputMode="stateHidden|adjustResize"
+       android:process=":main"
        >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -54,9 +60,24 @@
        android:label="@string/login_title">
     </activity>
 
+    <activity
+       android:process=":service"
+       android:noHistory="true"
+       android:excludeFromRecents="true"
+       android:launchMode="singleTop"
+       android:theme="@style/ProgressDialog"
+       android:name=".activity.ProgressActivity"
+       android:label="@string/progress_title">
+    </activity>
+
     <service
        android:process=":service"
        android:name=".service.ClientService">
+    </service>
+
+    <service
+       android:process=":main"
+       android:name=".service.LocalService">
     </service>
   </application>
 

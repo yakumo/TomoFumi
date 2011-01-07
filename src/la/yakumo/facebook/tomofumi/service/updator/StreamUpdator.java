@@ -1,16 +1,22 @@
 package la.yakumo.facebook.tomofumi.service.updator;
 
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.R;
+import la.yakumo.facebook.tomofumi.activity.ProgressActivity;
 import la.yakumo.facebook.tomofumi.data.Database;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,16 +25,128 @@ import org.json.JSONObject;
 public class StreamUpdator
     extends Updator
 {
-    private Context context;
+    private boolean isClear = false;
+    private ProgressDialog progress;
 
-    public StreamUpdator(Context context)
+    public StreamUpdator(Context context, Handler handler, boolean isClear)
     {
         super(context);
+        this.isClear = isClear;
     }
 
-    public StreamUpdator(Context context, OnEventCallback cb)
+    @Override
+    protected void updateCommand(Bundle info)
     {
-        super(context, cb);
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setClass(context, ProgressActivity.class);
+        intent.putExtra("is_finish", false);
+        context.startActivity(intent);
+
+        Database db = new Database(context);
+
+        if (isClear) {
+        }
+
+        SQLiteDatabase rdb = db.getReadableDatabase();
+        Cursor c = rdb.query(
+            "stream",
+            new String[] {"updated_time"},
+            null, null, null, null,
+            "updated_time desc",
+            "1");
+        long lastStream = 0;
+        if (c.moveToFirst()) {
+            lastStream = c.getLong(0);
+        }
+
+        String q1 =
+            "SELECT"+
+            " post_id"+
+            ",app_id"+
+            ",actor_id"+
+            ",target_id"+
+            ",created_time"+
+            ",updated_time"+
+            ",message"+
+            ",app_data"+
+            ",comments"+
+            ",likes"+
+            ",action_links"+
+            ",attachment"+
+            " FROM stream"+
+            " WHERE source_id"+
+            " IN"+
+            "(SELECT"+
+            " target_id"+
+            " FROM connection"+
+            " WHERE source_id="+facebook.getUserID()+")"+
+            " AND is_hidden = 0"+
+            ((lastStream == 0)?
+             " ORDER BY created_time DESC"+
+             " LIMIT 20":
+             " AND updated_time>"+lastStream+
+             " ORDER BY created_time DESC")+
+            "";
+        String q2 =
+            "SELECT"+
+            " id"+
+            ",name"+
+            ",pic_square"+
+            ",username"+
+            " FROM profile"+
+            " WHERE id IN "+
+            "(SELECT"+
+            " actor_id"+
+            " FROM #query1)"+
+            "";
+        String q3 =
+            "SELECT"+
+            " uid"+
+            ",profile_url"+
+            " FROM user"+
+            " WHERE uid IN "+
+            "(SELECT"+
+            " actor_id"+
+            " FROM #query1)"+
+            "";
+        String resp = "{}";
+        try {
+            resp = facebook.fqlMultiQuery(q1, q2, q3);
+            Log.i(TAG, "resp:"+resp);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "MalformedURLException", e);
+        } catch (IOException e) {
+            Log.e(TAG, "IOException", e);
+        }
+        if (resp.startsWith("[")) {
+            SQLiteDatabase wdb = db.getWritableDatabase();
+            try {
+                wdb.beginTransaction();
+                ContentValues val = new ContentValues();
+                val.put("updated", 0);
+                wdb.update("stream", val, "updated=1", null);
+
+                try {
+                    JSONArray resps = new JSONArray(resp);
+                    parseStream(
+                        wdb,
+                        resps.getJSONObject(0).getJSONArray("fql_result_set"));
+                    parseUsers(
+                        wdb,
+                        resps.getJSONObject(1).getJSONArray("fql_result_set"),
+                        resps.getJSONObject(2).getJSONArray("fql_result_set"));
+                } catch (JSONException e) {
+                    Log.e(TAG, "JSONException", e);
+                }
+                wdb.setTransactionSuccessful();
+            } finally {
+                wdb.endTransaction();
+            }
+        }
+
+        intent.putExtra("is_finish", true);
+        context.startActivity(intent);
     }
 
     private void setVariable(
@@ -171,116 +289,5 @@ public class StreamUpdator
         } catch (JSONException e) {
             Log.e(TAG, "JSONException", e);
         }
-    }
-
-    @Override
-    protected Integer doInBackground(Void... params)
-    {
-        if (!facebook.loginCheck()) {
-            return -1;
-        }
-
-        Bundle info = new Bundle();
-        start(info);
-
-        Database db = new Database(context);
-        SQLiteDatabase rdb = db.getReadableDatabase();
-        Cursor c = rdb.query(
-            "stream",
-            new String[] {"updated_time"},
-            null, null, null, null,
-            "updated_time desc",
-            "1");
-        long lastStream = 0;
-        if (c.moveToFirst()) {
-            lastStream = c.getLong(0);
-        }
-
-        String q1 =
-            "SELECT"+
-            " post_id"+
-            ",app_id"+
-            ",actor_id"+
-            ",target_id"+
-            ",created_time"+
-            ",updated_time"+
-            ",message"+
-            ",app_data"+
-            ",comments"+
-            ",likes"+
-            ",action_links"+
-            ",attachment"+
-            " FROM stream"+
-            " WHERE source_id"+
-            " IN"+
-            "(SELECT"+
-            " target_id"+
-            " FROM connection"+
-            " WHERE source_id="+facebook.getUserID()+")"+
-            " AND is_hidden = 0"+
-            ((lastStream == 0)?
-             " ORDER BY created_time DESC"+
-             " LIMIT 20":
-             " AND updated_time>"+lastStream+
-             " ORDER BY created_time DESC")+
-            "";
-        String q2 =
-            "SELECT"+
-            " id"+
-            ",name"+
-            ",pic_square"+
-            ",username"+
-            " FROM profile"+
-            " WHERE id IN "+
-            "(SELECT"+
-            " actor_id"+
-            " FROM #query1)"+
-            "";
-        String q3 =
-            "SELECT"+
-            " uid"+
-            ",profile_url"+
-            " FROM user"+
-            " WHERE uid IN "+
-            "(SELECT"+
-            " actor_id"+
-            " FROM #query1)"+
-            "";
-        String resp = "{}";
-        try {
-            resp = fqlMultiQuery(q1, q2, q3);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "MalformedURLException", e);
-        } catch (IOException e) {
-            Log.e(TAG, "IOException", e);
-        }
-        if (resp.startsWith("[")) {
-            SQLiteDatabase wdb = db.getWritableDatabase();
-            try {
-                wdb.beginTransaction();
-                ContentValues val = new ContentValues();
-                val.put("updated", 0);
-                wdb.update("stream", val, "updated=1", null);
-
-                try {
-                    JSONArray resps = new JSONArray(resp);
-                    parseStream(
-                        wdb,
-                        resps.getJSONObject(0).getJSONArray("fql_result_set"));
-                    parseUsers(
-                        wdb,
-                        resps.getJSONObject(1).getJSONArray("fql_result_set"),
-                        resps.getJSONObject(2).getJSONArray("fql_result_set"));
-                } catch (JSONException e) {
-                    Log.e(TAG, "JSONException", e);
-                }
-                wdb.setTransactionSuccessful();
-            } finally {
-                wdb.endTransaction();
-            }
-        }
-
-        finish(info, false);
-        return 0;
     }
 }

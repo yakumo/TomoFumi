@@ -194,6 +194,34 @@ public class Facebook
         return facebook.request(graphPath, parameters, httpMethod);
     }
 
+    public String fqlQuery(String query)
+    throws MalformedURLException, IOException
+    {
+        Bundle b = new Bundle();
+        b.putString("method", "fql.query");
+        b.putString("query", query);
+        String ret = request(b);
+        return ret;
+    }
+
+    public String fqlMultiQuery(String... queries)
+    throws MalformedURLException, IOException
+    {
+        Bundle b = new Bundle();
+        b.putString("method", "fql.multiquery");
+        JSONObject ql = new JSONObject();
+        for (int i = 0 ; i < queries.length ; i++) {
+            try {
+                ql.put(String.format("query%d", i + 1), queries[i]);
+            } catch (JSONException e) {
+                Log.e(TAG, "JSONException", e);
+            }
+        }
+        b.putString("queries", ql.toString());
+        String ret = request(b);
+        return ret;
+    }
+
     public static interface OnLoginCallback
     {
         public void onLoginSuccess();

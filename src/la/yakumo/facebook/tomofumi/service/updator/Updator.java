@@ -1,113 +1,185 @@
 package la.yakumo.facebook.tomofumi.service.updator;
 
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import la.yakumo.facebook.tomofumi.Constants;
+import la.yakumo.facebook.tomofumi.service.ClientService;
 import la.yakumo.facebook.tomofumi.service.Facebook;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class Updator
-    extends AsyncTask<Void,Bundle,Integer>
 {
     protected static final String TAG = Constants.LOG_TAG;
-    protected Facebook facebook;
+
+    private static final int MSG_SHOW_PROGRESS = 1;
+    private static final int MSG_DISMISS_PROGRESS = 2;
+
     protected Context context;
-    protected Resources resources = null;
-    private OnEventCallback callback = null;
-    private boolean showProgress = true;
+    protected Resources resources;
+    protected Facebook facebook;
+    private Handler handler = null;
+    private ProgressDialog progress = null;
 
     public Updator(Context context)
     {
-        facebook = Facebook.getInstance(context);
         this.context = context;
         this.resources = context.getResources();
+        this.facebook = Facebook.getInstance(context);
+
+        handler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg)
+            {
+                CharSequence[] par = (CharSequence[]) msg.obj;
+                switch (msg.what) {
+                case MSG_SHOW_PROGRESS:
+                    if (null == progress) {
+                        progress =
+                            ProgressDialog.show(
+                                Updator.this.context,
+                                par[0],
+                                par[1],
+                                true,
+                                true,
+                                new OnCancelListener()
+                                {
+                                    public void onCancel(DialogInterface dialog)
+                                    {
+                                        progressCancelled();
+                                    }
+                                });
+                    }
+                    break;
+                case MSG_DISMISS_PROGRESS:
+                    if (null != progress) {
+                        progress.dismiss();
+                    }
+                    break;
+                default:
+                    break;
+                }
+
+            }
+        };
     }
 
-    public Updator(Context context, OnEventCallback callback)
+    public Bundle execute(OnFinish finish)
     {
-        this(context);
-        this.callback = callback;
+        return
+            execute(
+                new OnUpdateCommand()
+                {
+                    public void onUpdateCommand(Bundle info)
+                    {
+                        updateCommand(info);
+                    }
+                },
+                finish);
     }
 
-    public Updator(Context context, OnEventCallback callback, boolean pShow)
+    protected void updateCommand(Bundle info)
     {
-        this(context, callback);
-        this.showProgress = pShow;
+        Log.i(TAG, "Updator#updateCommand");
     }
 
-    protected Integer doInBackground(Void... params)
+    protected Bundle execute(OnUpdateCommand command, OnFinish finish)
     {
-        return -1;
-    }
-
-    protected void onProgressUpdate(Bundle... values)
-    {
-        Log.i(TAG, ""+this.getClass().toString()+"#onProgressUpdate");
-        if (null != callback && values.length > 0) {
-            callback.onProgress(values[0]);
-        }
-    }
-
-    protected void onPostExecute(Integer result)
-    {
-        Log.i(TAG, ""+this.getClass().toString()+"#onPostExecute:"+result);
-    }
-
-    protected void start(Bundle info)
-    {
-        if (null != callback) {
-            callback.onStartEvent(info);
-        }
-    }
-
-    protected void finish(Bundle info, boolean cancelled)
-    {
-        if (null != callback) {
-            callback.onFinishEvent(info, cancelled);
-        }
-    }
-
-    protected String fqlQuery(String query)
-        throws MalformedURLException, IOException
-    {
-        Bundle b = new Bundle();
-        b.putString("method", "fql.query");
-        b.putString("query", query);
-        String ret = facebook.request(b);
-        Log.i(TAG, "query result:"+ret);
+        Bundle ret = execute(command);
+        finish.onFinish(ret);
         return ret;
     }
 
-    protected String fqlMultiQuery(String... queries)
-        throws MalformedURLException, IOException
+    protected Bundle execute(OnUpdateCommand... commands)
     {
-        Bundle b = new Bundle();
-        b.putString("method", "fql.multiquery");
-        JSONObject ql = new JSONObject();
-        for (int i = 0 ; i < queries.length ; i++) {
-            try {
-                ql.put(String.format("query%d", i + 1), queries[i]);
-            } catch (JSONException e) {
-                Log.e(TAG, "JSONException", e);
+        while (true) {
+            Log.i(TAG, "Update#execute");
+            if (!Facebook.getInstance(context).loginCheck()) {
+                Looper.prepare();
+                final String errMsg = null;
+                final Handler handler = new Handler() {
+                    public void handleMessage(Message msg)
+                    {
+                        if (msg.what == 1) {
+                            Looper.myLooper().quit();
+                        }
+                    }
+                };
+                BroadcastReceiver loginStatusReceiver =
+                    new BroadcastReceiver() {
+                        public void onReceive(Context context, Intent intent)
+                        {
+                            String action = intent.getAction();
+                            int sessionID = intent.getIntExtra(
+                                ClientService.EXTRA_LOGIN_SESSION_ID,
+                                Constants.SESSION_UNKNOWN);
+                            if (ClientService.ACTION_LOGIN_SUCCESS.equals(action)) {
+                            }
+                            if (ClientService.ACTION_LOGIN_FAIL.equals(action)) {
+                                errMsg.replace(
+                                    errMsg,
+                                    intent.getStringExtra(
+                                        ClientService.EXTRA_LOGIN_REASON));
+                            }
+                            handler.sendEmptyMessage(1);
+                        }
+                    };
+                IntentFilter f = new IntentFilter();
+                f.addAction(ClientService.ACTION_LOGIN_SUCCESS);
+                f.addAction(ClientService.ACTION_LOGIN_FAIL);
+                context.registerReceiver(loginStatusReceiver, f);
+                Log.i(TAG, "wait login ...");
+                Looper.loop();
+                Log.i(TAG, "logged in !!!");
+                context.unregisterReceiver(loginStatusReceiver);
+                break;
+            }
+            else {
+                break;
             }
         }
-        b.putString("queries", ql.toString());
-        String ret = facebook.request(b);
-        Log.i(TAG, "query result:"+ret);
-        return ret;
+
+        Bundle info = new Bundle();
+        for (OnUpdateCommand command : commands) {
+            command.onUpdateCommand(info);
+        }
+
+        return info;
     }
 
-    public static interface OnEventCallback
+    protected void showProgress(CharSequence title, CharSequence msg)
     {
-        public void onStartEvent(Bundle info);
-        public void onProgress(Bundle info);
-        public void onFinishEvent(Bundle info, boolean isCancel);
+        handler.sendMessage(
+            Message.obtain(
+                null,
+                MSG_SHOW_PROGRESS,
+                new CharSequence[] {title, msg}));
+    }
+
+    protected void dismissProgress()
+    {
+        handler.sendEmptyMessage(MSG_DISMISS_PROGRESS);
+    }
+
+    protected void progressCancelled()
+    {
+    }
+
+    public interface OnUpdateCommand
+    {
+        public void onUpdateCommand(Bundle info);
+    }
+
+    public interface OnFinish
+    {
+        public void onFinish(Bundle info);
     }
 }

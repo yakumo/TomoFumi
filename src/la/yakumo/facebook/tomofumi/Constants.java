@@ -11,6 +11,9 @@ public class Constants
     public static final String API_KEY = AppConst.API_KEY;
     public static final String SECRET_KEY = AppConst.SECRET_KEY;
 
+    public static final String LOCAL_BROADCAST_PERMISSION =
+        "la.yakumo.facebook.tomofumi.LOCAL_BROADCAST_PERMISSION";
+
     public static final int PROGRESS_CANCELLED_TOAST_DURATION = 800;
 
     public static final int SESSION_UNKNOWN = 0;

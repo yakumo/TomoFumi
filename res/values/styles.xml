@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <style name="ProgressDialog" parent="@android:style/Theme.Dialog">
+    <item name="android:windowNoTitle">true</item>
+  </style>
+
   <style name="StreamMessage" parent="@android:style/TextAppearance.Medium">
     <item name="android:textSize">@dimen/stream_message_text_size</item>
     <item name="android:textColor">@color/stream_message_text_color</item>

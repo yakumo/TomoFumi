@@ -14,11 +14,8 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 import la.yakumo.facebook.tomofumi.Constants;
-import la.yakumo.facebook.tomofumi.TextPostActivity;
 import la.yakumo.facebook.tomofumi.service.callback.*;
-import la.yakumo.facebook.tomofumi.service.register.*;
 import la.yakumo.facebook.tomofumi.service.updator.*;
-import la.yakumo.facebook.tomofumi.service.command.*;
 
 public class ClientService
     extends Service
@@ -38,319 +35,65 @@ public class ClientService
     public static final String EXTRA_LOGIN_SESSION_ID =
         "la.yakumo.facebook.tomofumi.LOGIN_SESSIONID";
 
-    private RemoteCallbackList<ILoginCallback> loginListeners =
-        new RemoteCallbackList<ILoginCallback>();
-    private RemoteCallbackList<IStreamCallback> streamListeners =
-        new RemoteCallbackList<IStreamCallback>();
-    private RemoteCallbackList<ICommentCallback> commentListeners =
-        new RemoteCallbackList<ICommentCallback>();
-    private RemoteCallbackList<ILikeCallback> likeListeners =
-        new RemoteCallbackList<ILikeCallback>();
+    private Handler handler = new Handler();
 
-    private static final int MSG_LOGIN = 1;
-    private static final int MSG_UPDATE_STREAM = 2;
-    private static final int MSG_UPDATE_COMMENT = 3;
-    private static final int MSG_UPDATE_LIKE = 4;
-    private static final int MSG_ADD_STREAM = 11;
-    private static final int MSG_ADD_COMMENT = 12;
-    private static final int MSG_ADD_STREAM_LIKE = 13;
-    private static final int MSG_ADD_COMMENT_LIKE = 14;
-    private static final int MSG_ADD_LINK = 15;
-    private static final int MSG_SHARE_STREAM = 31;
-    private Handler handler = new Handler() {
-        public void handleMessage(Message msg)
-        {
-            String[] strs;
-            switch (msg.what) {
-            case MSG_LOGIN:
-                login(msg.arg1);
-                break;
-            case MSG_UPDATE_STREAM:
-                updateStream();
-                break;
-            case MSG_UPDATE_COMMENT:
-                updateComment((String)msg.obj);
-                break;
-            case MSG_ADD_STREAM:
-                addStream((String)msg.obj);
-                break;
-            case MSG_ADD_COMMENT:
-                strs = (String[])msg.obj;
-                addComment(strs[0], strs[1]);
-                break;
-            case MSG_ADD_STREAM_LIKE:
-                addStreamLike((String)msg.obj);
-                break;
-            case MSG_ADD_COMMENT_LIKE:
-                addCommentLike((String)msg.obj, msg.arg1);
-                break;
-            case MSG_ADD_LINK:
-                strs = (String[])msg.obj;
-                addLink(strs[0], strs[1], strs[2]);
-                break;
-            case MSG_SHARE_STREAM:
-                shareStream((String)msg.obj);
-                break;
-            default:
-                break;
-            }
-        }
-    };
+    private RemoteCallbackList<ICommandCallback> callbacks =
+        new RemoteCallbackList<ICommandCallback>();
 
     private final IClientService.Stub stub =
         new IClientService.Stub()
         {
-            public void registerLoginCallback(ILoginCallback callback)
+            public void registerCallback(ICommandCallback callback)
             {
                 Log.i(TAG, "registerLoginCallback:"+callback);
-                loginListeners.register(callback);
+                synchronized (callbacks) {
+                    callbacks.register(callback);
+                }
             }
 
-            public void unregisterLoginCallback(ILoginCallback callback)
+            public void unregisterCallback(ICommandCallback callback)
             {
                 Log.i(TAG, "unregisterLoginCallback:"+callback);
-                loginListeners.unregister(callback);
-            }
-
-            public void registerStreamCallback(IStreamCallback callback)
-            {
-                Log.i(TAG, "registerStreamCallback:"+callback);
-                streamListeners.register(callback);
-            }
-
-            public void unregisterStreamCallback(IStreamCallback callback)
-            {
-                Log.i(TAG, "unregisterStreamCallback:"+callback);
-                streamListeners.unregister(callback);
-            }
-
-            public void registerCommentCallback(ICommentCallback callback)
-            {
-                Log.i(TAG, "registerCommentCallback:"+callback);
-                commentListeners.register(callback);
-            }
-
-            public void unregisterCommentCallback(ICommentCallback callback)
-            {
-                Log.i(TAG, "unregisterCommentCallback:"+callback);
-                commentListeners.unregister(callback);
-            }
-
-            public void registerLikeCallback(ILikeCallback callback)
-            {
-                Log.i(TAG, "registerLikeCallback:"+callback);
-                likeListeners.register(callback);
-            }
-
-            public void unregisterLikeCallback(ILikeCallback callback)
-            {
-                Log.i(TAG, "unregisterLikeCallback:"+callback);
-                likeListeners.unregister(callback);
-            }
-
-            public void login(int sessionID)
-            {
-                Message msg = new Message();
-                msg.what = MSG_LOGIN;
-                msg.arg1 = sessionID;
-                handler.sendMessage(msg);
-            }
-
-            public int updateStream()
-            throws RemoteException
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    handler.sendEmptyMessage(MSG_UPDATE_STREAM);
-                    return RESULT_OK;
+                synchronized (callbacks) {
+                    callbacks.unregister(callback);
                 }
-                return RESULT_DISPLAY_LOGIN;
             }
 
-            public int updateComment(String post_id)
-            throws RemoteException
+            public void reloadStream(boolean isClear)
             {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_UPDATE_COMMENT;
-                    msg.obj = post_id;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_DISPLAY_LOGIN;
+                ClientService.this.reloadStream(isClear);
             }
 
-            public int updateLike(String post_id)
-            throws RemoteException
+            public void reloadComment(String post_id)
             {
-                return RESULT_ERROR;
             }
 
-            public int addStream(String text)
-            throws RemoteException
+            public void reloadLike(String post_id)
             {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_STREAM;
-                    msg.obj = new String(text);
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
             }
 
-            public int addComment(String post_id, String text)
-            throws RemoteException
+            public void addStreamMessage(String text)
             {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_COMMENT;
-                    msg.obj = new String[] {post_id, text};
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
             }
 
-            public int toggleStreamLike(String post_id)
+            public void addLink(String text, String linkUrl, String imageUrl)
             {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_STREAM_LIKE;
-                    msg.obj = new String(post_id);
-                    msg.arg1 = -1;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int registStreamLike(String post_id)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_STREAM_LIKE;
-                    msg.obj = new String(post_id);
-                    msg.arg1 = 1;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int unregistStreamLike(String post_id)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_STREAM_LIKE;
-                    msg.obj = new String(post_id);
-                    msg.arg1 = 0;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int toggleCommentLike(String post_id)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_COMMENT_LIKE;
-                    msg.obj = new String(post_id);
-                    msg.arg1 = -1;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int registCommentLike(String post_id)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_COMMENT_LIKE;
-                    msg.obj = new String(post_id);
-                    msg.arg1 = 1;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int unregistCommentLike(String post_id)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_COMMENT_LIKE;
-                    msg.obj = new String(post_id);
-                    msg.arg1 = 0;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int addLink(String text, String linkUrl, String imageUrl)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_ADD_LINK;
-                    msg.obj = new String[] {text, linkUrl, imageUrl};
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-
-            public int shareStream(String post_id)
-            {
-                if (Facebook.getInstance(ClientService.this).loginCheck()) {
-                    Message msg = new Message();
-                    msg.what = MSG_SHARE_STREAM;
-                    msg.obj = post_id;
-                    handler.sendMessage(msg);
-                    return RESULT_OK;
-                }
-                return RESULT_ERROR;
-            }
-        };
-
-    private BroadcastReceiver loginStatusReceiver =
-        new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent)
-            {
-                String action = intent.getAction();
-                int sessionID = intent.getIntExtra(
-                    EXTRA_LOGIN_SESSION_ID,
-                    Constants.SESSION_UNKNOWN);
-                if (ACTION_LOGIN_SUCCESS.equals(action)) {
-                    sendLoggedIn(sessionID);
-                }
-                if (ACTION_LOGIN_FAIL.equals(action)) {
-                    sendLoginFail(
-                        sessionID,
-                        intent.getStringExtra(EXTRA_LOGIN_REASON));
-                }
             }
         };
 
     public void onCreate()
     {
-        IntentFilter f = new IntentFilter();
-        f.addAction(ACTION_LOGIN_SUCCESS);
-        f.addAction(ACTION_LOGIN_FAIL);
-        registerReceiver(loginStatusReceiver, f);
-        ImageDownloader.startDownloader(
-            this,
-            new ImageDownloader.OnDownloadCallback() {
-                public void downloaded(String url)
-                {
-                }
-            });
     }
 
     public void onDestroy()
     {
-        unregisterReceiver(loginStatusReceiver);
+        //unregisterReceiver(loginStatusReceiver);
+    }
+
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        Facebook.getInstance(this).loginCheck();
+        return START_STICKY;
     }
 
     public IBinder onBind(Intent intent)
@@ -359,6 +102,31 @@ public class ClientService
         return stub;
     }
 
+    private void reloadStream(boolean isClear)
+    {
+        new StreamUpdator(this, handler, isClear).execute(new Updator.OnFinish() {
+            public void onFinish(Bundle info)
+            {
+                String errMsg = null;
+                if (info.containsKey("error")) {
+                    errMsg = info.getString("error");
+                }
+                synchronized (callbacks) {
+                    int numListener = callbacks.beginBroadcast();
+                    for (int i = 0 ; i < numListener ; i++) {
+                        try {
+                            callbacks.getBroadcastItem(i).reloadedStream(errMsg);
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    callbacks.finishBroadcast();
+                }
+            }
+        });
+    }
+
+    /*
     private void sendLoggedIn(int sessionID)
     {
         String uid = Facebook.getInstance(this).getUserID();
@@ -730,4 +498,5 @@ public class ClientService
                 }
             }).execute();
     }
+    */
 }
