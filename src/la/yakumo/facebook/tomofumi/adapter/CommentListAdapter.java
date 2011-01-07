@@ -90,7 +90,9 @@ public class CommentListAdapter
                 else {
                     sli = (Database.StreamListItem)item;
                     sli.updated = true;
-                    sli.show_share = true;
+                    if (!Constants.IS_FREE) {
+                        sli.show_share = true;
+                    }
                 }
             }
             isFirstRead = false;
