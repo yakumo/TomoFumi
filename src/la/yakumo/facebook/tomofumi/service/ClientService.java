@@ -14,6 +14,7 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 import la.yakumo.facebook.tomofumi.Constants;
+import la.yakumo.facebook.tomofumi.service.IClientService;
 import la.yakumo.facebook.tomofumi.service.callback.*;
 import la.yakumo.facebook.tomofumi.service.updator.*;
 
@@ -104,9 +105,28 @@ public class ClientService
 
     private void reloadStream(boolean isClear)
     {
-        new StreamUpdator(this, handler, isClear).execute(new Updator.OnFinish() {
+        new StreamUpdator(this, handler, isClear)
+            .execute(new Updator.OnStatusChange() {
+            public void onStart()
+            {
+                Log.i(TAG, "!!! onStart !!!");
+                synchronized (callbacks) {
+                    int numListener = callbacks.beginBroadcast();
+                    for (int i = 0 ; i < numListener ; i++) {
+                        try {
+                            callbacks.getBroadcastItem(i)
+                                .reloadStreamStart();
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    callbacks.finishBroadcast();
+                }
+            }
+
             public void onFinish(Bundle info)
             {
+                Log.i(TAG, "!!! onFinish !!!");
                 String errMsg = null;
                 if (info.containsKey("error")) {
                     errMsg = info.getString("error");
@@ -115,7 +135,8 @@ public class ClientService
                     int numListener = callbacks.beginBroadcast();
                     for (int i = 0 ; i < numListener ; i++) {
                         try {
-                            callbacks.getBroadcastItem(i).reloadedStream(errMsg);
+                            callbacks.getBroadcastItem(i)
+                                .reloadStreamFinish(errMsg);
                         } catch (RemoteException e) {
                             Log.e(TAG, "RemoteException", e);
                         }

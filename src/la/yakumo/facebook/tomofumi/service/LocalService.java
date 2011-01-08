@@ -5,13 +5,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import java.util.ArrayList;
+import javax.rmi.CORBA.Stub;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.service.callback.ICommandCallback;
 
@@ -25,22 +28,57 @@ public class LocalService
 
     public static final int MSG_RELOAD_STREAM = 101;
 
-    public static final int MSG_RELOADED_STREAM = 201;
+    public static final int MSG_RELOAD_STREAM_START = 201;
+    public static final int MSG_RELOAD_STREAM_FINISH = 202;
 
     private IClientService service = null;
     private ArrayList<Message> bootMessageList = new ArrayList<Message>();
     private ArrayList<Messenger> clients = new ArrayList<Messenger>();
 
     final private ICommandCallback callback = new ICommandCallback.Stub() {
-        public void reloadedStream(String errMsg)
+        public void reloadStreamStart()
         {
-            for (Messenger c : clients) {
-                try {
-                    c.send(Message.obtain(null, MSG_RELOADED_STREAM, errMsg));
-                } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException", e);
+            new Thread(new Runnable() {
+                public void run()
+                {
+                    Log.i(TAG, "!!! (1)ICommandCallback.Stub#reloadStreamStart !!!");
+                    Log.i(TAG, "task:"+Thread.currentThread().getId());
+                    for (Messenger c : clients) {
+                        try {
+                            c.send(
+                                Message.obtain(
+                                    null,
+                                    MSG_RELOAD_STREAM_START));
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    Log.i(TAG, "!!! (2)ICommandCallback.Stub#reloadStreamStart !!!");
                 }
-            }
+            }).start();
+        }
+
+        public void reloadStreamFinish(final String errMsg)
+        {
+            new Thread(new Runnable() {
+                public void run()
+                {
+                    Log.i(TAG, "!!! (1)ICommandCallback.Stub#reloadStreamFinish !!!");
+                    Log.i(TAG, "task:"+Thread.currentThread().getId());
+                    for (Messenger c : clients) {
+                        try {
+                            c.send(
+                                Message.obtain(
+                                    null,
+                                    MSG_RELOAD_STREAM_FINISH,
+                                    errMsg));
+                        } catch (RemoteException e) {
+                            Log.e(TAG, "RemoteException", e);
+                        }
+                    }
+                    Log.i(TAG, "!!! (2)ICommandCallback.Stub#reloadStreamFinish !!!");
+                }
+            }).start();
         }
 
         public void reloadedComment(String post_id, String errMsg)
@@ -58,16 +96,7 @@ public class LocalService
             service = IClientService.Stub.asInterface(binder);
             try {
                 service.registerCallback(callback);
-                for (Message msg : bootMessageList) {
-                    messenger.send(
-                        Message.obtain(
-                            null,
-                            msg.what,
-                            msg.arg1,
-                            msg.arg2,
-                            msg.obj));
-                }
-                bootMessageList.clear();
+                localServerStub.notifyAll();
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -78,42 +107,7 @@ public class LocalService
         }
     };
 
-    final Messenger messenger = new Messenger(new Handler() {
-        public void handleMessage(Message msg)
-        {
-            switch (msg.what) {
-            case MSG_REGISTER_CLIENT:
-                clients.add(msg.replyTo);
-                return;
-            case MSG_UNREGISTER_CLIENT:
-                clients.remove(msg.replyTo);
-                return;
-            }
-
-            if (null == service) {
-                Message message = new Message();
-                message.what = msg.what;
-                message.arg1 = msg.arg1;
-                message.arg2 = msg.arg2;
-                message.obj = msg.obj;
-                bootMessageList.add(message);
-                return;
-            }
-
-            switch (msg.what) {
-            case MSG_RELOAD_STREAM:
-                try {
-                    if (null != service) {
-                        service.reloadStream(msg.arg1 != 0);
-                    }
-                } catch (RemoteException e) {
-                }
-                break;
-            default:
-                break;
-            }
-        }
-    });
+    private static final Stub localServerStub = new Stub();
 
     @Override
     public void onCreate()
@@ -128,7 +122,7 @@ public class LocalService
     @Override
     public IBinder onBind(Intent intent)
     {
-        return messenger.getBinder();
+        return localServerStub;
     }
 
     @Override
@@ -139,6 +133,28 @@ public class LocalService
             unbindService(conn);
         } catch (RemoteException e) {
             Log.e(TAG, "RemoteException", e);
+        }
+    }
+
+    public class Stub
+        extends Binder
+        implements IInterface
+    {
+        private String DESCRIPTOR =
+            "la.yakumo.facebook.tomofumi.service.LocalService.Stub";
+        public Stub()
+        {
+            attachInterface(this, DESCRIPTOR);
+        }
+
+        public IBinder asBinder()
+        {
+            return this;
+        }
+
+        public void callTest()
+        {
+            Log.i(TAG, "call !!!");
         }
     }
 }

@@ -1,6 +1,5 @@
 package la.yakumo.facebook.tomofumi.service.updator;
 
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
@@ -21,58 +20,19 @@ public class Updator
 {
     protected static final String TAG = Constants.LOG_TAG;
 
-    private static final int MSG_SHOW_PROGRESS = 1;
-    private static final int MSG_DISMISS_PROGRESS = 2;
-
     protected Context context;
     protected Resources resources;
     protected Facebook facebook;
     private Handler handler = null;
-    private ProgressDialog progress = null;
 
     public Updator(Context context)
     {
         this.context = context;
         this.resources = context.getResources();
         this.facebook = Facebook.getInstance(context);
-
-        handler = new Handler(Looper.getMainLooper()) {
-            public void handleMessage(Message msg)
-            {
-                CharSequence[] par = (CharSequence[]) msg.obj;
-                switch (msg.what) {
-                case MSG_SHOW_PROGRESS:
-                    if (null == progress) {
-                        progress =
-                            ProgressDialog.show(
-                                Updator.this.context,
-                                par[0],
-                                par[1],
-                                true,
-                                true,
-                                new OnCancelListener()
-                                {
-                                    public void onCancel(DialogInterface dialog)
-                                    {
-                                        progressCancelled();
-                                    }
-                                });
-                    }
-                    break;
-                case MSG_DISMISS_PROGRESS:
-                    if (null != progress) {
-                        progress.dismiss();
-                    }
-                    break;
-                default:
-                    break;
-                }
-
-            }
-        };
     }
 
-    public Bundle execute(OnFinish finish)
+    public Bundle execute(OnStatusChange status)
     {
         return
             execute(
@@ -83,7 +43,7 @@ public class Updator
                         updateCommand(info);
                     }
                 },
-                finish);
+                status);
     }
 
     protected void updateCommand(Bundle info)
@@ -91,10 +51,11 @@ public class Updator
         Log.i(TAG, "Updator#updateCommand");
     }
 
-    protected Bundle execute(OnUpdateCommand command, OnFinish finish)
+    protected Bundle execute(OnUpdateCommand command, OnStatusChange status)
     {
+        status.onStart();
         Bundle ret = execute(command);
-        finish.onFinish(ret);
+        status.onFinish(ret);
         return ret;
     }
 
@@ -155,31 +116,14 @@ public class Updator
         return info;
     }
 
-    protected void showProgress(CharSequence title, CharSequence msg)
-    {
-        handler.sendMessage(
-            Message.obtain(
-                null,
-                MSG_SHOW_PROGRESS,
-                new CharSequence[] {title, msg}));
-    }
-
-    protected void dismissProgress()
-    {
-        handler.sendEmptyMessage(MSG_DISMISS_PROGRESS);
-    }
-
-    protected void progressCancelled()
-    {
-    }
-
     public interface OnUpdateCommand
     {
         public void onUpdateCommand(Bundle info);
     }
 
-    public interface OnFinish
+    public interface OnStatusChange
     {
+        public void onStart();
         public void onFinish(Bundle info);
     }
 }

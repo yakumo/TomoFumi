@@ -1,6 +1,5 @@
 package la.yakumo.facebook.tomofumi.service.updator;
 
-import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.R;
-import la.yakumo.facebook.tomofumi.activity.ProgressActivity;
 import la.yakumo.facebook.tomofumi.data.Database;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +24,6 @@ public class StreamUpdator
     extends Updator
 {
     private boolean isClear = false;
-    private ProgressDialog progress;
 
     public StreamUpdator(Context context, Handler handler, boolean isClear)
     {
@@ -37,12 +34,6 @@ public class StreamUpdator
     @Override
     protected void updateCommand(Bundle info)
     {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(context, ProgressActivity.class);
-        intent.putExtra("is_finish", false);
-        context.startActivity(intent);
-
         Database db = new Database(context);
 
         if (isClear) {
@@ -144,9 +135,6 @@ public class StreamUpdator
                 wdb.endTransaction();
             }
         }
-
-        intent.putExtra("is_finish", true);
-        context.startActivity(intent);
     }
 
     private void setVariable(
