@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -26,28 +28,45 @@ public class StreamListActivity
     private static final String TAG = Constants.LOG_TAG;
 
     private Handler handler = new Handler();
-    //private Messenger mService;
     private Resources resources;
     private LocalService.Stub mService;
+
+    private static class StreamReadCallback
+        extends Binder
+        implements IInterface,
+        LocalService.OnStreamRead
+    {
+        private String DESCRIPTOR =
+            "la.yakumo.facebook.tomofumi.activity.StreamListActivity";
+        public StreamReadCallback()
+        {
+            attachInterface(this, DESCRIPTOR);
+        }
+
+        public IBinder asBinder()
+        {
+            return this;
+        }
+
+        public void onStreamReadStart()
+        {
+            Log.i(TAG, "!!!! onStreamReadStart !!!!");
+        }
+
+        public void onStreamReadFinish(String errMsg)
+        {
+            Log.i(TAG, "!!!! onStreamReadFinish !!!!");
+        }
+    }
+    private StreamReadCallback streamReadCallback = new StreamReadCallback();
 
     private ServiceConnection conn = new ServiceConnection(){
         public void onServiceConnected(ComponentName className, IBinder service)
         {
-            /*
-            mService = new Messenger(service);
-            sendMessage(
-                Message.obtain(
-                    null,
-                    LocalService.MSG_REGISTER_CLIENT));
-            sendMessage(
-                Message.obtain(
-                    null,
-                    LocalService.MSG_RELOAD_STREAM,
-                    1, 0, null));
-            */
             Log.i(TAG, "onServiceConnected:"+service);
             mService = (LocalService.Stub) service;
-            mService.callTest();
+            mService.addStreamReadCallback(streamReadCallback);
+            mService.reloadStream();
         }
 
         public void onServiceDisconnected(ComponentName className)
@@ -55,24 +74,6 @@ public class StreamListActivity
             mService = null;
         }
     };
-
-    private Messenger client = new Messenger(new Handler() {
-         public void handleMessage(Message msg)
-        {
-            switch (msg.what) {
-            case LocalService.MSG_RELOAD_STREAM_START:
-                Log.i(TAG, "LocalClient.MSG_RELOAD_STREAM_START");
-                Log.i(TAG, "task:"+Thread.currentThread().getId());
-                break;
-            case LocalService.MSG_RELOAD_STREAM_FINISH:
-                Log.i(TAG, "LocalClient.MSG_RELOAD_STREAM_FINISH");
-                Log.i(TAG, "task:"+Thread.currentThread().getId());
-                break;
-            default:
-                break;
-            }
-        }
-   });
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -115,17 +116,5 @@ public class StreamListActivity
             })
             ;
         return true;
-    }
-
-    private void sendMessage(Message msg)
-    {
-        /*
-        try {
-            msg.replyTo = client;
-            mService.send(msg);
-        } catch (RemoteException e) {
-            Log.e(TAG, "RemoteException", e);
-        }
-        */
     }
 }

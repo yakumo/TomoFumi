@@ -9,12 +9,14 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInterface;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.os.TokenWatcher;
 import android.util.Log;
 import java.util.ArrayList;
-import javax.rmi.CORBA.Stub;
+import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.service.callback.ICommandCallback;
 
@@ -38,45 +40,20 @@ public class LocalService
     final private ICommandCallback callback = new ICommandCallback.Stub() {
         public void reloadStreamStart()
         {
-            new Thread(new Runnable() {
+            new Thread(new Runnable(){
                 public void run()
                 {
-                    Log.i(TAG, "!!! (1)ICommandCallback.Stub#reloadStreamStart !!!");
-                    Log.i(TAG, "task:"+Thread.currentThread().getId());
-                    for (Messenger c : clients) {
-                        try {
-                            c.send(
-                                Message.obtain(
-                                    null,
-                                    MSG_RELOAD_STREAM_START));
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "RemoteException", e);
-                        }
-                    }
-                    Log.i(TAG, "!!! (2)ICommandCallback.Stub#reloadStreamStart !!!");
+                    localServerStub.streamReadStart();
                 }
             }).start();
         }
 
         public void reloadStreamFinish(final String errMsg)
         {
-            new Thread(new Runnable() {
+            new Thread(new Runnable(){
                 public void run()
                 {
-                    Log.i(TAG, "!!! (1)ICommandCallback.Stub#reloadStreamFinish !!!");
-                    Log.i(TAG, "task:"+Thread.currentThread().getId());
-                    for (Messenger c : clients) {
-                        try {
-                            c.send(
-                                Message.obtain(
-                                    null,
-                                    MSG_RELOAD_STREAM_FINISH,
-                                    errMsg));
-                        } catch (RemoteException e) {
-                            Log.e(TAG, "RemoteException", e);
-                        }
-                    }
-                    Log.i(TAG, "!!! (2)ICommandCallback.Stub#reloadStreamFinish !!!");
+                    localServerStub.streamReadFinish(errMsg);
                 }
             }).start();
         }
@@ -96,7 +73,8 @@ public class LocalService
             service = IClientService.Stub.asInterface(binder);
             try {
                 service.registerCallback(callback);
-                localServerStub.notifyAll();
+                //localServerStub.notifyAll();
+                localServerStub.serviceConnected();
             } catch (RemoteException e) {
                 Log.e(TAG, "RemoteException", e);
             }
@@ -107,14 +85,15 @@ public class LocalService
         }
     };
 
-    private static final Stub localServerStub = new Stub();
+    private final Stub localServerStub = new Stub();
 
     @Override
     public void onCreate()
     {
         Log.i(TAG, "LocalService#onCreate");
+
         Intent i = new Intent(Intent.ACTION_MAIN);
-        i.setClass(this, ClientService.class);
+        i.setClass(LocalService.this, ClientService.class);
         if (bindService(i, conn, Context.BIND_AUTO_CREATE)) {
         }
     }
@@ -140,6 +119,12 @@ public class LocalService
         extends Binder
         implements IInterface
     {
+        private ArrayList<Runnable> commandList = new ArrayList<Runnable>();
+        private Handler waitingHandler = null;
+
+        private HashMap<OnStreamRead,DeathCallback> streamReadCallbacks =
+            new HashMap<OnStreamRead,DeathCallback>();
+
         private String DESCRIPTOR =
             "la.yakumo.facebook.tomofumi.service.LocalService.Stub";
         public Stub()
@@ -152,9 +137,117 @@ public class LocalService
             return this;
         }
 
-        public void callTest()
+        void serviceConnected()
         {
-            Log.i(TAG, "call !!!");
+            if (null != waitingHandler) {
+                waitingHandler.sendEmptyMessage(1);
+            }
         }
+
+        private void execute(Runnable command)
+        {
+            if (null == service) {
+                if (null == waitingHandler) {
+                    new Thread(new Runnable() {
+                        public void run()
+                        {
+                            Looper.prepare();
+                            waitingHandler = new Handler() {
+                                public void handleMessage(Message msg)
+                                {
+                                    Looper.myLooper().quit();
+                                }
+                            };
+                            Looper.loop();
+
+                            waitingHandler = null;
+                            for (Runnable r : commandList) {
+                                r.run();
+                            }
+                        }
+                    }).start();
+                }
+                commandList.add(command);
+            }
+            else {
+                new Thread(command).start();
+            }
+        }
+
+        public void addStreamReadCallback(OnStreamRead sr)
+        {
+            IBinder binder = sr.asBinder();
+            DeathCallback cb = new DeathCallback(sr);
+            try {
+                binder.linkToDeath(cb, 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+            streamReadCallbacks.put(sr, cb);
+        }
+
+        public void removeStreamReadCallback(OnStreamRead sr)
+        {
+            IBinder binder = sr.asBinder();
+            binder.unlinkToDeath(streamReadCallbacks.get(sr), 0);
+            streamReadCallbacks.remove(sr);
+        }
+
+        void streamReadStart()
+        {
+            for (OnStreamRead sr : streamReadCallbacks.keySet()) {
+                sr.onStreamReadStart();
+            }
+        }
+
+        void streamReadFinish(String errStr)
+        {
+            for (OnStreamRead sr : streamReadCallbacks.keySet()) {
+                sr.onStreamReadFinish(errStr);
+            }
+        }
+
+        public void reloadStream()
+        {
+            execute(new Runnable() {
+                public void run()
+                {
+                    try {
+                        service.reloadStream(true);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "RemoteException", e);
+                    }
+                }
+            });
+        }
+
+        final class DeathCallback
+            implements IBinder.DeathRecipient
+        {
+            final IInterface watch;
+
+            DeathCallback(IInterface obj)
+            {
+                watch = obj;
+            }
+
+            public void binderDied()
+            {
+                Log.i(TAG, "DeathCallback#binderDied, object:"+watch);
+                synchronized (watch) {
+                    if (watch instanceof OnStreamRead &&
+                        streamReadCallbacks.containsKey((OnStreamRead)watch)) {
+                        streamReadCallbacks.remove((OnStreamRead)watch);
+                    }
+                }
+            }
+        }
+    }
+
+    public static interface OnStreamRead
+        extends IInterface
+    {
+        public void onStreamReadStart();
+        public void onStreamReadFinish(String errMsg);
     }
 }
