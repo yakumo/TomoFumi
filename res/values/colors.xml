@@ -12,6 +12,9 @@
   <color name="stream_no_updated_background_color">#eee</color>
   <color name="stream_comment_background_color">#eee</color>
   <color name="stream_like_background_color">#eee</color>
+  <color name="stream_list_progress_frame_color">#6d84b4</color>
+  <color name="stream_list_progress_background_color">#3b5998</color>
+  <color name="stream_list_progress_text_color">#ffffff</color>
   <color name="post_splitter_color">#fff</color>
   <color name="list_fading_color">#222</color>
   <color name="link_check_title_color">@color/title_color</color>
@@ -20,4 +23,13 @@
   <color name="link_check_image_normal_color">#fff</color>
   <color name="link_check_image_pressed_color">#0ff</color>
   <color name="link_check_image_selected_color">#077</color>
+
+  <color name="facebook_blue">#3b5998</color>
+  <color name="facebook_light_blue">#6d84b4</color>
+  <color name="facebook_primary_copy">#333333</color>
+  <color name="facebook_secondary_copy">#555555</color>
+  <color name="facebook_light_grey">#f7f7f7</color>
+  <color name="facebook_hairline_grey">#cccccc</color>
+  <color name="facebook_notification_yellow">#fffbe2</color>
+  <color name="facebook_notification_red">#dd3c10</color>
 </resources>

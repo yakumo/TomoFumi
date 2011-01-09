@@ -1,14 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
-   android:orientation="vertical"
    android:layout_width="fill_parent"
    android:layout_height="fill_parent"
    >
-  <ListView
+  <LinearLayout
+     android:orientation="vertical"
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
-     android:id="@+id/stream_list"
      >
-  </ListView>
-</LinearLayout>
+    <ListView
+       android:layout_width="fill_parent"
+       android:layout_height="fill_parent"
+       android:id="@+id/stream_list"
+       >
+    </ListView>
+  </LinearLayout>
+  <FrameLayout
+     android:layout_width="fill_parent"
+     android:layout_height="@dimen/stream_list_progress_view_height"
+     android:layout_gravity="top|center_horizontal"
+     android:padding="1dp"
+     android:background="@color/stream_list_progress_frame_color"
+     >
+    <FrameLayout
+       android:layout_width="fill_parent"
+       android:layout_height="fill_parent"
+       android:background="@color/stream_list_progress_background_color"
+       >
+      <RelativeLayout
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_gravity="center"
+         >
+        <LinearLayout
+           android:orientation="horizontal"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_centerInParent="true"
+           android:layout_gravity="center"
+           android:gravity="center"
+           >
+          <ProgressBar
+             android:layout_width="@dimen/stream_list_progress_bar_size"
+             android:layout_height="@dimen/stream_list_progress_bar_size"
+             />
+          <TextView
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:id="@+id/progress_label"
+             android:text="@string/progress_stream_update_title"
+             style="@style/ProgressText"
+             />
+        </LinearLayout>
+      </RelativeLayout>
+    </FrameLayout>
+  </FrameLayout>
+</FrameLayout>

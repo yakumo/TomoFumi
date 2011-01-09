@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="ProgressDialog" parent="@android:style/Theme.Dialog">
-    <item name="android:windowNoTitle">true</item>
+  <style name="ProgressText" parent="@android:style/TextAppearance.Medium">
+    <item name="android:textColor">@color/stream_list_progress_text_color</item>
+    <item name="android:textStyle">bold</item>
   </style>
 
   <style name="StreamMessage" parent="@android:style/TextAppearance.Medium">

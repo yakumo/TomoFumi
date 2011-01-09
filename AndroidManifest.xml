@@ -60,16 +60,6 @@
        android:label="@string/login_title">
     </activity>
 
-    <activity
-       android:process=":service"
-       android:noHistory="true"
-       android:excludeFromRecents="true"
-       android:launchMode="singleTop"
-       android:theme="@style/ProgressDialog"
-       android:name=".activity.ProgressActivity"
-       android:label="@string/progress_title">
-    </activity>
-
     <service
        android:process=":service"
        android:name=".service.ClientService">
