@@ -3,6 +3,8 @@
   <style name="ProgressText" parent="@android:style/TextAppearance.Medium">
     <item name="android:textColor">@color/stream_list_progress_text_color</item>
     <item name="android:textStyle">bold</item>
+    <item name="android:paddingLeft">@dimen/stream_list_progress_text_padding</item>
+    <item name="android:paddingRight">@dimen/stream_list_progress_text_padding</item>
   </style>
 
   <style name="StreamMessage" parent="@android:style/TextAppearance.Medium">
