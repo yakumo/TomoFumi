@@ -17,14 +17,17 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ListView;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
+import la.yakumo.facebook.tomofumi.adapter.StreamListAdapter;
 import la.yakumo.facebook.tomofumi.service.LocalService;
 
 public class StreamListActivity
@@ -36,6 +39,8 @@ public class StreamListActivity
     private Resources resources;
     private LocalService.Stub mService;
     private View progress;
+    private ListView streamList;
+    private boolean isReloading = false;
 
     private class StreamReadCallback
         extends Binder
@@ -43,7 +48,7 @@ public class StreamListActivity
         LocalService.OnStreamRead
     {
         private String DESCRIPTOR =
-            "la.yakumo.facebook.tomofumi.activity.StreamListActivity";
+            "la.yakumo.facebook.tomofumi.activity.StreamListActivity$StreamReadCallback";
         public StreamReadCallback()
         {
             attachInterface(this, DESCRIPTOR);
@@ -100,6 +105,8 @@ public class StreamListActivity
         setContentView(R.layout.main);
 
         progress = findViewById(R.id.stream_progress_view);
+        streamList = (ListView) findViewById(R.id.stream_list);
+        streamList.setAdapter(new StreamListAdapter(this));
 
         Intent intent = new Intent(this, LocalService.class);
         if (bindService(intent, conn, Context.BIND_AUTO_CREATE)) {
@@ -113,32 +120,56 @@ public class StreamListActivity
         unbindService(conn);
     }
 
+    @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
-        menu.add(R.string.menu_refresh)
-            .setIcon(R.drawable.ic_menu_refresh)
-            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-                public boolean onMenuItemClick(MenuItem item)
-                {
-                    return true;
-                }
-            })
-            ;
-        menu.add(R.string.menu_post_stream)
-            .setIcon(R.drawable.ic_menu_start_conversation)
-            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-                public boolean onMenuItemClick(MenuItem item)
-                {
-                    return true;
-                }
-            })
-            ;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.stream_list_menu, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        MenuItem menuItem;
+
+        menuItem = menu.findItem(R.id.menuitem_reload);
+        if (null != menuItem) {
+            boolean flg = true;
+            if (isReloading) {
+                flg = false;
+            }
+            menuItem.setEnabled(flg);
+        }
+
+        menuItem = menu.findItem(R.id.menuitem_stream_post);
+        if (null != menuItem) {
+            boolean flg = true;
+            menuItem.setEnabled(flg);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId()) {
+        case R.id.menuitem_reload:
+            if (null != mService) {
+                mService.reloadStream();
+            }
+            return true;
+        case R.id.menuitem_stream_post:
+            break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void streamReadStart()
     {
         Log.i(TAG, "!!!! onStreamReadStart !!!!");
+        isReloading = true;
         if (null != progress) {
             Animation anim =
                 AnimationUtils.loadAnimation(
@@ -172,6 +203,7 @@ public class StreamListActivity
     public void streamReadFinish(String errMsg)
     {
         Log.i(TAG, "!!!! onStreamReadFinish !!!!");
+        isReloading = false;
         if (null != progress) {
             Animation anim =
                 AnimationUtils.loadAnimation(
@@ -194,6 +226,14 @@ public class StreamListActivity
                     {
                         Log.i(TAG, "onAnimationEnd");
                         progress.setVisibility(View.INVISIBLE);
+                        handler.post(new Runnable() {
+                            public void run()
+                            {
+                                StreamListAdapter a =
+                                    (StreamListAdapter)streamList.getAdapter();
+                                a.reloadData();
+                            }
+                        });
                     }
                 });
             if (null != anim) {

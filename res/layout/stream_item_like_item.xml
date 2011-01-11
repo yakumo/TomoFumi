@@ -23,7 +23,8 @@
          android:padding="3dp"
          android:background="#fff"
          >
-        <la.yakumo.facebook.tomofumi.view.NetImageView
+        <!-- la.yakumo.facebook.tomofumi.view.NetImageView -->
+        <ImageView
            android:layout_width="@dimen/stream_image_width"
            android:layout_height="@dimen/stream_image_width"
            android:scaleType="fitXY"
