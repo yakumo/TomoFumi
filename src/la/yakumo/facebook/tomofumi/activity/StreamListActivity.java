@@ -1,5 +1,6 @@
 package la.yakumo.facebook.tomofumi.activity;
 
+import android.R.anim;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +19,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.service.LocalService;
@@ -30,8 +35,9 @@ public class StreamListActivity
     private Handler handler = new Handler();
     private Resources resources;
     private LocalService.Stub mService;
+    private View progress;
 
-    private static class StreamReadCallback
+    private class StreamReadCallback
         extends Binder
         implements IInterface,
         LocalService.OnStreamRead
@@ -50,12 +56,22 @@ public class StreamListActivity
 
         public void onStreamReadStart()
         {
-            Log.i(TAG, "!!!! onStreamReadStart !!!!");
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    streamReadStart();
+                }
+            });
         }
 
-        public void onStreamReadFinish(String errMsg)
+        public void onStreamReadFinish(final String errMsg)
         {
-            Log.i(TAG, "!!!! onStreamReadFinish !!!!");
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    streamReadFinish(errMsg);
+                }
+            });
         }
     }
     private StreamReadCallback streamReadCallback = new StreamReadCallback();
@@ -82,6 +98,8 @@ public class StreamListActivity
 
         resources = getResources();
         setContentView(R.layout.main);
+
+        progress = findViewById(R.id.stream_progress_view);
 
         Intent intent = new Intent(this, LocalService.class);
         if (bindService(intent, conn, Context.BIND_AUTO_CREATE)) {
@@ -116,5 +134,71 @@ public class StreamListActivity
             })
             ;
         return true;
+    }
+
+    public void streamReadStart()
+    {
+        Log.i(TAG, "!!!! onStreamReadStart !!!!");
+        if (null != progress) {
+            Animation anim =
+                AnimationUtils.loadAnimation(
+                    this,
+                    R.anim.stream_progress_start);
+            anim.setAnimationListener(
+                new AnimationListener()
+                {
+                    public void onAnimationStart(Animation animation)
+                    {
+                        progress.setVisibility(View.VISIBLE);
+                        Log.i(TAG, "onAnimationStart");
+                    }
+
+                    public void onAnimationRepeat(Animation animation)
+                    {
+                        Log.i(TAG, "onAnimationRepeat");
+                    }
+
+                    public void onAnimationEnd(Animation animation)
+                    {
+                        Log.i(TAG, "onAnimationEnd");
+                    }
+                });
+            if (null != anim) {
+                progress.startAnimation(anim);
+            }
+        }
+    }
+
+    public void streamReadFinish(String errMsg)
+    {
+        Log.i(TAG, "!!!! onStreamReadFinish !!!!");
+        if (null != progress) {
+            Animation anim =
+                AnimationUtils.loadAnimation(
+                    this,
+                    R.anim.stream_progress_finish);
+            anim.setAnimationListener(
+                new AnimationListener()
+                {
+                    public void onAnimationStart(Animation animation)
+                    {
+                        Log.i(TAG, "onAnimationStart");
+                    }
+
+                    public void onAnimationRepeat(Animation animation)
+                    {
+                        Log.i(TAG, "onAnimationRepeat");
+                    }
+
+                    public void onAnimationEnd(Animation animation)
+                    {
+                        Log.i(TAG, "onAnimationEnd");
+                        progress.setVisibility(View.INVISIBLE);
+                    }
+                });
+            if (null != anim) {
+                progress.startAnimation(anim);
+            }
+        }
     }
 }

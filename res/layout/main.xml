@@ -22,6 +22,8 @@
      android:layout_gravity="top|center_horizontal"
      android:padding="1dp"
      android:background="@color/stream_list_progress_frame_color"
+     android:id="@+id/stream_progress_view"
+     android:visibility="invisible"
      >
     <FrameLayout
        android:layout_width="fill_parent"
