@@ -100,15 +100,6 @@ public class StreamDataView
                 descriptionView.setVisibility(View.GONE);
             }
         }
-        if (null != streamIconView) {
-            if (null != streamItem.pic_square) {
-                streamIconView.setImageURI(Uri.parse(streamItem.pic_square));
-                streamIconView.setVisibility(View.VISIBLE);
-            }
-            else {
-                streamIconView.setVisibility(View.GONE);
-            }
-        }
 
         if (null != shareImageView && streamItem.show_share) {
             shareImageView.setVisibility(View.VISIBLE);

@@ -41,10 +41,14 @@ public class Database
         SQLiteDatabase rdb = getReadableDatabase();
         Cursor c =
             rdb.rawQuery(
-                "SELECT *, stream._id as post_id"+
+                "SELECT *"+
+                ", stream._id as post_id"+
+                ", profile_image.image_data as profile_image_data"+
                 " FROM stream"+
                 " LEFT JOIN user"+
                 " ON stream.actor_id=user._id"+
+                " LEFT JOIN images as profile_image"+
+                " ON user.pic_square=profile_image.image_url"+
                 " WHERE stream._id=?"+
                 "",
                 new String[] {post_id});
@@ -62,10 +66,14 @@ public class Database
         SQLiteDatabase rdb = getReadableDatabase();
         Cursor c =
             rdb.rawQuery(
-                "SELECT *, stream._id as post_id"+
+                "SELECT *"+
+                ", stream._id as post_id"+
+                ", profile_image.image_data as profile_image_data"+
                 " FROM stream"+
                 " LEFT JOIN user"+
                 " ON stream.actor_id=user._id"+
+                " LEFT JOIN images as profile_image"+
+                " ON user.pic_square=profile_image.image_url"+
                 " ORDER BY created_time DESC"+
                 " LIMIT 400"+
                 "",
@@ -183,7 +191,7 @@ public class Database
                 "CREATE TABLE images "+
                 "(_id INTEGER primary key unique"+
                 ",read_time INTEGER"+
-                ",image_url TEXT"+
+                ",image_url TEXT unique"+
                 ",image_data BLOB default null"+
                 ");");
         }
@@ -237,7 +245,7 @@ public class Database
             pic_square = c.getColumnIndex("pic_square");
             username = c.getColumnIndex("username");
             profile_url = c.getColumnIndex("profile_url");
-            pic_data = c.getColumnIndex("pic_data");
+            pic_data = c.getColumnIndex("profile_image_data");
         }
     }
 

@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.data.Database;
+import la.yakumo.facebook.tomofumi.service.ImageDownloader;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -135,6 +136,8 @@ public class StreamUpdator
                 wdb.endTransaction();
             }
         }
+
+        ImageDownloader.getInstance(context).request();
     }
 
     private void setVariable(
@@ -242,16 +245,21 @@ public class StreamUpdator
 
                 val = new ContentValues();
                 String uid = null;
+                String pic_square = null;
                 try {
                     uid = obj.getString("id");
+                    pic_square = obj.getString("pic_square");
                     val.put("_id", uid);
                     val.put("name", obj.getString("name"));
                     val.put("username", obj.getString("username"));
-                    val.put("pic_square", obj.getString("pic_square"));
+                    val.put("pic_square", pic_square);
                 } catch (JSONException e) {
                 }
                 if (null != uid) {
                     userMap.put(uid, val);
+                }
+                if (null != pic_square) {
+                    ImageDownloader.getInstance(context).registUrl(pic_square);
                 }
             }
             for (int i = 0 ; i < users.length() ; i++) {

@@ -2,6 +2,8 @@ package la.yakumo.facebook.tomofumi.view;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
@@ -182,6 +184,20 @@ public class ItemDataView
                 }
             }
             messageView.setText(spannable, TextView.BufferType.SPANNABLE);
+        }
+
+        if (null != streamIconView) {
+            Log.i(TAG, "pic_data:"+messageItem.pic_data);
+            streamIconView.setVisibility(View.VISIBLE);
+            if (null != messageItem.pic_data) {
+                Bitmap bmp =
+                    BitmapFactory.decodeByteArray(
+                        messageItem.pic_data, 0, messageItem.pic_data.length);
+                streamIconView.setImageBitmap(bmp);
+            }
+            if (null != messageItem.pic_square) {
+                streamIconView.setTag(messageItem.pic_square);
+            }
         }
 
         if (null != commentView) {

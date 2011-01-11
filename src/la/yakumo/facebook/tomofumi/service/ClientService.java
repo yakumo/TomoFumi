@@ -109,7 +109,6 @@ public class ClientService
             .execute(new Updator.OnStatusChange() {
             public void onStart()
             {
-                Log.i(TAG, "!!! onStart !!!");
                 synchronized (callbacks) {
                     int numListener = callbacks.beginBroadcast();
                     for (int i = 0 ; i < numListener ; i++) {
@@ -126,7 +125,6 @@ public class ClientService
 
             public void onFinish(Bundle info)
             {
-                Log.i(TAG, "!!! onFinish !!!");
                 String errMsg = null;
                 if (info.containsKey("error")) {
                     errMsg = info.getString("error");
