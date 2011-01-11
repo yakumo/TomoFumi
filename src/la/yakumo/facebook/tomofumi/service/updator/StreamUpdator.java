@@ -137,7 +137,7 @@ public class StreamUpdator
             }
         }
 
-        ImageDownloader.getInstance(context).request();
+        ImageDownloader.getInstance().request();
     }
 
     private void setVariable(
@@ -259,7 +259,7 @@ public class StreamUpdator
                     userMap.put(uid, val);
                 }
                 if (null != pic_square) {
-                    ImageDownloader.getInstance(context).registUrl(pic_square);
+                    ImageDownloader.getInstance().registUrl(pic_square);
                 }
             }
             for (int i = 0 ; i < users.length() ; i++) {

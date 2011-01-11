@@ -19,14 +19,24 @@ public class StreamDataView
 {
     private static final String TAG = Constants.LOG_TAG;
 
+    private Database db;
+
     public StreamDataView(Context context)
     {
         super(context);
+        db = new Database(context);
     }
 
     public StreamDataView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+        db = new Database(context);
+    }
+
+    @Override
+    public void reload()
+    {
+        put(db.getStreamListItem(messageItem.post_id));
     }
 
     @Override

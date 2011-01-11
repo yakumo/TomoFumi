@@ -65,6 +65,17 @@ public class LocalService
         public void reloadedLike(String post_id, String errMsg)
         {
         }
+
+        public void readedImage(final String url)
+        {
+            Log.i(TAG, "reloadedImage:"+url);
+            new Thread(new Runnable(){
+                public void run()
+                {
+                    localServerStub.readedImage(url);
+                }
+            }).start();
+        }
     };
 
     final private ServiceConnection conn = new ServiceConnection() {
@@ -124,6 +135,8 @@ public class LocalService
 
         private HashMap<OnStreamRead,DeathCallback> streamReadCallbacks =
             new HashMap<OnStreamRead,DeathCallback>();
+        private HashMap<OnImageRead,DeathCallback> imageReadCallbacks =
+            new HashMap<OnImageRead,DeathCallback>();
 
         private String DESCRIPTOR =
             "la.yakumo.facebook.tomofumi.service.LocalService.Stub";
@@ -174,6 +187,7 @@ public class LocalService
             }
         }
 
+        // stream readed ////////////////////////////////////////////////////////
         public void addStreamReadCallback(OnStreamRead sr)
         {
             IBinder binder = sr.asBinder();
@@ -221,6 +235,34 @@ public class LocalService
             });
         }
 
+        // image readed /////////////////////////////////////////////////////////
+        public void addImageReadCallback(OnImageRead sr)
+        {
+            IBinder binder = sr.asBinder();
+            DeathCallback cb = new DeathCallback(sr);
+            try {
+                binder.linkToDeath(cb, 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+            imageReadCallbacks.put(sr, cb);
+        }
+
+        public void removeImageReadCallback(OnImageRead sr)
+        {
+            IBinder binder = sr.asBinder();
+            binder.unlinkToDeath(imageReadCallbacks.get(sr), 0);
+            imageReadCallbacks.remove(sr);
+        }
+
+        public void readedImage(String url)
+        {
+            for (OnImageRead ir : imageReadCallbacks.keySet()) {
+                ir.onImageReaded(url);
+            }
+        }
+
+        // callback settings ////////////////////////////////////////////////////
         final class DeathCallback
             implements IBinder.DeathRecipient
         {
@@ -249,5 +291,11 @@ public class LocalService
     {
         public void onStreamReadStart();
         public void onStreamReadFinish(String errMsg);
+    }
+
+    public static interface OnImageRead
+        extends IInterface
+    {
+        public void onImageReaded(String url);
     }
 }

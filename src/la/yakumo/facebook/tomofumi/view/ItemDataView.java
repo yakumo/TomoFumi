@@ -1,6 +1,7 @@
 package la.yakumo.facebook.tomofumi.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -23,6 +24,8 @@ import java.net.URL;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.data.Database;
+import la.yakumo.facebook.tomofumi.service.ClientService;
+import la.yakumo.facebook.tomofumi.service.ImageDownloader;
 
 public class ItemDataView
     extends LinearLayout
@@ -146,6 +149,11 @@ public class ItemDataView
         updateData();
     }
 
+    public void reload()
+    {
+        Log.e(TAG, "ItemDataView#reload, use subclass method");
+    }
+
     protected void updateData()
     {
         if (null != streamIconView) {
@@ -187,7 +195,6 @@ public class ItemDataView
         }
 
         if (null != streamIconView) {
-            Log.i(TAG, "pic_data:"+messageItem.pic_data);
             streamIconView.setVisibility(View.VISIBLE);
             if (null != messageItem.pic_data) {
                 Bitmap bmp =
@@ -196,6 +203,12 @@ public class ItemDataView
                 streamIconView.setImageBitmap(bmp);
             }
             if (null != messageItem.pic_square) {
+                if (null == messageItem.pic_data) {
+                    Intent intent = new Intent(ImageDownloader.IMAGE_REQUEST);
+                    intent.setClass(getContext(), ClientService.class);
+                    intent.putExtra("url", messageItem.pic_square);
+                    getContext().startService(intent);
+                }
                 streamIconView.setTag(messageItem.pic_square);
             }
         }

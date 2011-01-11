@@ -29,6 +29,7 @@ import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.adapter.StreamListAdapter;
 import la.yakumo.facebook.tomofumi.service.LocalService;
+import la.yakumo.facebook.tomofumi.view.ItemDataView;
 
 public class StreamListActivity
     extends Activity
@@ -81,12 +82,43 @@ public class StreamListActivity
     }
     private StreamReadCallback streamReadCallback = new StreamReadCallback();
 
+
+    private class ImageReadCallback
+        extends Binder
+        implements IInterface,
+        LocalService.OnImageRead
+    {
+        private String DESCRIPTOR =
+            "la.yakumo.facebook.tomofumi.activity.StreamListActivity$ImageReadCallback";
+        public ImageReadCallback()
+        {
+            attachInterface(this, DESCRIPTOR);
+        }
+
+        public IBinder asBinder()
+        {
+            return this;
+        }
+
+        public void onImageReaded(final String url)
+        {
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    imageReaded(url);
+                }
+            });
+        }
+    }
+    private ImageReadCallback imageReadCallback = new ImageReadCallback();
+
     private ServiceConnection conn = new ServiceConnection(){
         public void onServiceConnected(ComponentName className, IBinder service)
         {
             Log.i(TAG, "onServiceConnected:"+service);
             mService = (LocalService.Stub) service;
             mService.addStreamReadCallback(streamReadCallback);
+            mService.addImageReadCallback(imageReadCallback);
             mService.reloadStream();
         }
 
@@ -238,6 +270,30 @@ public class StreamListActivity
                 });
             if (null != anim) {
                 progress.startAnimation(anim);
+            }
+        }
+    }
+
+    public void imageReaded(String url)
+    {
+        Log.i(TAG, "StreamListActivity#imageReaded:"+url);
+        int cnt = streamList.getChildCount();
+        for (int i = 0 ; i < cnt ; i++) {
+            View v = streamList.getChildAt(i);
+            View tv = v.findViewWithTag((Object)url);
+            while (tv != null) {
+                if (tv instanceof ItemDataView) {
+                    break;
+                }
+                tv = (View) tv.getParent();
+            }
+
+            if (null != tv) {
+                ItemDataView itemView = (ItemDataView) tv;
+                if (null != itemView) {
+                    Log.i(TAG, "find view !!!, "+itemView);
+                    itemView.reload();
+                }
             }
         }
     }

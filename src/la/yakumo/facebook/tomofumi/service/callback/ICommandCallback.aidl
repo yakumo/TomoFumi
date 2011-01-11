@@ -6,4 +6,6 @@ interface ICommandCallback
     void reloadStreamFinish(String errMsg);
     void reloadedComment(String post_id, String errMsg);
     void reloadedLike(String post_id, String errMsg);
+
+    void readedImage(String url);
 }
