@@ -51,6 +51,8 @@ public class ItemDataView
 
     protected Database.MessageItem messageItem = null;
 
+    private OnClickItem clickItem = null;
+
     public ItemDataView(Context context)
     {
         super(context);
@@ -125,12 +127,16 @@ public class ItemDataView
 
     protected void onClickCommentView()
     {
-        Log.i(TAG, "ItemDataView#onClickCommentView");
+        if (null != clickItem) {
+            clickItem.onClickComment(messageItem);
+        }
     }
 
     protected void onClickLikeView()
     {
-        Log.i(TAG, "ItemDataView#onClickLikeView");
+        if (null != clickItem) {
+            clickItem.onClickLike(messageItem);
+        }
     }
 
     protected void onClickShareView()
@@ -225,5 +231,18 @@ public class ItemDataView
         if (null != likeView) {
             likeView.setPostItem(messageItem.like);
         }
+    }
+
+    public void setOnClickItem(OnClickItem clickItem)
+    {
+        this.clickItem = clickItem;
+    }
+
+    public static interface OnClickItem
+    {
+        public void onClickComment(Database.MessageItem item);
+        public void onClickLike(Database.MessageItem item);
+        public void onClickShare(Database.MessageItem item);
+        public void onClickUserIcon(Database.MessageItem item);
     }
 }

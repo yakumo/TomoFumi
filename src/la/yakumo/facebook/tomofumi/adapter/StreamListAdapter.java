@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import java.util.ArrayList;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.data.Database;
+import la.yakumo.facebook.tomofumi.view.ItemDataView;
 import la.yakumo.facebook.tomofumi.view.StreamDataView;
 
 public class StreamListAdapter
@@ -17,6 +18,7 @@ public class StreamListAdapter
     private LayoutInflater layoutInflater;
     private Database db;
     private Database.MessageItem[] items = new Database.MessageItem[0];
+    private ItemDataView.OnClickItem clickItem = null;
 
     public StreamListAdapter(Context context)
     {
@@ -25,6 +27,11 @@ public class StreamListAdapter
             (LayoutInflater)context.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
         db = new Database(context);
+    }
+
+    public void setOnClickItem(ItemDataView.OnClickItem clickItem)
+    {
+        this.clickItem = clickItem;
     }
 
     public void reloadData()
@@ -73,6 +80,7 @@ public class StreamListAdapter
         View ret = convertView;
         if (null == ret) {
             ret = layoutInflater.inflate(R.layout.stream_list_item, null);
+            ((ItemDataView) ret).setOnClickItem(clickItem);
         }
         if (null != ret) {
             StreamDataView sdv = (StreamDataView) ret;

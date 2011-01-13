@@ -28,6 +28,7 @@ import android.widget.ListView;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.adapter.StreamListAdapter;
+import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.LocalService;
 import la.yakumo.facebook.tomofumi.view.ItemDataView;
 
@@ -137,8 +138,25 @@ public class StreamListActivity
         setContentView(R.layout.main);
 
         progress = findViewById(R.id.stream_progress_view);
+        StreamListAdapter a = new StreamListAdapter(this);
+        a.setOnClickItem(new ItemDataView.OnClickItem() {
+            public void onClickComment(Database.MessageItem item)
+            {
+                Log.i(TAG, "comment:"+item.post_id);
+            }
+            public void onClickLike(Database.MessageItem item)
+            {
+                Log.i(TAG, "like:"+item.post_id);
+            }
+            public void onClickShare(Database.MessageItem item)
+            {
+            }
+            public void onClickUserIcon(Database.MessageItem item)
+            {
+            }
+        });
         streamList = (ListView) findViewById(R.id.stream_list);
-        streamList.setAdapter(new StreamListAdapter(this));
+        streamList.setAdapter(a);
 
         Intent intent = new Intent(this, LocalService.class);
         if (bindService(intent, conn, Context.BIND_AUTO_CREATE)) {
