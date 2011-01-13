@@ -44,11 +44,17 @@ public class Database
                 "SELECT *"+
                 ", stream._id as post_id"+
                 ", profile_image.image_data as profile_image_data"+
+                ", attachment_image.image_data as attachment_image_data"+
+                ", attachment_icon.image_data as attachment_icon_data"+
                 " FROM stream"+
                 " LEFT JOIN user"+
                 " ON stream.actor_id=user._id"+
                 " LEFT JOIN images as profile_image"+
                 " ON user.pic_square=profile_image.image_url"+
+                " LEFT JOIN images as attachment_image"+
+                " ON stream.attachment_image=attachment_image.image_url"+
+                " LEFT JOIN images as attachment_icon"+
+                " ON stream.attachment_icon=attachment_icon.image_url"+
                 " WHERE stream._id=?"+
                 "",
                 new String[] {post_id});
@@ -69,11 +75,17 @@ public class Database
                 "SELECT *"+
                 ", stream._id as post_id"+
                 ", profile_image.image_data as profile_image_data"+
+                ", attachment_image.image_data as attachment_image_data"+
+                ", attachment_icon.image_data as attachment_icon_data"+
                 " FROM stream"+
                 " LEFT JOIN user"+
                 " ON stream.actor_id=user._id"+
                 " LEFT JOIN images as profile_image"+
                 " ON user.pic_square=profile_image.image_url"+
+                " LEFT JOIN images as attachment_image"+
+                " ON stream.attachment_image=attachment_image.image_url"+
+                " LEFT JOIN images as attachment_icon"+
+                " ON stream.attachment_icon=attachment_icon.image_url"+
                 " ORDER BY created_time DESC"+
                 " LIMIT 400"+
                 "",
@@ -211,7 +223,9 @@ public class Database
         public int attachment_caption; /* attachment_caption */
         public int attachment_link; /* attachment_link */
         public int attachment_image; /* attachment_image */
+        public int attachment_image_data; /* attachment_image_data */
         public int attachment_icon; /* attachment_icon */
+        public int attachment_icon_data; /* attachment_icon_data */
         public int comment_count; /* comment_count */
         public int comment_can_post; /* comment_can_post */
         public int like_count; /* like_count */
@@ -234,7 +248,9 @@ public class Database
             attachment_caption = c.getColumnIndex("attachment_caption");
             attachment_link = c.getColumnIndex("attachment_link");
             attachment_image = c.getColumnIndex("attachment_image");
+            attachment_image_data = c.getColumnIndex("attachment_image_data");
             attachment_icon = c.getColumnIndex("attachment_icon");
+            attachment_icon_data = c.getColumnIndex("attachment_icon_data");
             comment_count = c.getColumnIndex("comment_count");
             comment_can_post = c.getColumnIndex("comment_can_post");
             like_count = c.getColumnIndex("like_count");
@@ -347,7 +363,9 @@ public class Database
             attachment_caption = c.getString(idx.attachment_caption);
             attachment_link = c.getString(idx.attachment_link);
             attachment_image = c.getString(idx.attachment_image);
+            attachment_image_data = c.getBlob(idx.attachment_image_data);
             attachment_icon = c.getString(idx.attachment_icon);
+            attachment_icon_data = c.getBlob(idx.attachment_icon_data);
             updated = (c.getInt(idx.updated) != 0);
             show_share = false;
             name = c.getString(idx.name);

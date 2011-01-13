@@ -154,6 +154,23 @@ public class ItemDataView
         Log.e(TAG, "ItemDataView#reload, use subclass method");
     }
 
+    protected void setImageToView(ImageView v, String url, byte[] data)
+    {
+        if (null != data) {
+            Bitmap bmp =
+                BitmapFactory.decodeByteArray(
+                    data, 0, data.length);
+            v.setImageBitmap(bmp);
+        }
+        else if (null != url) {
+            Intent intent = new Intent(ImageDownloader.IMAGE_REQUEST);
+            intent.setClass(getContext(), ClientService.class);
+            intent.putExtra("url", url);
+            getContext().startService(intent);
+        }
+        v.setTag(url);
+    }
+
     protected void updateData()
     {
         if (null != streamIconView) {
@@ -196,21 +213,10 @@ public class ItemDataView
 
         if (null != streamIconView) {
             streamIconView.setVisibility(View.VISIBLE);
-            if (null != messageItem.pic_data) {
-                Bitmap bmp =
-                    BitmapFactory.decodeByteArray(
-                        messageItem.pic_data, 0, messageItem.pic_data.length);
-                streamIconView.setImageBitmap(bmp);
-            }
-            if (null != messageItem.pic_square) {
-                if (null == messageItem.pic_data) {
-                    Intent intent = new Intent(ImageDownloader.IMAGE_REQUEST);
-                    intent.setClass(getContext(), ClientService.class);
-                    intent.putExtra("url", messageItem.pic_square);
-                    getContext().startService(intent);
-                }
-                streamIconView.setTag(messageItem.pic_square);
-            }
+            setImageToView(
+                streamIconView,
+                messageItem.pic_square,
+                messageItem.pic_data);
         }
 
         if (null != commentView) {

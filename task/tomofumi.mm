@@ -1,6 +1,6 @@
 <map version="0.9.0">
 <!-- To view this file, download free mind mapping software FreeMind from http://freemind.sourceforge.net -->
-<node COLOR="#000000" CREATED="1294833131252" ID="ID_1772276602" MODIFIED="1294881999087" TEXT="&#x53cb;&#x6587;">
+<node COLOR="#000000" CREATED="1294833131252" ID="ID_1772276602" MODIFIED="1294898465931" TEXT="&#x53cb;&#x6587;">
 <font NAME="IPA X0208 P&#x30b4;&#x30b7;&#x30c3;&#x30af;" SIZE="20"/>
 <hook NAME="accessories/plugins/AutomaticLayout.properties"/>
 <node COLOR="#0033ff" CREATED="1294833149410" ID="ID_445460999" MODIFIED="1294881973633" POSITION="right" TEXT="TASKS">
@@ -18,14 +18,13 @@
 <node COLOR="#00b439" CREATED="1294879599775" ID="ID_1253271811" MODIFIED="1294881973636" TEXT="&#x958b;&#x767a;&#x30bf;&#x30b9;&#x30af;">
 <edge STYLE="bezier" WIDTH="thin"/>
 <font NAME="SansSerif" SIZE="16"/>
-<node COLOR="#990000" CREATED="1294834832500" ID="ID_1076786634" MODIFIED="1294881973637" TEXT="&#x30e1;&#x30a4;&#x30f3;&#x753b;&#x9762;">
-<cloud COLOR="#f4eaae"/>
+<node COLOR="#990000" CREATED="1294834598050" ID="ID_1500755531" MODIFIED="1294897913438" TEXT="Stream&#x4e00;&#x89a7;">
+<cloud COLOR="#fef2a5"/>
 <font NAME="SansSerif" SIZE="14"/>
-<node COLOR="#111111" CREATED="1294834598050" ID="ID_1500755531" MODIFIED="1294889647778" TEXT="Stream&#x4e00;&#x89a7;">
 <icon BUILTIN="idea"/>
 <attribute NAME="task" VALUE="main_screen"/>
 <attribute NAME="start" VALUE="2011-01-03"/>
-<attribute NAME="complete" VALUE="25"/>
+<attribute NAME="complete" VALUE="30"/>
 <attribute NAME="maxend" VALUE="2011-01-17"/>
 <attribute NAME="note" VALUE="&quot;&#x30e1;&#x30a4;&#x30f3;&#x753b;&#x9762;&#x4f5c;&#x6210;&quot;"/>
 <attribute NAME="allocate" VALUE="yakumo"/>
@@ -41,14 +40,15 @@
 <attribute NAME="flags" VALUE="task_completed"/>
 <attribute NAME="complete" VALUE="100"/>
 </node>
-<node COLOR="#111111" CREATED="1294888040817" ID="ID_1569210992" MODIFIED="1294888757469" TEXT="Attach&#x3055;&#x308c;&#x305f;&#x753b;&#x50cf;&#x304c;&#x8868;&#x793a;&#x3055;&#x308c;&#x306a;&#x3044;">
-<icon BUILTIN="messagebox_warning"/>
+<node COLOR="#111111" CREATED="1294888040817" HGAP="30" ID="ID_1569210992" MODIFIED="1294898231920" TEXT="Attach&#x3055;&#x308c;&#x305f;&#x753b;&#x50cf;&#x304c;&#x8868;&#x793a;&#x3055;&#x308c;&#x306a;&#x3044;" VSHIFT="-1">
+<icon BUILTIN="button_ok"/>
 <attribute NAME="task" VALUE="main_screen_not_visible_attached_image"/>
 <attribute NAME="allocate" VALUE="yakumo"/>
-<attribute NAME="complete" VALUE="0"/>
+<attribute NAME="complete" VALUE="100"/>
 <attribute NAME="start" VALUE="2011-01-13"/>
+<attribute NAME="end" VALUE="2011-01-13"/>
 </node>
-<node COLOR="#111111" CREATED="1294835298400" ID="ID_364637509" MODIFIED="1294889588761" TEXT="Like&#x4ed8;&#x3051;&#x6a5f;&#x80fd;">
+<node COLOR="#111111" CREATED="1294835298400" ID="ID_364637509" MODIFIED="1294898461098" TEXT="Like&#x4ed8;&#x3051;&#x6a5f;&#x80fd;">
 <icon BUILTIN="full-9"/>
 <attribute NAME="task" VALUE="stream_like"/>
 <attribute NAME="note" VALUE="&quot;&#x30dc;&#x30bf;&#x30f3;&#x3092;&#x62bc;&#x3059;&#x3068;Like&#x304c;&#x5207;&#x308a;&#x66ff;&#x308f;&#x308b;&quot;"/>
@@ -74,7 +74,6 @@
 <attribute NAME="task" VALUE="stream_message_add_link"/>
 <attribute NAME="depends" VALUE="!image_display"/>
 <attribute NAME="complete" VALUE="0"/>
-</node>
 </node>
 </node>
 <node COLOR="#990000" CREATED="1294835121964" FOLDED="true" ID="ID_1463653292" MODIFIED="1294888371615" TEXT="&#x6295;&#x7a3f;&#x753b;&#x9762;">

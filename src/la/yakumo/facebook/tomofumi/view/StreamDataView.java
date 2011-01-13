@@ -52,7 +52,9 @@ public class StreamDataView
             String caption = streamItem.attachment_caption;
             String link = streamItem.attachment_link;
             String icon = streamItem.attachment_icon;
+            byte[] icon_data = streamItem.attachment_icon_data;
             String image = streamItem.attachment_image;
+            byte[] image_data = streamItem.attachment_image_data;
             String msg = "";
             String sep = "";
             if (null != name && name.length() > 0) {
@@ -80,18 +82,18 @@ public class StreamDataView
                         Log.i(TAG, "MalformedURLException", e);
                     }
                 }
-                if (null != icon && null != appIconView) {
+                if (null != icon_data && null != appIconView) {
                     appIconView.setVisibility(View.VISIBLE);
-                    appIconView.setImageURI(Uri.parse(icon));
                 }
+                setImageToView(appIconView, icon, icon_data);
                 if (null != summaryIconView) {
-                    if (null != image && image.length() > 0){
+                    if (null != image_data && image_data.length > 0){
                         summaryIconView.setVisibility(View.VISIBLE);
-                        summaryIconView.setImageURI(Uri.parse(image));
                     }
                     else {
                         summaryIconView.setVisibility(View.GONE);
                     }
+                    setImageToView(summaryIconView, image, image_data);
                 }
                 summaryBaseView.setVisibility(View.VISIBLE);
                 summaryView.setText(spannable, TextView.BufferType.SPANNABLE);
