@@ -27,27 +27,72 @@ task tomofumi "友文開発" {
             complete 100
             start 2011-01-13
             end 2011-01-13
+            flags task_completed
         }
 
         task stream_like "Like付け機能" {
             note "ボタンを押すとLikeが切り替わる"
             depends !main_screen_not_visible_attached_image
-            complete 0
+            complete 50
+            start 2011-01-13
+
+            task stream_like_signal_to_view "ボタンを押してViewに反応を返す" {
+                allocate yakumo
+                complete 100
+                start 2011-01-13
+                end 2011-01-13
+                flags task_completed
+            }
+
+            task stream_like_request_to_server "Likeのリクエストをする" {
+                allocate yakumo
+                complete 100
+                depends main_screen.stream_like.stream_like_signal_to_view
+                start 2011-01-13
+                end 2011-01-13
+            }
+
+            task stream_like_parse_response_from_server "Likeリクエストの戻り値判定" {
+                allocate yakumo
+                complete 0
+                depends main_screen.stream_like.stream_like_request_to_server
+            }
+
+            task stream_like_update_view "画面に反映" {
+                allocate yakumo
+                complete 0
+                depends main_screen.stream_like.stream_like_parse_response_from_server
+            }
         }
 
         task stream_comment "コメント付け機能" {
             note "ボタンを押すとStream選択後画面に切り替わる"
             depends !stream_like
             complete 0
+
+            task stream_comment_signal_to_view "ボタンを押してViewに反応を返す" {
+                allocate yakumo
+                complete 100
+                start 2011-01-13
+                end 2011-01-13
+                flags task_completed
+            }
         }
 
         task image_display "画像表示" {
             depends !stream_comment
             complete 0
+            note "画像が追加されているデータの場合、画像を表示する"
         }
 
         task stream_message_add_link "リンク自動付加" {
             depends !image_display
             complete 0
+        }
+
+        task stream_data_clear_when_boot "起動時アイテムクリア" {
+            allocate yakumo
+            complete 0
+            depends !stream_comment
         }
     }

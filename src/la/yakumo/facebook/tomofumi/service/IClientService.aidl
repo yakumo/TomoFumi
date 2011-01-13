@@ -13,4 +13,9 @@ interface IClientService
 
     void addStreamMessage(String text);
     void addLink(String text, String linkUrl, String imageUrl);
+
+    void setStreamLike(String post_id);
+    void resetStreamLike(String post_id);
+    void setCommentLike(String post_id);
+    void resetCommentLike(String post_id);
 }

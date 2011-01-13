@@ -26,7 +26,7 @@ public class StreamUpdator
 {
     private boolean isClear = false;
 
-    public StreamUpdator(Context context, Handler handler, boolean isClear)
+    public StreamUpdator(Context context, boolean isClear)
     {
         super(context);
         this.isClear = isClear;

@@ -147,6 +147,12 @@ public class StreamListActivity
             public void onClickLike(Database.MessageItem item)
             {
                 Log.i(TAG, "like:"+item.post_id);
+                if (item.like.enable_item) {
+                    mService.resetStreamLike(item.post_id);
+                }
+                else {
+                    mService.setStreamLike(item.post_id);
+                }
             }
             public void onClickShare(Database.MessageItem item)
             {

@@ -262,6 +262,35 @@ public class LocalService
             }
         }
 
+        // add like to stream message ///////////////////////////////////////////
+        public void setStreamLike(final String post_id)
+        {
+            execute(new Runnable() {
+                public void run()
+                {
+                    try {
+                        service.setStreamLike(post_id);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "RemoteException", e);
+                    }
+                }
+            });
+        }
+
+        public void resetStreamLike(final String post_id)
+        {
+            execute(new Runnable() {
+                public void run()
+                {
+                    try {
+                        service.resetStreamLike(post_id);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "RemoteException", e);
+                    }
+                }
+            });
+        }
+
         // callback settings ////////////////////////////////////////////////////
         final class DeathCallback
             implements IBinder.DeathRecipient
