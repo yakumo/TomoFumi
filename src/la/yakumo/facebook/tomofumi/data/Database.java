@@ -304,6 +304,23 @@ public class Database
 
         public PostItem comment = new PostItem();
         public PostItem like = new PostItem();
+
+        public boolean hasImage(String url)
+        {
+            if (url.equals(pic_square)) {
+                return true;
+            }
+            return false;
+        }
+
+        public boolean hasNullImage(String url)
+        {
+            if (url.equals(pic_square) &&
+                null == pic_data) {
+                return true;
+            }
+            return false;
+        }
     }
 
     public class StreamListItem
@@ -314,7 +331,9 @@ public class Database
         public String attachment_caption;
         public String attachment_link;
         public String attachment_image;
+        public byte[] attachment_image_data;
         public String attachment_icon;
+        public byte[] attachment_icon_data;
         public boolean updated;
         public boolean show_share;
 
@@ -346,6 +365,28 @@ public class Database
             like.have_item = (like.count > 0);
             like.can_do = (c.getInt(idx.can_like) != 0);
             like.state_changing = false;
+        }
+
+        @Override
+        public boolean hasImage(String url)
+        {
+            if (url.equals(attachment_image) ||
+                url.equals(attachment_icon)) {
+                return true;
+            }
+            return super.hasImage(url);
+        }
+
+        @Override
+        public boolean hasNullImage(String url)
+        {
+            if ((url.equals(attachment_image) &&
+                 null == attachment_image_data) ||
+                (url.equals(attachment_icon) &&
+                 null == attachment_icon_data)) {
+                return true;
+            }
+            return super.hasNullImage(url);
         }
     }
 

@@ -33,10 +33,9 @@ public class ImageDownloader
     private Context context;
     private Database db;
     private SQLiteDatabase wdb;
-    private Thread downloadThread;
-    private Handler waiterHandler = null;
     private ArrayList<String> requestUrls = new ArrayList<String>();
     private ArrayList<String> gettingUrls = new ArrayList<String>();
+    private boolean downloadThreadAlive = false;
 
     private ImageDownloader(Service context)
     {
@@ -44,35 +43,6 @@ public class ImageDownloader
         this.db = new Database(context);
         wdb = db.getWritableDatabase();
         Log.i(TAG, "ImageDownloader#<<constructor>>");
-        downloadThread = new Thread(new Runnable() {
-            public void run()
-            {
-                Log.i(TAG, "ImageDownloader$downloadThread");
-                Looper.prepare();
-                waiterHandler = new Handler() {
-                    public void handleMessage(Message msg)
-                    {
-                        Log.i(TAG, "!!! handleMessage !!!");
-                        switch (msg.what) {
-                        case 1:
-                            Looper.myLooper().quit();
-                            break;
-                        default:
-                            break;
-                        }
-
-                    }
-                };
-                Log.i(TAG, "!!! start loop... !!!");
-                while (!Thread.currentThread().isInterrupted()) {
-                    Log.i(TAG, "!!! waiting... !!!");
-                    Looper.loop();
-                    Log.i(TAG, "!!! start download... !!!");
-                    download();
-                }
-            }
-        });
-        downloadThread.start();
     }
 
     public static ImageDownloader createInstance(Service context)
@@ -102,14 +72,32 @@ public class ImageDownloader
 
     public void request()
     {
-        synchronized (gettingUrls) {
-            synchronized (requestUrls) {
+        synchronized (requestUrls) {
+            synchronized (gettingUrls) {
                 gettingUrls.addAll(requestUrls);
                 requestUrls.clear();
-                Log.i(TAG, "gettingUrls:"+gettingUrls);
             }
         }
-        waiterHandler.sendEmptyMessage(1);
+        boolean isExec = true;
+        synchronized (ImageDownloader.this) {
+            if (downloadThreadAlive) {
+                isExec = false;
+            }
+        }
+        if (isExec) {
+            new Thread(new Runnable() {
+                public void run()
+                {
+                    synchronized (ImageDownloader.this) {
+                        downloadThreadAlive = true;
+                    }
+                    download();
+                    synchronized (ImageDownloader.this) {
+                        downloadThreadAlive = false;
+                    }
+                }
+            }).start();
+        }
     }
 
     public void requestUrl(String url)
@@ -122,7 +110,7 @@ public class ImageDownloader
     {
         ContentValues val = new ContentValues();
         while (gettingUrls.size() > 0) {
-            if (Thread.currentThread().isInterrupted()) {
+            if (Thread.interrupted()) {
                 return;
             }
             String imgUri = gettingUrls.remove(0);

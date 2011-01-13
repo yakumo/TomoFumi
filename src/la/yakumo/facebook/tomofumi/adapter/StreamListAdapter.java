@@ -33,6 +33,16 @@ public class StreamListAdapter
         notifyDataSetChanged();
     }
 
+    public void imageLoaded(String url)
+    {
+        int cnt = items.length;
+        for (int i = 0 ; i < cnt ; i++) {
+            if (items[i].hasNullImage(url)) {
+                items[i] = db.getStreamListItem(items[i].post_id);
+            }
+        }
+    }
+
     public int getCount()
     {
         return items.length;

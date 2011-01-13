@@ -1,0 +1,37 @@
+  project myProjectId "My Project" "1.0" 2011-01-03 - 2011-05-31 {
+    weekstartsmonday
+    timeformat "%Y-%m-%d %H:%M"
+    timingresolution 60min
+    workinghours sat, sun off
+  }
+
+flags task_completed
+
+include "tomofumi.resources.tji"
+include "tomofumi.tasks.tji"
+
+taskreport "Gantt Chart" {
+  headline "Project 'TomoFumi'"
+  columns hierarchindex, name, start, end, effort, duration, cost, revenue, chart
+  loadunit days
+  hideresource 1
+  hidetask task_completed
+  sorttasks tree, sequenceup, statusdown
+}
+
+htmlstatusreport "status_report.html" {
+  caption "Project 'TomoFumi'"
+}
+
+htmltaskreport "task_report.html" {
+  caption "Project 'TomoFumi'"
+  columns name, start, end, daily
+  sorttasks tree, sequenceup, statusdown
+  hidetask task_completed
+}
+
+htmlweeklycalendar "weekly_calendar.html" {
+  caption "Project 'TomoFumi'"
+  columns name, priority, status
+  hidetask task_completed
+}

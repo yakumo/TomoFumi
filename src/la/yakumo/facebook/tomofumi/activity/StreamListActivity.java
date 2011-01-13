@@ -277,6 +277,7 @@ public class StreamListActivity
     public void imageReaded(String url)
     {
         Log.i(TAG, "StreamListActivity#imageReaded:"+url);
+
         int cnt = streamList.getChildCount();
         for (int i = 0 ; i < cnt ; i++) {
             View v = streamList.getChildAt(i);
@@ -296,5 +297,8 @@ public class StreamListActivity
                 }
             }
         }
+
+        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
+        a.imageLoaded(url);
     }
 }

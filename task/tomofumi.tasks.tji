@@ -1,0 +1,52 @@
+# FreeMind map "友文"
+
+task tomofumi "友文開発" {
+    start 2011-01-03
+    milestone 
+}
+
+        task main_screen "Stream一覧" {
+            start 2011-01-03
+            complete 25
+            maxend 2011-01-17
+            note "メイン画面作成"
+            allocate yakumo
+
+            task main_screen_icon_bug_1 "アイコンが表示されない不具合の修正" {
+                start 2011-01-12
+                end 2011-01-13
+                note "画像取得バッファがつまっている模様"
+                statusnote "画像取得待ち行列がクリアされていないっぽい"
+                allocate yakumo
+                flags task_completed
+                complete 100
+            }
+
+            task main_screen_not_visible_attached_image "Attachされた画像が表示されない" {
+                allocate yakumo
+                complete 0
+                start 2011-01-13
+            }
+
+            task stream_like "Like付け機能" {
+                note "ボタンを押すとLikeが切り替わる"
+                depends !main_screen_not_visible_attached_image
+                complete 0
+            }
+
+            task stream_comment "コメント付け機能" {
+                note "ボタンを押すとStream選択後画面に切り替わる"
+                depends !stream_like
+                complete 0
+            }
+
+            task image_display "画像表示" {
+                depends !stream_comment
+                complete 0
+            }
+
+            task stream_message_add_link "リンク自動付加" {
+                depends !image_display
+                complete 0
+            }
+        }
