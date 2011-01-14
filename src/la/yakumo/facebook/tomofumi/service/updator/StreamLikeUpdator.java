@@ -1,6 +1,9 @@
 package la.yakumo.facebook.tomofumi.service.updator;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import java.io.IOException;
@@ -26,6 +29,36 @@ public class StreamLikeUpdator
     {
         Database db = new Database(context);
 
+        info.putString("post_id", post_id);
+
+        int like_count = 0;
+        int like_posted = 0;
+        int can_like = 0;
+        SQLiteDatabase rdb = db.getReadableDatabase();
+        Cursor c = rdb.query(
+            "stream",
+            new String[] {
+                "like_count",
+                "like_posted",
+                "can_like"
+            },
+            "_id=?",
+            new String[] {
+                post_id,
+            },
+            null, null, null);
+        if (c.moveToFirst()) {
+            like_count = c.getInt(0);
+            like_posted = c.getInt(1);
+            can_like = c.getInt(2);
+            if (can_like == 0) {
+                info.putString(
+                    "error",
+                    resources.getString(R.string.error_can_not_like));
+                return;
+            }
+        }
+
         String errStr = null;
         try {
             Bundle b = new Bundle();
@@ -39,11 +72,9 @@ public class StreamLikeUpdator
             String ret = facebook.request(b, "POST");
             Log.i(TAG, "regist result:"+ret);
 
-            /*
             if ("true".equals(ret)) {
-                SQLiteDatabase wdb = db.getWritableDatabase();
                 ContentValues val = new ContentValues();
-                if (like_posted == 0) {
+                if (isRegist) {
                     val.put("like_count", like_count + 1);
                     val.put("like_posted", 1);
                     info.putInt("like_count", like_count + 1);
@@ -53,15 +84,22 @@ public class StreamLikeUpdator
                     val.put("like_posted", 0);
                     info.putInt("like_count", like_count - 1);
                 }
-                wdb.update(
-                    "stream",
-                    val,
-                    "_id=?",
-                    new String[] {
-                        post_id,
-                    });
+
+                SQLiteDatabase wdb = db.getWritableDatabase();
+                try {
+                    wdb.beginTransaction();
+                    wdb.update(
+                        "stream",
+                        val,
+                        "_id=?",
+                        new String[] {
+                            post_id,
+                        });
+                    wdb.setTransactionSuccessful();
+                } finally {
+                    wdb.endTransaction();
+                }
             }
-            */
         } catch (MalformedURLException e) {
             Log.e(TAG, "MalformedURLException", e);
             errStr = e.getMessage();

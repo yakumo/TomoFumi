@@ -1,7 +1,7 @@
-  project myProjectId "TomoFumi" "1.0" 2011-01-03 - 2011-05-31 {
-    weekstartsmonday
+  project tomofumi "TomoFumi" "1.0" 2011-01-03 - 2011-05-31 {
+    weekstartssunday
     timeformat "%Y-%m-%d %H:%M"
-    timingresolution 60min
+    timingresolution 30min
     workinghours sat, sun off
   }
 
@@ -12,11 +12,15 @@ include "tomofumi.tasks.tji"
 
 taskreport "Gantt Chart" {
   headline "Project 'TomoFumi'"
-  columns hierarchindex, name, start, end, effort, duration, cost, revenue, chart
+  columns hierarchindex, name, start, end, duration, chart
   loadunit days
   hideresource 1
-  hidetask task_completed
   sorttasks tree, sequenceup, statusdown
+}
+
+resourcereport "Resources" {
+  caption "Project 'TomoFumi'"
+  columns name, id
 }
 
 htmlstatusreport "status_report.html" {
@@ -25,13 +29,18 @@ htmlstatusreport "status_report.html" {
 
 htmltaskreport "task_report.html" {
   caption "Project 'TomoFumi'"
-  columns name, start, end, daily
+  columns name, start, end, completed, daily
   sorttasks tree, sequenceup, statusdown
-  hidetask task_completed
 }
 
 htmlweeklycalendar "weekly_calendar.html" {
   caption "Project 'TomoFumi'"
-  columns name, priority, status
-  hidetask task_completed
+  accumulate
+  barlabels load
+  loadunit shortauto
+  showprojectids
 }
+
+# columns completed,cost,criticalness,depends,duration,efficiency,effort,flags,follows,freeload,hierarchindex,hierarchno,id,index,maxeffort,mineffort,name,no,note,pathcriticalness,priority,profit,projectid,projectids,quarterly,rate,reference,resources,responsibilities,responsible,revenue,scenario,seqno,schedule,status,total,utilization
+# columns start,startbuffer,startbufferend,minstart,maxstart,end,endbuffer,endbufferstart,minend,maxend
+# columns chart,daily,monthly,weekly,yearly

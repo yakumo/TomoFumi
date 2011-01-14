@@ -1,4 +1,6 @@
 # FreeMind map "友文"
 
 resource yakumo "Kazuya Yakumo" {
+    workinghours sat, sun off
+    workinghours mon - fri 9:00 - 12:30, 13:30 - 18:00
 }

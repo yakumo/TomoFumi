@@ -39,6 +39,7 @@
   <string name="error_login_cancel">Login cancel</string>
   <string name="error_unknown_postid">Unknown Post ID</string>
   <string name="error_unsupported">Unsupported</string>
+  <string name="error_can_not_like">Can\'t like</string>
 
   <plurals name="plural_comment_format">
     <item quantity="one">comment:%d</item>

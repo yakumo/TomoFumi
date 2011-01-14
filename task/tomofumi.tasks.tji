@@ -7,7 +7,7 @@ task tomofumi "友文開発" {
 
     task main_screen "Stream一覧" {
         start 2011-01-03
-        complete 30
+        complete 50
         maxend 2011-01-17
         note "メイン画面作成"
         allocate yakumo
@@ -17,16 +17,14 @@ task tomofumi "友文開発" {
             end 2011-01-13
             note "画像取得バッファがつまっている模様"
             statusnote "画像取得待ち行列がクリアされていないっぽい"
-            allocate yakumo
             flags task_completed
             complete 100
         }
 
         task main_screen_not_visible_attached_image "Attachされた画像が表示されない" {
-            allocate yakumo
             complete 100
-            start 2011-01-13
-            end 2011-01-13
+            start 2011-01-13-09:00
+            end 2011-01-13-12:30
             flags task_completed
         }
 
@@ -34,32 +32,30 @@ task tomofumi "友文開発" {
             note "ボタンを押すとLikeが切り替わる"
             depends !main_screen_not_visible_attached_image
             complete 50
-            start 2011-01-13
+            start 2011-01-13-13:30
 
             task stream_like_signal_to_view "ボタンを押してViewに反応を返す" {
-                allocate yakumo
                 complete 100
-                start 2011-01-13
-                end 2011-01-13
+                start 2011-01-13-13:30
+                end 2011-01-13-15:00
                 flags task_completed
             }
 
             task stream_like_request_to_server "Likeのリクエストをする" {
-                allocate yakumo
                 complete 100
                 depends main_screen.stream_like.stream_like_signal_to_view
-                start 2011-01-13
-                end 2011-01-13
+                start 2011-01-13-15:00
+                end 2011-01-13-18:00
             }
 
             task stream_like_parse_response_from_server "Likeリクエストの戻り値判定" {
-                allocate yakumo
-                complete 0
+                complete 100
                 depends main_screen.stream_like.stream_like_request_to_server
+                start 2011-01-14-09:00
+                end 2011-01-14-10:30
             }
 
             task stream_like_update_view "画面に反映" {
-                allocate yakumo
                 complete 0
                 depends main_screen.stream_like.stream_like_parse_response_from_server
             }
@@ -67,14 +63,14 @@ task tomofumi "友文開発" {
 
         task stream_comment "コメント付け機能" {
             note "ボタンを押すとStream選択後画面に切り替わる"
-            depends !stream_like
+            depends !main_screen_not_visible_attached_image
             complete 0
+            start 2011-01-13-13:30
 
             task stream_comment_signal_to_view "ボタンを押してViewに反応を返す" {
-                allocate yakumo
                 complete 100
-                start 2011-01-13
-                end 2011-01-13
+                start 2011-01-13-13:30
+                end 2011-01-13-15:00
                 flags task_completed
             }
         }
