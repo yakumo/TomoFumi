@@ -190,26 +190,24 @@ public class ClientService
             });
     }
 
-    public void setStreamLike(String post_id)
+    private void changeStreamLike(final String post_id, boolean flag)
     {
-        new StreamLikeUpdator(this, post_id, true)
+        new StreamLikeUpdator(this, post_id, flag)
             .execute(new Updator.OnStatusChange() {
                 public void onStart()
                 {
-                    /*
                     synchronized (callbacks) {
                         int numListener = callbacks.beginBroadcast();
                         for (int i = 0 ; i < numListener ; i++) {
                             try {
                                 callbacks.getBroadcastItem(i)
-                                    .reloadStreamStart();
+                                    .reloadedStreamLikeStart(post_id);
                             } catch (RemoteException e) {
                                 Log.e(TAG, "RemoteException", e);
                             }
                         }
                         callbacks.finishBroadcast();
                     }
-                    */
                 }
 
                 public void onFinish(Bundle info)
@@ -218,26 +216,30 @@ public class ClientService
                     if (info.containsKey("error")) {
                         errMsg = info.getString("error");
                     }
-                    /*
                     synchronized (callbacks) {
                         int numListener = callbacks.beginBroadcast();
                         for (int i = 0 ; i < numListener ; i++) {
                             try {
                                 callbacks.getBroadcastItem(i)
-                                    .reloadStreamFinish(errMsg);
+                                    .reloadedStreamLikeFinish(post_id, errMsg);
                             } catch (RemoteException e) {
                                 Log.e(TAG, "RemoteException", e);
                             }
                         }
                         callbacks.finishBroadcast();
                     }
-                    */
                 }
             });
     }
 
+    public void setStreamLike(String post_id)
+    {
+        changeStreamLike(post_id, true);
+    }
+
     public void resetStreamLike(String post_id)
     {
+        changeStreamLike(post_id, false);
     }
 
     public void setCommentLike(String post_id)

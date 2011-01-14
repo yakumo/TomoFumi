@@ -40,6 +40,29 @@ public class StreamListAdapter
         notifyDataSetChanged();
     }
 
+    public void reloadData(Database.MessageItem item, boolean updateFlag)
+    {
+        for (int i = 0 ; i < items.length ; i++) {
+            if (item.post_id.equals(items[i].post_id)) {
+                items[i] = db.getStreamListItem(item.post_id);
+                if (updateFlag) {
+                    notifyDataSetChanged();
+                }
+                return;
+            }
+        }
+    }
+
+    public boolean hasPostId(String post_id)
+    {
+        for (Database.MessageItem item : items) {
+            if (item.post_id.equals(post_id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void imageLoaded(String url)
     {
         int cnt = items.length;

@@ -31,6 +31,7 @@ import la.yakumo.facebook.tomofumi.adapter.StreamListAdapter;
 import la.yakumo.facebook.tomofumi.data.Database;
 import la.yakumo.facebook.tomofumi.service.LocalService;
 import la.yakumo.facebook.tomofumi.view.ItemDataView;
+import la.yakumo.facebook.tomofumi.view.StreamDataView;
 
 public class StreamListActivity
     extends Activity
@@ -44,14 +45,16 @@ public class StreamListActivity
     private ListView streamList;
     private boolean isReloading = false;
 
-    private class StreamReadCallback
+    private class ServiceCallback
         extends Binder
-        implements IInterface,
-        LocalService.OnStreamRead
+        implements IInterface
+        ,LocalService.OnStreamRead
+        ,LocalService.OnImageRead
+        ,LocalService.OnStreamLikeChange
     {
         private String DESCRIPTOR =
-            "la.yakumo.facebook.tomofumi.activity.StreamListActivity$StreamReadCallback";
-        public StreamReadCallback()
+            "la.yakumo.facebook.tomofumi.activity.StreamListActivity$ServiceCallback";
+        public ServiceCallback()
         {
             attachInterface(this, DESCRIPTOR);
         }
@@ -80,26 +83,6 @@ public class StreamListActivity
                 }
             });
         }
-    }
-    private StreamReadCallback streamReadCallback = new StreamReadCallback();
-
-
-    private class ImageReadCallback
-        extends Binder
-        implements IInterface,
-        LocalService.OnImageRead
-    {
-        private String DESCRIPTOR =
-            "la.yakumo.facebook.tomofumi.activity.StreamListActivity$ImageReadCallback";
-        public ImageReadCallback()
-        {
-            attachInterface(this, DESCRIPTOR);
-        }
-
-        public IBinder asBinder()
-        {
-            return this;
-        }
 
         public void onImageReaded(final String url)
         {
@@ -110,16 +93,29 @@ public class StreamListActivity
                 }
             });
         }
+
+        public void onStreamLikeChange(
+            final String post_id,
+            final boolean isAccess)
+        {
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    streamLikeChange(post_id, isAccess);
+                }
+            });
+        }
     }
-    private ImageReadCallback imageReadCallback = new ImageReadCallback();
+    private ServiceCallback serviceCallback = new ServiceCallback();
 
     private ServiceConnection conn = new ServiceConnection(){
         public void onServiceConnected(ComponentName className, IBinder service)
         {
             Log.i(TAG, "onServiceConnected:"+service);
             mService = (LocalService.Stub) service;
-            mService.addStreamReadCallback(streamReadCallback);
-            mService.addImageReadCallback(imageReadCallback);
+            mService.addStreamReadCallback(serviceCallback);
+            mService.addImageReadCallback(serviceCallback);
+            mService.addStreamLikeChangeCallback(serviceCallback);
             mService.reloadStream();
         }
 
@@ -143,6 +139,13 @@ public class StreamListActivity
             public void onClickComment(Database.MessageItem item)
             {
                 Log.i(TAG, "comment:"+item.post_id);
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.setClass(
+                    StreamListActivity.this,
+                    StreamItemActivity.class);
+                intent.putExtra("post_id", item.post_id);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             }
             public void onClickLike(Database.MessageItem item)
             {
@@ -222,7 +225,7 @@ public class StreamListActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public void streamReadStart()
+    void streamReadStart()
     {
         Log.i(TAG, "!!!! onStreamReadStart !!!!");
         isReloading = true;
@@ -256,7 +259,7 @@ public class StreamListActivity
         }
     }
 
-    public void streamReadFinish(String errMsg)
+    void streamReadFinish(String errMsg)
     {
         Log.i(TAG, "!!!! onStreamReadFinish !!!!");
         isReloading = false;
@@ -298,9 +301,11 @@ public class StreamListActivity
         }
     }
 
-    public void imageReaded(String url)
+    void imageReaded(String url)
     {
         Log.i(TAG, "StreamListActivity#imageReaded:"+url);
+
+        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
 
         int cnt = streamList.getChildCount();
         for (int i = 0 ; i < cnt ; i++) {
@@ -317,12 +322,42 @@ public class StreamListActivity
                 ItemDataView itemView = (ItemDataView) tv;
                 if (null != itemView) {
                     Log.i(TAG, "find view !!!, "+itemView);
+                    a.reloadData(itemView.get(), false);
                     itemView.reload();
                 }
             }
         }
 
-        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
         a.imageLoaded(url);
+    }
+
+    void streamLikeChange(String post_id, boolean isAccess)
+    {
+        Log.i(TAG, "stream like change:"+post_id+","+isAccess);
+
+        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
+        int cnt = streamList.getChildCount();
+        View v = streamList.findViewWithTag(post_id);
+        Log.i(TAG, "streamLikeChange:"+v);
+        if (null != v) {
+            if (v instanceof ItemDataView) {
+                ItemDataView idv = (ItemDataView) v;
+                if (isAccess) {
+                    Database.MessageItem item = idv.get();
+                    item.like.state_changing = true;
+                    idv.put(item);
+                }
+                else {
+                    a.reloadData(idv.get(), true);
+                }
+            }
+        }
+        else {
+            if (!isAccess) {
+                if (a.hasPostId(post_id)) {
+                    a.reloadData();
+                }
+            }
+        }
     }
 }

@@ -149,6 +149,11 @@ public class ItemDataView
         return R.layout.item_data;
     }
 
+    public final Database.MessageItem get()
+    {
+        return messageItem;
+    }
+
     public void put(Database.MessageItem item)
     {
         messageItem = item;
@@ -179,6 +184,8 @@ public class ItemDataView
 
     protected void updateData()
     {
+        setTag(messageItem.post_id);
+
         if (null != streamIconView) {
             streamIconView.setImageResource(R.drawable.clear_image);
         }
@@ -226,9 +233,11 @@ public class ItemDataView
         }
 
         if (null != commentView) {
+            commentView.setTag(messageItem.post_id);
             commentView.setPostItem(messageItem.comment);
         }
         if (null != likeView) {
+            likeView.setTag(messageItem.post_id);
             likeView.setPostItem(messageItem.like);
         }
     }

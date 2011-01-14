@@ -62,8 +62,28 @@ public class LocalService
         {
         }
 
-        public void reloadedLike(String post_id, String errMsg)
+        public void reloadedStreamLikeStart(final String post_id)
         {
+            Log.i(TAG, "reloadedStreamLikeStart:"+post_id);
+            new Thread(new Runnable(){
+                public void run()
+                {
+                    localServerStub.reloadedStreamLikeStart(post_id);
+                }
+            }).start();
+        }
+
+        public void reloadedStreamLikeFinish(
+            final String post_id,
+            final String errMsg)
+        {
+            Log.i(TAG, "reloadedStreamLikeFinish:"+post_id);
+            new Thread(new Runnable(){
+                public void run()
+                {
+                    localServerStub.reloadedStreamLikeFinish(post_id, errMsg);
+                }
+            }).start();
         }
 
         public void readedImage(final String url)
@@ -137,6 +157,8 @@ public class LocalService
             new HashMap<OnStreamRead,DeathCallback>();
         private HashMap<OnImageRead,DeathCallback> imageReadCallbacks =
             new HashMap<OnImageRead,DeathCallback>();
+        private HashMap<OnStreamLikeChange,DeathCallback> streamLikeChange =
+            new HashMap<OnStreamLikeChange,DeathCallback>();
 
         private String DESCRIPTOR =
             "la.yakumo.facebook.tomofumi.service.LocalService.Stub";
@@ -263,6 +285,39 @@ public class LocalService
         }
 
         // add like to stream message ///////////////////////////////////////////
+        public void addStreamLikeChangeCallback(OnStreamLikeChange sr)
+        {
+            IBinder binder = sr.asBinder();
+            DeathCallback cb = new DeathCallback(sr);
+            try {
+                binder.linkToDeath(cb, 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+            streamLikeChange.put(sr, cb);
+        }
+
+        public void removeStreamLikeChangeCallback(OnStreamLikeChange sr)
+        {
+            IBinder binder = sr.asBinder();
+            binder.unlinkToDeath(streamLikeChange.get(sr), 0);
+            streamLikeChange.remove(sr);
+        }
+
+        void reloadedStreamLikeStart(String post_id)
+        {
+            for (OnStreamLikeChange lc : streamLikeChange.keySet()) {
+                lc.onStreamLikeChange(post_id, true);
+            }
+        }
+
+        void reloadedStreamLikeFinish(String post_id, String errMsg)
+        {
+            for (OnStreamLikeChange lc : streamLikeChange.keySet()) {
+                lc.onStreamLikeChange(post_id, false);
+            }
+        }
+
         public void setStreamLike(final String post_id)
         {
             execute(new Runnable() {
@@ -326,5 +381,11 @@ public class LocalService
         extends IInterface
     {
         public void onImageReaded(String url);
+    }
+
+    public static interface OnStreamLikeChange
+        extends IInterface
+    {
+        public void onStreamLikeChange(String post_id, boolean isAccess);
     }
 }

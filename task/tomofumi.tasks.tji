@@ -8,31 +8,23 @@ task tomofumi "友文開発" {
     task main_screen "Stream一覧" {
         start 2011-01-03
         complete 50
-        maxend 2011-01-17
+        maxend 2011-01-31
         note "メイン画面作成"
         allocate yakumo
 
-        task main_screen_icon_bug_1 "アイコンが表示されない不具合の修正" {
-            start 2011-01-12
-            end 2011-01-13
-            note "画像取得バッファがつまっている模様"
-            statusnote "画像取得待ち行列がクリアされていないっぽい"
-            flags task_completed
+        task main_screen_base "基本動作" {
             complete 100
-        }
-
-        task main_screen_not_visible_attached_image "Attachされた画像が表示されない" {
-            complete 100
-            start 2011-01-13-09:00
-            end 2011-01-13-12:30
-            flags task_completed
+            start 2011-01-03
+            end 2011-01-12
         }
 
         task stream_like "Like付け機能" {
             note "ボタンを押すとLikeが切り替わる"
-            depends !main_screen_not_visible_attached_image
-            complete 50
+            depends !main_screen_base
+            complete 100
             start 2011-01-13-13:30
+            end 2011-01-14-12:00
+            flags task_completed
 
             task stream_like_signal_to_view "ボタンを押してViewに反応を返す" {
                 complete 100
@@ -46,6 +38,7 @@ task tomofumi "友文開発" {
                 depends main_screen.stream_like.stream_like_signal_to_view
                 start 2011-01-13-15:00
                 end 2011-01-13-18:00
+                flags task_completed
             }
 
             task stream_like_parse_response_from_server "Likeリクエストの戻り値判定" {
@@ -53,19 +46,25 @@ task tomofumi "友文開発" {
                 depends main_screen.stream_like.stream_like_request_to_server
                 start 2011-01-14-09:00
                 end 2011-01-14-10:30
+                flags task_completed
             }
 
             task stream_like_update_view "画面に反映" {
-                complete 0
+                complete 100
                 depends main_screen.stream_like.stream_like_parse_response_from_server
+                start 2011-01-14-10:30
+                end 2011-01-14-12:00
+                flags task_completed
             }
         }
 
         task stream_comment "コメント付け機能" {
             note "ボタンを押すとStream選択後画面に切り替わる"
-            depends !main_screen_not_visible_attached_image
-            complete 0
+            depends !main_screen_base
+            complete 100
             start 2011-01-13-13:30
+            end 2011-01-14-14:00
+            flags task_completed
 
             task stream_comment_signal_to_view "ボタンを押してViewに反応を返す" {
                 complete 100
@@ -73,12 +72,21 @@ task tomofumi "友文開発" {
                 end 2011-01-13-15:00
                 flags task_completed
             }
+
+            task stream_comment_pressed_open_stream_item_view "Stream選択後画面を開く" {
+                depends !stream_comment_signal_to_view
+                complete 100
+                start 2011-01-14-13:30
+                end 2011-01-14-14:00
+                flags task_completed
+            }
         }
 
         task image_display "画像表示" {
             depends !stream_comment
-            complete 0
+            complete 1
             note "画像が追加されているデータの場合、画像を表示する"
+            start 2011-01-14-15:30
         }
 
         task stream_message_add_link "リンク自動付加" {
@@ -90,5 +98,45 @@ task tomofumi "友文開発" {
             allocate yakumo
             complete 0
             depends !stream_comment
+        }
+
+        task bugs "不具合" {
+            depends !main_screen_base
+
+            task main_screen_icon_bug_1 "アイコンが表示されない不具合の修正" {
+                start 2011-01-12
+                end 2011-01-13
+                note "画像取得バッファがつまっている模様"
+                statusnote "画像取得待ち行列がクリアされていないっぽい"
+                flags task_completed
+                complete 100
+            }
+
+            task main_screen_not_visible_attached_image "Attachされた画像が表示されない" {
+                complete 100
+                start 2011-01-13-09:00
+                end 2011-01-13-12:30
+                flags task_completed
+            }
+
+            task main_screen_bug_like_progress_scroll_out "Likeプログレス表示中のスクロール" {
+                complete 100
+                priority 500
+                depends !main_screen_not_visible_attached_image
+                start 2011-01-14-14:00
+                end 2011-01-14-15:30
+                flags task_completed
+            }
+        }
+    }
+
+    task stream_item_screen "Stream選択後画面" {
+        start 2011-01-14-14:00
+        allocate yakumo
+        complete 0
+
+        task stream_item_screen_make_layout "レイアウト作成" {
+            complete 0
+            start 2011-01-14-14:00
         }
     }
