@@ -82,6 +82,29 @@ task tomofumi "友文開発" {
             }
         }
 
+        task stream_message_input "単行入力欄作成" {
+            note "画面上部にメッセージの入力欄を設ける"
+            complete 0
+            depends !stream_comment
+            start 2011-01-18-10:30
+
+            task stream_message_input_relayout "レイアウト追加" {
+                complete 100
+                start 2011-01-18-10:30
+                end 2011-01-18-12:30
+            }
+
+            task stream_message_input_sender "入力・送信機能追加" {
+                depends !stream_message_input_relayout
+                complete 0
+            }
+
+            task stream_message_input_resize_button "画面サイズに拡大機能追加" {
+                depends !stream_message_input_sender
+                complete 0
+            }
+        }
+
         task image_display "画像表示" {
             depends !stream_comment
             complete 1

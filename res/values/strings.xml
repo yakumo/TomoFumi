@@ -10,6 +10,8 @@
   <string name="message_ok">OK</string>
   <string name="message_cancel">Cancel</string>
 
+  <string name="stream_message_hint">Post</string>
+
   <string name="send_button_text">Send</string>
   <string name="link_check">Check</string>
   <string name="modestr_compose">Compose</string>

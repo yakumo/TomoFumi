@@ -9,6 +9,52 @@
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
      >
+    <RelativeLayout
+       android:orientation="horizontal"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       >
+      <Button
+         android:layout_width="1px"
+         android:layout_height="1px"
+         android:layout_alignParentTop="true"
+         android:layout_alignParentRight="true"
+         android:id="@+id/stream_focus_getter"
+         />
+      <ImageButton
+         android:layout_width="@dimen/stream_post_message_icon_size"
+         android:layout_height="@dimen/stream_post_message_icon_size"
+         android:layout_alignParentRight="true"
+         android:layout_centerVertical="true"
+         android:padding="3dp"
+         android:clickable="true"
+         android:onClick="onClickTextMore"
+         android:src="@android:drawable/ic_menu_more"
+         android:scaleType="fitXY"
+         android:id="@+id/stream_post_message_more"
+         />
+      <ImageButton
+         android:layout_width="@dimen/stream_post_message_icon_size"
+         android:layout_height="@dimen/stream_post_message_icon_size"
+         android:layout_toLeftOf="@id/stream_post_message_more"
+         android:layout_centerVertical="true"
+         android:padding="3dp"
+         android:clickable="true"
+         android:onClick="onClickTextShare"
+         android:src="@android:drawable/ic_menu_share"
+         android:scaleType="fitXY"
+         android:id="@+id/stream_post_message_share"
+         />
+      <EditText
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         android:layout_toLeftOf="@id/stream_post_message_share"
+         android:layout_centerVertical="true"
+         android:hint="@string/stream_message_hint"
+         android:singleLine="true"
+         android:id="@+id/stream_post_message_text"
+         />
+    </RelativeLayout>
     <ListView
        android:layout_width="fill_parent"
        android:layout_height="fill_parent"

@@ -25,6 +25,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ListView;
+import android.widget.TextView;
 import la.yakumo.facebook.tomofumi.Constants;
 import la.yakumo.facebook.tomofumi.R;
 import la.yakumo.facebook.tomofumi.adapter.StreamListAdapter;
@@ -44,6 +45,7 @@ public class StreamListActivity
     private View progress;
     private ListView streamList;
     private boolean isReloading = false;
+    private boolean isCreated = false;
 
     private class ServiceCallback
         extends Binder
@@ -167,9 +169,24 @@ public class StreamListActivity
         streamList = (ListView) findViewById(R.id.stream_list);
         streamList.setAdapter(a);
 
+        isCreated = true;
+        View v = findViewById(R.id.stream_focus_getter);
+        if (null != v) {
+            v.requestFocus();
+        }
+
         Intent intent = new Intent(this, LocalService.class);
         if (bindService(intent, conn, Context.BIND_AUTO_CREATE)) {
         }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (isCreated) {
+        }
+        isCreated = false;
     }
 
     @Override
