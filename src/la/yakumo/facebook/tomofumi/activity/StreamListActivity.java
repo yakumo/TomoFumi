@@ -53,6 +53,7 @@ public class StreamListActivity
         ,LocalService.OnStreamRead
         ,LocalService.OnImageRead
         ,LocalService.OnStreamLikeChange
+        ,LocalService.OnStreamMessageUploaded
     {
         private String DESCRIPTOR =
             "la.yakumo.facebook.tomofumi.activity.StreamListActivity$ServiceCallback";
@@ -107,6 +108,17 @@ public class StreamListActivity
                 }
             });
         }
+
+        public void onStreamMessageUploaded(
+            final String post_id)
+        {
+            handler.post(new Runnable() {
+                public void run()
+                {
+                    streamMessageUploaded(post_id);
+                }
+            });
+        }
     }
     private ServiceCallback serviceCallback = new ServiceCallback();
 
@@ -118,6 +130,7 @@ public class StreamListActivity
             mService.addStreamReadCallback(serviceCallback);
             mService.addImageReadCallback(serviceCallback);
             mService.addStreamLikeChangeCallback(serviceCallback);
+            mService.addStreamMessageUpdatedCallback(serviceCallback);
             mService.reloadStream();
         }
 
@@ -240,6 +253,24 @@ public class StreamListActivity
             break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onClickTextMore(View v)
+    {
+    }
+
+    public void onClickTextShare(View v)
+    {
+        TextView tv = (TextView) findViewById(R.id.stream_post_message_text);
+        if (null != tv) {
+            String txt = tv.getText().toString();
+            if (null != mService &&
+                null != txt &&
+                txt.length() > 0) {
+                tv.setText("");
+                mService.sendMessage(txt);
+            }
+        }
     }
 
     void streamReadStart()
@@ -376,5 +407,11 @@ public class StreamListActivity
                 }
             }
         }
+    }
+
+    void streamMessageUploaded(String post_id)
+    {
+        StreamListAdapter a = (StreamListAdapter)streamList.getAdapter();
+        a.reloadData();
     }
 }

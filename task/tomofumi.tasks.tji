@@ -92,11 +92,14 @@ task tomofumi "友文開発" {
                 complete 100
                 start 2011-01-18-10:30
                 end 2011-01-18-12:30
+                flags task_completed
             }
 
             task stream_message_input_sender "入力・送信機能追加" {
                 depends !stream_message_input_relayout
-                complete 0
+                complete 100
+                start 2011-01-18-14:00
+                end 2011-01-18-18:00
             }
 
             task stream_message_input_resize_button "画面サイズに拡大機能追加" {

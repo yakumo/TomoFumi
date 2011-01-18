@@ -86,6 +86,18 @@ public class LocalService
             }).start();
         }
 
+        public void registedStreamMessage(
+            final String post_id,
+            final String errMsg)
+        {
+            new Thread(new Runnable(){
+                public void run()
+                {
+                    localServerStub.registedStreamMessage(post_id, errMsg);
+                }
+            }).start();
+        }
+
         public void readedImage(final String url)
         {
             Log.i(TAG, "reloadedImage:"+url);
@@ -159,6 +171,8 @@ public class LocalService
             new HashMap<OnImageRead,DeathCallback>();
         private HashMap<OnStreamLikeChange,DeathCallback> streamLikeChange =
             new HashMap<OnStreamLikeChange,DeathCallback>();
+        private HashMap<OnStreamMessageUploaded,DeathCallback> streamUploaded =
+            new HashMap<OnStreamMessageUploaded,DeathCallback>();
 
         private String DESCRIPTOR =
             "la.yakumo.facebook.tomofumi.service.LocalService.Stub";
@@ -346,6 +360,49 @@ public class LocalService
             });
         }
 
+        // send status message //////////////////////////////////////////////////
+        public void addStreamMessageUpdatedCallback(OnStreamMessageUploaded sr)
+        {
+            IBinder binder = sr.asBinder();
+            DeathCallback cb = new DeathCallback(sr);
+            try {
+                binder.linkToDeath(cb, 0);
+            } catch (RemoteException e) {
+                Log.e(TAG, "RemoteException", e);
+            }
+            streamUploaded.put(sr, cb);
+        }
+
+        public void removeStreamMessageUpdatedCallback(OnStreamMessageUploaded sr)
+        {
+            IBinder binder = sr.asBinder();
+            binder.unlinkToDeath(streamUploaded.get(sr), 0);
+            streamUploaded.remove(sr);
+        }
+
+        void registedStreamMessage(
+            final String post_id,
+            final String errMsg)
+        {
+            for (OnStreamMessageUploaded lc : streamUploaded.keySet()) {
+                lc.onStreamMessageUploaded(post_id);
+            }
+        }
+
+        public void sendMessage(final String message)
+        {
+            execute(new Runnable() {
+                public void run()
+                {
+                    try {
+                        service.addStreamMessage(message);
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "RemoteException", e);
+                    }
+                }
+            });
+        }
+
         // callback settings ////////////////////////////////////////////////////
         final class DeathCallback
             implements IBinder.DeathRecipient
@@ -387,5 +444,11 @@ public class LocalService
         extends IInterface
     {
         public void onStreamLikeChange(String post_id, boolean isAccess);
+    }
+
+    public static interface OnStreamMessageUploaded
+        extends IInterface
+    {
+        public void onStreamMessageUploaded(String post_id);
     }
 }

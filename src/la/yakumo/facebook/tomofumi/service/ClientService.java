@@ -75,6 +75,7 @@ public class ClientService
 
             public void addStreamMessage(String text)
             {
+                ClientService.this.addStreamMessage(text);
             }
 
             public void addLink(String text, String linkUrl, String imageUrl)
@@ -148,7 +149,7 @@ public class ClientService
         return stub;
     }
 
-    private void reloadStream(boolean isClear)
+    void reloadStream(boolean isClear)
     {
         new StreamUpdator(this, isClear)
             .execute(new Updator.OnStatusChange() {
@@ -190,7 +191,41 @@ public class ClientService
             });
     }
 
-    private void changeStreamLike(final String post_id, boolean flag)
+    void addStreamMessage(String text)
+    {
+        new AddStreamMessageUpdator(this, text)
+            .execute(new Updator.OnStatusChange() {
+                public void onStart()
+                {
+                }
+
+                public void onFinish(Bundle info)
+                {
+                    String errMsg = null;
+                    if (info.containsKey("error")) {
+                        errMsg = info.getString("error");
+                    }
+                    String post_id = null;
+                    if (info.containsKey("post_id")) {
+                        post_id = info.getString("post_id");
+                    }
+                    synchronized (callbacks) {
+                        int numListener = callbacks.beginBroadcast();
+                        for (int i = 0 ; i < numListener ; i++) {
+                            try {
+                                callbacks.getBroadcastItem(i)
+                                    .registedStreamMessage(post_id, errMsg);
+                            } catch (RemoteException e) {
+                                Log.e(TAG, "RemoteException", e);
+                            }
+                        }
+                        callbacks.finishBroadcast();
+                    }
+                }
+            });
+    }
+
+    void changeStreamLike(final String post_id, boolean flag)
     {
         new StreamLikeUpdator(this, post_id, flag)
             .execute(new Updator.OnStatusChange() {
@@ -232,21 +267,21 @@ public class ClientService
             });
     }
 
-    public void setStreamLike(String post_id)
+    void setStreamLike(String post_id)
     {
         changeStreamLike(post_id, true);
     }
 
-    public void resetStreamLike(String post_id)
+    void resetStreamLike(String post_id)
     {
         changeStreamLike(post_id, false);
     }
 
-    public void setCommentLike(String post_id)
+    void setCommentLike(String post_id)
     {
     }
 
-    public void resetCommentLike(String post_id)
+    void resetCommentLike(String post_id)
     {
     }
 }

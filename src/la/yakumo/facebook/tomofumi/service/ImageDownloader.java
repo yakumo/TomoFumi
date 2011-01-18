@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -32,7 +33,6 @@ public class ImageDownloader
     private static ImageDownloader downloader = null;
     private Context context;
     private Database db;
-    private SQLiteDatabase wdb;
     private ArrayList<String> requestUrls = new ArrayList<String>();
     private ArrayList<String> gettingUrls = new ArrayList<String>();
     private boolean downloadThreadAlive = false;
@@ -41,7 +41,6 @@ public class ImageDownloader
     {
         this.context = context;
         this.db = new Database(context);
-        wdb = db.getWritableDatabase();
         Log.i(TAG, "ImageDownloader#<<constructor>>");
     }
 
@@ -135,25 +134,44 @@ public class ImageDownloader
                 }
                 byte[] imageData = dst.toByteArray();
 
+                boolean isOK = false;
+                SQLiteDatabase wdb = db.getWritableDatabase();
                 try {
-                    wdb.beginTransaction();
                     val.clear();
                     val.put("image_url", imgUri);
                     val.put("image_data", imageData);
+                    while (wdb.isDbLockedByCurrentThread() ||
+                           wdb.isDbLockedByOtherThreads() ||
+                           wdb.inTransaction()) {
+                        Log.i(TAG, "inTransaction !!!");
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    wdb.beginTransaction();
                     wdb.insertWithOnConflict(
                         "images",
                         null,
                         val,
                         SQLiteDatabase.CONFLICT_REPLACE);
                     wdb.setTransactionSuccessful();
+                    isOK = true;
+                } catch (SQLiteException e) {
+                    Log.e(TAG, "SQLiteException", e);
+                    gettingUrls.add(imgUri);
                 } finally {
-                    wdb.endTransaction();
+                    if (wdb.inTransaction()) {
+                        wdb.endTransaction();
+                    }
                 }
 
-                Intent intent = new Intent(IMAGE_DOWNLOADED);
-                intent.setClass(context, ClientService.class);
-                intent.putExtra("url", imgUri);
-                context.startService(intent);
+                if (isOK) {
+                    Intent intent = new Intent(IMAGE_DOWNLOADED);
+                    intent.setClass(context, ClientService.class);
+                    intent.putExtra("url", imgUri);
+                    context.startService(intent);
+                }
             } catch (MalformedURLException e) {
                 Log.e(TAG, "MalformedURLException", e);
             } catch (IOException e) {

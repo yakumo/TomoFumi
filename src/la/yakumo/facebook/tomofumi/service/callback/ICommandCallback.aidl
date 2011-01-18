@@ -8,5 +8,7 @@ interface ICommandCallback
     void reloadedStreamLikeStart(String post_id);
     void reloadedStreamLikeFinish(String post_id, String errMsg);
 
+    void registedStreamMessage(String post_id, String errMsg);
+
     void readedImage(String url);
 }

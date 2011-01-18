@@ -127,18 +127,21 @@
 <attribute NAME="complete" VALUE="0"/>
 <attribute NAME="depends" VALUE="!stream_comment"/>
 <attribute NAME="start" VALUE="2011-01-18-10:30"/>
-<node COLOR="#111111" CREATED="1295313789458" ID="ID_1692833748" MODIFIED="1295321174782" TEXT="&#x30ec;&#x30a4;&#x30a2;&#x30a6;&#x30c8;&#x8ffd;&#x52a0;">
+<node COLOR="#111111" CREATED="1295313789458" ID="ID_1692833748" MODIFIED="1295334531626" TEXT="&#x30ec;&#x30a4;&#x30a2;&#x30a6;&#x30c8;&#x8ffd;&#x52a0;">
 <attribute_layout NAME_WIDTH="51" VALUE_WIDTH="201"/>
 <attribute NAME="task" VALUE="stream_message_input_relayout"/>
 <attribute NAME="complete" VALUE="100"/>
 <attribute NAME="start" VALUE="2011-01-18-10:30"/>
 <attribute NAME="end" VALUE="2011-01-18-12:30"/>
+<attribute NAME="flags" VALUE="task_completed"/>
 </node>
-<node COLOR="#111111" CREATED="1295313806365" ID="ID_1786786945" MODIFIED="1295314062178" TEXT="&#x5165;&#x529b;&#x30fb;&#x9001;&#x4fe1;&#x6a5f;&#x80fd;&#x8ffd;&#x52a0;">
+<node COLOR="#111111" CREATED="1295313806365" ID="ID_1786786945" MODIFIED="1295340959127" TEXT="&#x5165;&#x529b;&#x30fb;&#x9001;&#x4fe1;&#x6a5f;&#x80fd;&#x8ffd;&#x52a0;">
 <attribute_layout NAME_WIDTH="51" VALUE_WIDTH="183"/>
 <attribute NAME="task" VALUE="stream_message_input_sender"/>
 <attribute NAME="depends" VALUE="!stream_message_input_relayout"/>
-<attribute NAME="complete" VALUE="0"/>
+<attribute NAME="complete" VALUE="100"/>
+<attribute NAME="start" VALUE="2011-01-18-14:00"/>
+<attribute NAME="end" VALUE="2011-01-18-18:00"/>
 </node>
 <node COLOR="#111111" CREATED="1295313828162" ID="ID_142054996" MODIFIED="1295314079617" TEXT="&#x753b;&#x9762;&#x30b5;&#x30a4;&#x30ba;&#x306b;&#x62e1;&#x5927;&#x6a5f;&#x80fd;&#x8ffd;&#x52a0;">
 <attribute NAME="task" VALUE="stream_message_input_resize_button"/>
